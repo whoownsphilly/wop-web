@@ -6,7 +6,7 @@ function App() {
   const [output, setOutput] = useState(0);
 
   useEffect(() => {
-    fetch('/api/properties?search_query=DOMB ALLAN&search_type=owner').then(res => res.json()).then(data => {
+    fetch('/api/v1/properties?search_query=DOMB ALLAN&search_type=owner').then(res => res.json()).then(data => {
       setOutput(data['results'][0]['location']);
     });
   }, []);

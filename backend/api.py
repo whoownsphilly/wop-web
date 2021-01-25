@@ -1,0 +1,32 @@
+from django.http import JsonResponse
+from phillydb import construct_search_query
+from phillydb.tables import Properties
+from phillydb.exceptions import SearchTypeNotImplementedError, SearchMethodNotImplementedError
+
+
+def properties_list(request):
+    search_query = request.GET.get("search_query", '')
+    search_type = request.GET.get("search_type", '')
+    search_method = request.GET.get("search_method", "contains")
+    try:
+        opa_account_numbers_sql = construct_search_query(
+            search_query=search_query, search_type=search_type, search_method=search_method
+        )
+    except SearchTypeNotImplementedError as e:
+        return JsonResponse({"error": e.message}, status=400)
+    except SearchMethodNotImplementedError as e:
+        return JsonResponse({"error": e.message}, status=400)
+
+    properties_obj = Properties()
+    df = properties_obj.query_by_opa_account_numbers(
+        opa_account_numbers=opa_account_numbers_sql
+    )
+    data = {
+        "metadata": {
+            "search_query": search_query,
+            "search_type": search_type,
+            "search_method": search_method,
+        },
+        "results": df.to_dict("records"),
+    }
+    return JsonResponse(data)

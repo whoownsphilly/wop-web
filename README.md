@@ -59,11 +59,6 @@ heroku buildpacks:add --index 2 heroku/python
 
 To deploy to heroku, use the `./heroku.sh` script which both freezes and requirements and pushes the code.
 
-TO-DO before making this repo public
-------------------------------------
-
-- move the django secret key into an env var
-
 create-react-app docs
 ---------------------
 

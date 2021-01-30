@@ -14,6 +14,18 @@ To develop locally, you need to start up the django server. The django server po
 pip install -r requirements.txt
 python manage.py runserver
 
+# Mac Catalina Installation
+- Install Poetry
+- Install `xcode-select --install`
+- Link open SSL stuff
+    - `export LDFLAGS="-L/usr/local/opt/openssl@1.1/lib"`
+    - `export CPPFLAGS="-I/usr/local/opt/openssl@1.1/include"`
+- Install Postgre
+    - `brew install postgresql`
+- `poetry shell` to enter venv
+- `pip install -r requirements.txt`
+- `./django_serve.sh`
+
 ### React ###
 yarn start
 ```

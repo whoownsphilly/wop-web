@@ -1,14 +1,16 @@
-import logo from './logo.svg';
-import React, { useState, useEffect } from 'react';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import logo from "./logo.svg";
+import "./App.css";
 
-function App() {
+function App(): React.ReactElement {
   const [output, setOutput] = useState(0);
 
   useEffect(() => {
-    fetch('/api/v1/properties?search_query=DOMB ALLAN&search_type=owner').then(res => res.json()).then(data => {
-      setOutput(data['results'][0]['location']);
-    });
+    fetch("/api/v1/properties?search_query=DOMB ALLAN&search_type=owner")
+      .then((res) => res.json())
+      .then((data) => {
+        setOutput(data.results[0].location);
+      });
   }, []);
 
   return (

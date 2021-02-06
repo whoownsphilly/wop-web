@@ -1,3 +1,9 @@
-name: Black Code Formatter
-uses: lgeiger/black-action@v1.0.1
+workflow "Python Code Formatter" {
+  on = "push"
+  resolves = ["Lint"]
+}
 
+action "Lint" {
+  uses = "lgeiger/black-action@master"
+  args = ". --check"
+}

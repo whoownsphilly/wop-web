@@ -19,6 +19,14 @@ from phillydb.exceptions import (
     SearchMethodNotImplementedError,
 )
 
+from phillydb import __version__ as philly_db_version
+
+
+def settings_response(request):
+    return JsonResponse(
+        {"latest_api_version": "v1", "phillydb_version": philly_db_version.__version__}
+    )
+
 
 def _table_response(table_obj, request):
     search_query = request.GET.get("search_query", "")

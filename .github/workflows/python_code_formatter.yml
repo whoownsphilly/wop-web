@@ -29,6 +29,7 @@ jobs:
 
       - name: Format code
         run: |
+          pip install black
           black .
 
       - name: Run migrations

@@ -16,7 +16,8 @@ jobs:
       # Checks out a copy of your repository on the ubuntu-latest machine
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: actions/seup-python@v1
+      - name: 'Set up Pyton 3.7'
+      - uses: actions/setup-python@v1
         with:
           python-version: 3.7
       - name: Install dependencies

@@ -1,23 +1,47 @@
 import { put, all, takeLatest } from "redux-saga/effects";
+import axios from "axios";
 
 import * as actionTypes from "./actionTypes";
-import { SubmitPropertySearchForm } from "./actions";
+import {
+  setFirstName,
+  setLastName,
+  setSearchMethod,
+  setSearchType,
+  SubmitPropertySearchForm,
+} from "./actions";
 
-function* submitSearchForm(action: SubmitPropertySearchForm): Generator {
-  const {
-    SET_SEARCH_METHOD,
-    SET_SEARCH_TYPE,
-    SET_FIRST_NAME,
-    SET_LAST_NAME,
-  } = actionTypes;
-
-  const { form } = action;
+function* submitSearchForm(action: SubmitPropertySearchForm): unknown {
+  const { form, reject, resolve } = action;
   const { firstName, lastName, searchMethod, searchType } = form;
 
-  yield put({ type: SET_SEARCH_METHOD, searchMethod });
-  yield put({ type: SET_SEARCH_TYPE, searchType });
-  yield put({ type: SET_FIRST_NAME, firstName });
-  yield put({ type: SET_LAST_NAME, lastName });
+  let ownerName = `${lastName}`;
+  if (firstName) {
+    ownerName = `${lastName} ${firstName}`;
+  }
+
+  const API_ENDPOINT = `/api/v1/properties`;
+  const SEARCH_QUERY = `?search_query=${ownerName}`;
+  const SEARCH_TYPE = `&search_type=${searchType}`;
+  const QUERY = `${API_ENDPOINT}${SEARCH_QUERY}${SEARCH_TYPE}`;
+
+  yield put(setSearchMethod(searchMethod));
+  yield put(setSearchType(searchType));
+  yield put(setFirstName(firstName));
+  yield put(setLastName(lastName));
+
+  axios
+    .get(QUERY)
+    .then((res) => {
+      const { data } = res;
+      console.log(data);
+
+      resolve();
+    })
+    .catch((error) => {
+      console.error(error);
+
+      reject(error);
+    });
 }
 
 function* watchsubmitSearchForm() {

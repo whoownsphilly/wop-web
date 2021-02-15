@@ -15,6 +15,6 @@ export interface PropertyState {
 export interface PropertySearchState {
   firstName: string;
   lastName: string;
-  searchType: string;
-  searchMethod: string;
+  searchType: APISearchType;
+  searchMethod: APISearchMethod;
 }

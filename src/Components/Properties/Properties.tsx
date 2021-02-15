@@ -24,8 +24,8 @@ const Properties: FunctionComponent<Props> = (props: Props) => {
   const intitialSearchState: PropertySearchState = {
     firstName: "",
     lastName: "",
-    searchType: "",
-    searchMethod: "",
+    searchType: "owner",
+    searchMethod: "contains",
   };
 
   const [searchState, updateSearchState] = useState<PropertySearchState>(

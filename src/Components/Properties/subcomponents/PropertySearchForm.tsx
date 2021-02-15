@@ -45,8 +45,8 @@ const PropertySearchForm: FunctionComponent<Props> = (props: Props) => {
           <select
             id="search-type"
             value={searchType}
-            onChange={(e) =>
-              updateSearchState({ ...searchState, searchType: e.target.value })
+            onChange={() =>
+              updateSearchState({ ...searchState, searchType: "owner" })
             }
           >
             <option value="owner">Owner</option>
@@ -62,10 +62,10 @@ const PropertySearchForm: FunctionComponent<Props> = (props: Props) => {
           <select
             id="search-method"
             value={searchMethod}
-            onChange={(e) =>
+            onChange={() =>
               updateSearchState({
                 ...searchState,
-                searchMethod: e.target.value,
+                searchMethod: "",
               })
             }
           >

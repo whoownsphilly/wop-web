@@ -23,4 +23,4 @@ export type APISearchQuery = string;
  * Optional
  * TODO add more documentation on how this affects search
  */
-export type APISearchMethod = "contains" | "starts_with" | "ends_with" | null;
+export type APISearchMethod = "contains" | "starts_with" | "ends_with" | "";

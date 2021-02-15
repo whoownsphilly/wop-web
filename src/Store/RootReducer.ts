@@ -8,7 +8,7 @@ import { Actions as HomeActions } from "../Components/Home/redux/actions";
 // Property Imports
 import { PropertyState } from "../Components/Properties/types";
 import PropertyReducer from "../Components/Properties/redux/reducer";
-import { Actions as PropertyActions } from "../Components/Properties/redux/actions";
+import { PropertyActions } from "../Components/Properties/redux/actions";
 
 export type RootActionTypes = HomeActions | PropertyActions;
 

@@ -1,6 +1,8 @@
 import { put, all, takeLatest } from "redux-saga/effects";
 import axios from "axios";
 
+import parsePropertySearchQuery from "../../../Utilities/queryHelpers";
+
 import * as actionTypes from "./actionTypes";
 import {
   setFirstName,
@@ -8,6 +10,7 @@ import {
   setSearchMethod,
   setSearchType,
   SubmitPropertySearchForm,
+  setPropertyData,
 } from "./actions";
 
 function* submitSearchForm(action: SubmitPropertySearchForm): unknown {
@@ -19,29 +22,36 @@ function* submitSearchForm(action: SubmitPropertySearchForm): unknown {
     ownerName = `${lastName} ${firstName}`;
   }
 
-  const API_ENDPOINT = `/api/v1/properties`;
-  const SEARCH_QUERY = `?search_query=${ownerName}`;
-  const SEARCH_TYPE = `&search_type=${searchType}`;
-  const QUERY = `${API_ENDPOINT}${SEARCH_QUERY}${SEARCH_TYPE}`;
+  const query = parsePropertySearchQuery(ownerName, searchType);
 
   yield put(setSearchMethod(searchMethod));
   yield put(setSearchType(searchType));
   yield put(setFirstName(firstName));
   yield put(setLastName(lastName));
 
-  axios
-    .get(QUERY)
-    .then((res) => {
-      const { data } = res;
-      console.log(data);
+  let success = false;
+  let data;
 
-      resolve();
+  yield axios
+    .get(query)
+    .then((res) => {
+      const { status, data: resData } = res;
+
+      if (status === 200) {
+        success = true;
+        data = resData;
+      }
     })
     .catch((error) => {
-      console.error(error);
-
       reject(error);
     });
+
+  if (success && data) {
+    yield put(setPropertyData(data));
+    resolve();
+  } else {
+    reject("Something went horribly wrong...");
+  }
 }
 
 function* watchsubmitSearchForm() {

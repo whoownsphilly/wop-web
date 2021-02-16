@@ -50,8 +50,6 @@ const Properties: FunctionComponent<Props> = (props: Props) => {
         updateErrorState(errorMessage);
       };
 
-      // TODO saga to handle api call
-      // it also returns a promise that turns on the default table view
       submitPropertySearchForm(searchState, resolve, reject);
     }
   };

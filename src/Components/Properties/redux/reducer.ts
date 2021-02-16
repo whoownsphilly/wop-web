@@ -4,7 +4,18 @@ import { PropertyActions } from "./actions";
 import { PropertyState } from "../types";
 
 const initialState: PropertyState = {
-  data: [],
+  data: {
+    metadata: {
+      cartoDbLink: "",
+      cartoDbTableName: "",
+      odbLink: "",
+      searchMethod: "",
+      searchQuery: "",
+      searchType: "",
+      title: "",
+    },
+    properties: [],
+  },
   firstName: "",
   lastName: "",
   searchType: "owner",
@@ -16,11 +27,6 @@ const PropertyReducer = (
   action: PropertyActions
 ): PropertyState => {
   switch (action.type) {
-    case ActionTypes.GET_PROPERTIES_LIST:
-      const { data } = action;
-
-      return { ...state, data };
-
     case ActionTypes.SET_FIRST_NAME:
       const { firstName } = action;
 
@@ -37,6 +43,10 @@ const PropertyReducer = (
       const { searchMethod } = action;
 
       return { ...state, searchMethod };
+    case ActionTypes.SET_PROPERTY_DATA:
+      const { data: actionData } = action;
+
+      return { ...state, data: actionData };
     default:
       return state;
   }

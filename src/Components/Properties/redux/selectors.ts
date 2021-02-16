@@ -1,8 +1,8 @@
 import { RootState } from "../../../Store/RootReducer";
 import { APISearchMethod, APISearchType } from "../../../Utilities/types";
-import { Property } from "../types";
+import { PropertyData } from "../types";
 
-export const selectPropertiesList = (state: RootState): Property[] => {
+export const selectPropertiesList = (state: RootState): PropertyData => {
   return state.properties.data;
 };
 

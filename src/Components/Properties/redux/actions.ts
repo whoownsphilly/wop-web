@@ -1,20 +1,6 @@
 import * as ActionTypes from "./actionTypes";
-import { Property, PropertySearchState } from "../types";
+import { PropertySearchState, PropertyData } from "../types";
 import { APISearchMethod, APISearchType } from "../../../Utilities/types";
-
-interface GetPropertiesList {
-  type: ActionTypes.GET_PROPERTIES_LIST;
-  data: Property[];
-}
-
-export function getPropertiesList(data: Property[]): GetPropertiesList {
-  const { GET_PROPERTIES_LIST } = ActionTypes;
-
-  return {
-    type: GET_PROPERTIES_LIST,
-    data,
-  };
-}
 
 interface SetFirstName {
   type: ActionTypes.SET_FIRST_NAME;
@@ -96,10 +82,24 @@ export function submitPropertySearchForm(
   };
 }
 
+export interface SetPropertyData {
+  type: ActionTypes.SET_PROPERTY_DATA;
+  data: PropertyData;
+}
+
+export function setPropertyData(data: PropertyData): SetPropertyData {
+  const { SET_PROPERTY_DATA } = ActionTypes;
+
+  return {
+    type: SET_PROPERTY_DATA,
+    data,
+  };
+}
+
 export type PropertyActions =
-  | GetPropertiesList
   | SetFirstName
   | SetLastName
   | SetSearchType
   | SetSearchMethod
-  | SubmitPropertySearchForm;
+  | SubmitPropertySearchForm
+  | SetPropertyData;

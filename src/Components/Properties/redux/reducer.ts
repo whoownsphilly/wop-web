@@ -1,23 +1,52 @@
 /* eslint-disable no-case-declarations */
 import * as ActionTypes from "./actionTypes";
-import { Actions } from "./actions";
+import { PropertyActions } from "./actions";
 import { PropertyState } from "../types";
 
 const initialState: PropertyState = {
-  data: [],
+  data: {
+    metadata: {
+      cartoDbLink: "",
+      cartoDbTableName: "",
+      odbLink: "",
+      searchMethod: "",
+      searchQuery: "",
+      searchType: "",
+      title: "",
+    },
+    properties: [],
+  },
+  firstName: "",
+  lastName: "",
+  searchType: "owner",
+  searchMethod: "contains",
 };
 
 const PropertyReducer = (
-  state = initialState,
-  action: Actions
+  state: PropertyState = initialState,
+  action: PropertyActions
 ): PropertyState => {
-  const { type } = action;
+  switch (action.type) {
+    case ActionTypes.SET_FIRST_NAME:
+      const { firstName } = action;
 
-  switch (type) {
-    case ActionTypes.GET_PROPERTIES_LIST:
-      const { data } = action;
+      return { ...state, firstName };
+    case ActionTypes.SET_LAST_NAME:
+      const { lastName } = action;
 
-      return { ...state, data };
+      return { ...state, lastName };
+    case ActionTypes.SET_SEARCH_TYPE:
+      const { searchType } = action;
+
+      return { ...state, searchType };
+    case ActionTypes.SET_SEARCH_METHOD:
+      const { searchMethod } = action;
+
+      return { ...state, searchMethod };
+    case ActionTypes.SET_PROPERTY_DATA:
+      const { data: actionData } = action;
+
+      return { ...state, data: actionData };
     default:
       return state;
   }

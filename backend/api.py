@@ -13,7 +13,6 @@ from phillydb.tables import (
     CaseInvestigations,
 )
 
-
 from phillydb.exceptions import (
     SearchTypeNotImplementedError,
     SearchMethodNotImplementedError,
@@ -46,6 +45,7 @@ def _table_response(table_obj, request):
     df = table_obj.query_by_opa_account_numbers(
         opa_account_numbers=opa_account_numbers_sql
     )
+
     data = {
         "metadata": {
             "title": table_obj.title,

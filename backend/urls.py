@@ -31,9 +31,7 @@ from .api import (
     case_investigations_response,
 )
 
-urlpatterns = [
-    path("", index, name="index"),
-    # path("admin/", admin.site.urls),
+api_urlpatterns = [
     path("api/", settings_response, name="settings"),
     path("api/v1/properties/", properties_response, name="properties_list"),
     path("api/v1/permits/", permits_response, name="permits_list"),
@@ -58,3 +56,8 @@ urlpatterns = [
         name="case_investigations_list",
     ),
 ]
+
+urlpatterns = [
+    path("", index, name="index"),
+    # path("admin/", admin.site.urls),
+] + api_urlpatterns

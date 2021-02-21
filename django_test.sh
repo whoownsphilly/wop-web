@@ -1,2 +1,2 @@
 #!/bin/sh
-poetry run python manage.py test
+poetry run py.test "$@"

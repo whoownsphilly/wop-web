@@ -8,6 +8,7 @@ To develop locally, you need to start up the django server. The django server po
 ```
 ### DJANGO ###
 # either install [poetry](https://python-poetry.org/)
+poetry run pip install -r requirements.txt
 ./django_serve.sh
 
 # or directly install the requirements and run django
@@ -20,7 +21,7 @@ python manage.py runserver
 - Link open SSL stuff
     - `export LDFLAGS="-L/usr/local/opt/openssl@1.1/lib"`
     - `export CPPFLAGS="-I/usr/local/opt/openssl@1.1/include"`
-- Install Postgre
+- Install Postgres
     - `brew install postgresql`
 - `poetry shell` to enter venv
 - `pip install -r requirements.txt`

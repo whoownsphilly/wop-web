@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "whitenoise.runserver_nostatic",  # < As per whitenoise documentation
     "django.contrib.staticfiles",
+    "django_nose",
 ]
 
 MIDDLEWARE = [
@@ -139,3 +140,9 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "build", "media")
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+
+# Use nose to run all tests
+TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
+
+NOSE_ARGS = ["--with-coverage", "--cover-package=backend"]

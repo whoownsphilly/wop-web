@@ -8,7 +8,7 @@ jobs:
   # when a job name is not provided
   python-checks:
     # Name the Job
-    name: Lint and Test code base
+    name: Run Python Tests and Coverage Check
     # Set the type of machine to run on
     runs-on: ubuntu-latest
 
@@ -17,12 +17,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         
-      - name: 'Set up Pyton 3.7'
+      - name: 'Set up Python 3.7'
         uses: actions/setup-python@v1
         with:
           python-version: 3.7
 
-      - name: Format code
+      - name: Check code formatting
         run: |
           pip install black 
           black . --check
@@ -36,4 +36,4 @@ jobs:
           python manage.py migrate
 
       - name: Run tests
-        run: python manage.py test
+        run: py.test

@@ -1,39 +1,153 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable react/no-unused-prop-types */
-import React, { FunctionComponent } from "react";
-import { connect } from "react-redux";
+/* eslint-disable react/jsx-props-no-spreading */
+import React, { FunctionComponent, useMemo } from "react";
+import { useTable } from "react-table";
 
-import {
-  selectOwnerFirstName,
-  selectOwnerLastName,
-  selectPropertiesList,
-  selectSearchType,
-} from "../redux/selectors";
-
-import { APISearchType, APISearchMethod } from "../../../Utilities/types";
 import { Property } from "../types";
 
-import { RootState } from "../../../Store/RootReducer";
-
-interface StateProps {
-  firstName: string;
-  lastName: string;
-  searchType: APISearchType;
-  searchMethod: APISearchMethod;
-  data: Property[];
+interface Props {
+  properties: Property[];
 }
 
-const PropertyDataTable: FunctionComponent = () => {
-  return <p>Property Data Table</p>;
-};
+const PropertyDataTable: FunctionComponent<Props> = (props: Props) => {
+  const { properties } = props;
 
-const mapStateToProps = (state: RootState) => {
-  return {
-    firstName: selectOwnerFirstName(state),
-    lastName: selectOwnerLastName(state),
-    searchType: selectSearchType(state),
-    data: selectPropertiesList(state),
+  const tableData = useMemo(() => {
+    return properties.map((property) => {
+      const UNKNOWN = "unknown";
+      const {
+        location,
+        lat,
+        lng,
+        mailingAddress1,
+        mailingAddress2,
+        mailing_care_of: mailingCareOf,
+        mailing_city_state: mailingCityState,
+        owner_2: owner2,
+        unit,
+      } = property;
+
+      return {
+        location: location || UNKNOWN,
+        lat: lat || UNKNOWN,
+        lng: lng || UNKNOWN,
+        mailingAddress1: mailingAddress1 || UNKNOWN,
+        mailingAddress2: mailingAddress2 || UNKNOWN,
+        mailingCareOf: mailingCareOf || UNKNOWN,
+        mailingCityState: mailingCityState || UNKNOWN,
+        owner2: owner2 || UNKNOWN,
+        unit: unit || UNKNOWN,
+      };
+    });
+  }, [properties]);
+
+  const columns = useMemo(
+    () => [
+      {
+        Header: "Location",
+        accessor: "location",
+      },
+      {
+        Header: "Coordinates",
+        columns: [
+          {
+            Header: "Lat",
+            accessor: "lat",
+          },
+          {
+            Header: "Lng",
+            accessor: "lng",
+          },
+        ],
+      },
+      {
+        Header: "Owner Mailing Information",
+        columns: [
+          {
+            Header: "Mailing Address 1",
+            accessor: "mailingAddress1",
+          },
+          {
+            Header: "Mailing Address 2",
+            accessor: "mailingAddress2",
+          },
+          {
+            Header: "Mailing Care Of",
+            accessor: "mailingCareOf",
+          },
+          {
+            Header: "Maiiling City, State",
+            accessor: "mailingCityState",
+          },
+        ],
+      },
+      {
+        Header: "Owner 2",
+        accessor: "owner2",
+      },
+      {
+        Header: "Parcel Number",
+        accessor: "parcelNumber",
+      },
+      {
+        Header: "Unit",
+        accessor: "unit",
+      },
+    ],
+    []
+  );
+
+  /**
+   * Why is this ignored? Well React Table doesn't play nice with TS
+   * and I got covid brain right now
+   *
+   * TODO Fix typing on this one
+   */
+  const {
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    rows,
+    prepareRow,
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+  } = useTable({ columns, data: tableData });
+
+  const renderTable = () => {
+    return (
+      <table {...getTableProps()}>
+        <thead>
+          {headerGroups.map((headerGroup) => (
+            <tr {...headerGroup.getHeaderGroupProps()}>
+              {headerGroup.headers.map((column) => (
+                <th {...column.getHeaderProps()}>{column.render("Header")}</th>
+              ))}
+            </tr>
+          ))}
+        </thead>
+        <tbody {...getTableBodyProps()}>
+          {rows.map((row) => {
+            prepareRow(row);
+            return (
+              <tr {...row.getRowProps()}>
+                {row.cells.map((cell) => {
+                  return (
+                    <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+                  );
+                })}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    );
   };
+
+  return (
+    <>
+      <h1>Property Data Table</h1>
+      {renderTable()}
+    </>
+  );
 };
 
-export default connect(mapStateToProps, null)(PropertyDataTable);
+export default PropertyDataTable;

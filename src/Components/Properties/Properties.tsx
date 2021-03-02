@@ -4,11 +4,19 @@ import { Dispatch } from "redux";
 
 import { submitPropertySearchForm as actionSubmitPropertySearchForm } from "./redux/actions";
 
-import { PropertySearchState } from "./types";
+import { Property, PropertySearchState } from "./types";
 
 import PropertySearchForm from "./subcomponents/PropertySearchForm";
 import SearchError from "./subcomponents/SearchError";
 import PropertyDataTable from "./subcomponents/PropertyDataTable";
+import SearchInfoDisplay from "./subcomponents/SearchInfoDisplay";
+import MetadataDisplay from "./subcomponents/MetadataDisplay";
+import { selectPropertiesList } from "./redux/selectors";
+import { RootState } from "../../Store/RootReducer";
+
+interface StateProps {
+  properties: Property[];
+}
 
 interface DispatchProps {
   submitPropertySearchForm: (
@@ -18,7 +26,7 @@ interface DispatchProps {
   ) => void;
 }
 
-type Props = DispatchProps;
+type Props = DispatchProps & StateProps;
 
 const Properties: FunctionComponent<Props> = (props: Props) => {
   const intitialSearchState: PropertySearchState = {
@@ -55,9 +63,17 @@ const Properties: FunctionComponent<Props> = (props: Props) => {
   };
 
   const renderDataTable = () => {
+    const { properties } = props;
+
     let dataTable = null;
-    if (showDataTable) {
-      dataTable = <PropertyDataTable />;
+    if (showDataTable && properties) {
+      dataTable = (
+        <>
+          <SearchInfoDisplay />
+          <MetadataDisplay />
+          <PropertyDataTable properties={properties} />
+        </>
+      );
     }
 
     return dataTable;
@@ -78,6 +94,10 @@ const Properties: FunctionComponent<Props> = (props: Props) => {
   );
 };
 
+const mapStateToProps = (state: RootState) => ({
+  properties: selectPropertiesList(state),
+});
+
 const mapDispatchToProps = (dispatch: Dispatch) => {
   return {
     submitPropertySearchForm: (
@@ -88,4 +108,4 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
   };
 };
 
-export default connect(null, mapDispatchToProps)(Properties);
+export default connect(mapStateToProps, mapDispatchToProps)(Properties);

@@ -1,13 +1,13 @@
 import { APISearchType } from "./types";
 
 const parsePropertySearchQuery = (
-  ownerName: string,
+  searchQuery: string,
   searchType: APISearchType,
   searchMethod = null
 ): string => {
   const API_ENDPOINT = `/api/v1/properties`;
 
-  const searchQueryString = `?search_query=${ownerName}`;
+  const searchQueryString = `?search_query=${searchQuery}`;
   const searchTypeString = `&search_type=${searchType}`;
 
   let searchMethodString = "";

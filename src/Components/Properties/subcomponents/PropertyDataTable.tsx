@@ -24,6 +24,7 @@ const PropertyDataTable: FunctionComponent<Props> = (props: Props) => {
         mailing_city_state: mailingCityState,
         owner_2: owner2,
         unit,
+        parcel_number: parcelNumber,
       } = property;
 
       return {
@@ -36,6 +37,7 @@ const PropertyDataTable: FunctionComponent<Props> = (props: Props) => {
         mailingCityState: mailingCityState || UNKNOWN,
         owner2: owner2 || UNKNOWN,
         unit: unit || UNKNOWN,
+        parcelNumber: parcelNumber || UNKNOWN,
       };
     });
   }, [properties]);
@@ -75,7 +77,7 @@ const PropertyDataTable: FunctionComponent<Props> = (props: Props) => {
             accessor: "mailingCareOf",
           },
           {
-            Header: "Maiiling City, State",
+            Header: "Mailing City, State",
             accessor: "mailingCityState",
           },
         ],
@@ -112,32 +114,48 @@ const PropertyDataTable: FunctionComponent<Props> = (props: Props) => {
     // @ts-ignore
   } = useTable({ columns, data: tableData });
 
+  const renderTableHead = () => {
+    return (
+      <thead>
+        {headerGroups.map((headerGroup) => (
+          <tr {...headerGroup.getHeaderGroupProps()}>
+            {headerGroup.headers.map((column) => (
+              <th {...column.getHeaderProps()}>{column.render("Header")}</th>
+            ))}
+          </tr>
+        ))}
+      </thead>
+    );
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const renderTableData = (cell: any) => {
+    return <td {...cell.getCellProps()}>{cell.render("Cell")}</td>;
+  };
+
+  const renderTableRow = () => {
+    return rows.map((row) => {
+      prepareRow(row);
+
+      return (
+        <tr {...row.getRowProps()}>
+          {row.cells.map((cell) => {
+            return renderTableData(cell);
+          })}
+        </tr>
+      );
+    });
+  };
+
+  const renderTableBody = () => {
+    return <tbody {...getTableBodyProps()}>{renderTableRow()}</tbody>;
+  };
+
   const renderTable = () => {
     return (
       <table {...getTableProps()}>
-        <thead>
-          {headerGroups.map((headerGroup) => (
-            <tr {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map((column) => (
-                <th {...column.getHeaderProps()}>{column.render("Header")}</th>
-              ))}
-            </tr>
-          ))}
-        </thead>
-        <tbody {...getTableBodyProps()}>
-          {rows.map((row) => {
-            prepareRow(row);
-            return (
-              <tr {...row.getRowProps()}>
-                {row.cells.map((cell) => {
-                  return (
-                    <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
-                  );
-                })}
-              </tr>
-            );
-          })}
-        </tbody>
+        {renderTableHead()}
+        {renderTableBody()}
       </table>
     );
   };

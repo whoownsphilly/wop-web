@@ -30,15 +30,13 @@ export interface PropertyData {
 
 export interface PropertyState {
   data: PropertyData;
-  firstName: string;
-  lastName: string;
+  searchQuery: string;
   searchType: APISearchType;
   searchMethod: APISearchMethod;
 }
 
 export interface PropertySearchState {
-  firstName: string;
-  lastName: string;
+  searchQuery: string;
   searchType: APISearchType;
   searchMethod: APISearchMethod;
 }

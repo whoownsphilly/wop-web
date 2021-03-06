@@ -2,8 +2,7 @@ import React, { FunctionComponent } from "react";
 import { connect } from "react-redux";
 
 import {
-  selectOwnerFirstName,
-  selectOwnerLastName,
+  selectSearchQuery,
   selectSearchMethod,
   selectSearchType,
 } from "../redux/selectors";
@@ -12,8 +11,7 @@ import { RootState } from "../../../Store/RootReducer";
 import { APISearchType, APISearchMethod } from "../../../Utilities/types";
 
 interface StateProps {
-  firstName: string;
-  lastName: string;
+  searchQuery: string;
   searchType: APISearchType;
   searchMethod: APISearchMethod;
 }
@@ -21,15 +19,13 @@ interface StateProps {
 type Props = StateProps;
 
 const SearchInfoDisplay: FunctionComponent<Props> = (props: Props) => {
-  const { firstName, lastName, searchType, searchMethod } = props;
+  const { searchQuery, searchType, searchMethod } = props;
 
   return (
     <>
       <div>
-        <p>Owner Name</p>
-        <p>
-          {firstName} {lastName}
-        </p>
+        <p>Search Query</p>
+        <p>{searchQuery}</p>
       </div>
       <div>
         <p>Search Type</p>
@@ -44,8 +40,7 @@ const SearchInfoDisplay: FunctionComponent<Props> = (props: Props) => {
 };
 
 const mapStateToProps = (state: RootState) => ({
-  firstName: selectOwnerFirstName(state),
-  lastName: selectOwnerLastName(state),
+  searchQuery: selectSearchQuery(state),
   searchType: selectSearchType(state),
   searchMethod: selectSearchMethod(state),
 });

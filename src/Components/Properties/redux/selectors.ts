@@ -10,12 +10,8 @@ export const selectPropertyMetadata = (state: RootState): PropertyMetadata => {
   return state.properties.data.metadata;
 };
 
-export const selectOwnerFirstName = (state: RootState): string => {
-  return state.properties.firstName;
-};
-
-export const selectOwnerLastName = (state: RootState): string => {
-  return state.properties.lastName;
+export const selectSearchQuery = (state: RootState): string => {
+  return state.properties.searchQuery;
 };
 
 export const selectSearchType = (state: RootState): APISearchType => {

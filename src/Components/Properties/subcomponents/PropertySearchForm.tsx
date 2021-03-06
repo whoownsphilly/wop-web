@@ -1,4 +1,5 @@
-import React, { FunctionComponent } from "react";
+import React, { ChangeEvent, FunctionComponent } from "react";
+import { APISearchMethod, APISearchType } from "../../../Utilities/types";
 
 import { PropertySearchState } from "../types";
 
@@ -10,34 +11,45 @@ interface Props {
 
 const PropertySearchForm: FunctionComponent<Props> = (props: Props) => {
   const { handleSubmit, searchState, updateSearchState } = props;
-  const { firstName, lastName, searchType, searchMethod } = searchState;
+  const { searchQuery, searchType, searchMethod } = searchState;
+
+  const handleSearchMethodChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const { target } = event;
+    const { value } = target;
+
+    updateSearchState({
+      ...searchState,
+      searchMethod: value as APISearchMethod,
+    });
+  };
+
+  const handleSearchTypeChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const { target } = event;
+    const { value } = target;
+
+    updateSearchState({
+      ...searchState,
+      searchType: value as APISearchType,
+    });
+  };
+
+  const handleSearchQueryChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { target } = event;
+    const { value } = target;
+
+    updateSearchState({ ...searchState, searchQuery: value });
+  };
 
   const renderSearchForm = () => {
     return (
       <form onSubmit={(e) => handleSubmit(e)}>
-        <label htmlFor="first-name">
-          First Name:
+        <label htmlFor="search-query">
+          Search Query:
           <input
             type="text"
-            id="first-name"
-            value={firstName}
-            onChange={(e) =>
-              updateSearchState({ ...searchState, firstName: e.target.value })
-            }
-          />
-        </label>
-        <label htmlFor="last-name">
-          Last Name:
-          <input
-            type="text"
-            id="last-name"
-            value={lastName}
-            onChange={(e) =>
-              updateSearchState({
-                ...searchState,
-                lastName: e.target.value,
-              })
-            }
+            id="search-query"
+            value={searchQuery}
+            onChange={handleSearchQueryChange}
           />
         </label>
         <label htmlFor="search-type">
@@ -45,9 +57,7 @@ const PropertySearchForm: FunctionComponent<Props> = (props: Props) => {
           <select
             id="search-type"
             value={searchType}
-            onChange={() =>
-              updateSearchState({ ...searchState, searchType: "owner" })
-            }
+            onChange={handleSearchTypeChange}
           >
             <option value="owner">Owner</option>
             <option value="location_by_owner">Location By Owner</option>
@@ -62,12 +72,7 @@ const PropertySearchForm: FunctionComponent<Props> = (props: Props) => {
           <select
             id="search-method"
             value={searchMethod}
-            onChange={() =>
-              updateSearchState({
-                ...searchState,
-                searchMethod: "",
-              })
-            }
+            onChange={handleSearchMethodChange}
           >
             <option value="">None</option>
             <option value="contains">Contains</option>

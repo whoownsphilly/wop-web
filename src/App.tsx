@@ -16,33 +16,31 @@ function App(): React.ReactElement {
       });
   }, []);
 
-  const renderRouter = () => {
-    return (
-      <Router>
-        <div>
-          <nav>
-            <ul>
-              <li>
-                <Link to="/">Home</Link>
-              </li>
-              <li>
-                <Link to="/properties">Properties</Link>
-              </li>
-            </ul>
-          </nav>
+  const renderRouter = () => (
+    <Router>
+      <div>
+        <nav>
+          <ul>
+            <li>
+              <Link to="/">Home</Link>
+            </li>
+            <li>
+              <Link to="/properties">Properties</Link>
+            </li>
+          </ul>
+        </nav>
 
-          <Switch>
-            <Route path="/properties">
-              <Properties />
-            </Route>
-            <Route path="/">
-              <Home />
-            </Route>
-          </Switch>
-        </div>
-      </Router>
-    );
-  };
+        <Switch>
+          <Route path="/properties">
+            <Properties />
+          </Route>
+          <Route path="/">
+            <Home />
+          </Route>
+        </Switch>
+      </div>
+    </Router>
+  );
 
   return (
     <div className="App">

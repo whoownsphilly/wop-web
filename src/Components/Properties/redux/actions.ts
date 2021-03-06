@@ -2,31 +2,17 @@ import * as ActionTypes from "./actionTypes";
 import { PropertySearchState, PropertyData } from "../types";
 import { APISearchMethod, APISearchType } from "../../../Utilities/types";
 
-interface SetFirstName {
-  type: ActionTypes.SET_FIRST_NAME;
-  firstName: string;
+interface SetSearchQuery {
+  type: ActionTypes.SET_SEARCH_QUERY;
+  searchQuery: string;
 }
 
-export function setFirstName(firstName: string): SetFirstName {
-  const { SET_FIRST_NAME } = ActionTypes;
+export function setSearchQuery(searchQuery: string): SetSearchQuery {
+  const { SET_SEARCH_QUERY } = ActionTypes;
 
   return {
-    type: SET_FIRST_NAME,
-    firstName,
-  };
-}
-
-interface SetLastName {
-  type: ActionTypes.SET_LAST_NAME;
-  lastName: string;
-}
-
-export function setLastName(lastName: string): SetLastName {
-  const { SET_LAST_NAME } = ActionTypes;
-
-  return {
-    type: SET_LAST_NAME,
-    lastName,
+    type: SET_SEARCH_QUERY,
+    searchQuery,
   };
 }
 
@@ -97,8 +83,7 @@ export function setPropertyData(data: PropertyData): SetPropertyData {
 }
 
 export type PropertyActions =
-  | SetFirstName
-  | SetLastName
+  | SetSearchQuery
   | SetSearchType
   | SetSearchMethod
   | SubmitPropertySearchForm

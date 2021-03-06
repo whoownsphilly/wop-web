@@ -6,8 +6,7 @@ import parsePropertySearchQuery from "../../../Utilities/queryHelpers";
 
 import * as actionTypes from "./actionTypes";
 import {
-  setFirstName,
-  setLastName,
+  setSearchQuery,
   setSearchMethod,
   setSearchType,
   SubmitPropertySearchForm,
@@ -17,19 +16,13 @@ import { PropertyMetadata } from "../types";
 
 function* submitSearchForm(action: SubmitPropertySearchForm): unknown {
   const { form, reject, resolve } = action;
-  const { firstName, lastName, searchMethod, searchType } = form;
+  const { searchQuery, searchMethod, searchType } = form;
 
-  let ownerName = `${lastName}`;
-  if (firstName) {
-    ownerName = `${lastName} ${firstName}`;
-  }
-
-  const query = parsePropertySearchQuery(ownerName, searchType);
+  const query = parsePropertySearchQuery(searchQuery, searchType);
 
   yield put(setSearchMethod(searchMethod));
   yield put(setSearchType(searchType));
-  yield put(setFirstName(firstName));
-  yield put(setLastName(lastName));
+  yield put(setSearchQuery(searchQuery));
 
   let success = false;
   let data;
@@ -78,7 +71,7 @@ function* submitSearchForm(action: SubmitPropertySearchForm): unknown {
     yield put(setPropertyData(transformedData));
     resolve();
   } else {
-    reject("Something went horribly wrong...");
+    reject("Something went horribly wrong submitting the search form.");
   }
 }
 

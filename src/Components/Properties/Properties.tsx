@@ -30,8 +30,7 @@ type Props = DispatchProps & StateProps;
 
 const Properties: FunctionComponent<Props> = (props: Props) => {
   const intitialSearchState: PropertySearchState = {
-    firstName: "",
-    lastName: "",
+    searchQuery: "",
     searchType: "owner",
     searchMethod: "contains",
   };
@@ -44,10 +43,10 @@ const Properties: FunctionComponent<Props> = (props: Props) => {
 
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
-    const { lastName } = searchState;
+    const { searchQuery } = searchState;
 
-    if (!lastName) {
-      updateErrorState("Must enter a last name.");
+    if (!searchQuery) {
+      updateErrorState("Must enter a search query/term.");
     } else {
       const { submitPropertySearchForm } = props;
 

@@ -1,11 +1,8 @@
 /* eslint-disable @typescript-eslint/no-redeclare */
 /* eslint-disable @typescript-eslint/naming-convention */
 
-export const SET_FIRST_NAME = "properties/SET_FIRST_NAME";
-export type SET_FIRST_NAME = typeof SET_FIRST_NAME;
-
-export const SET_LAST_NAME = "properties/SET_LAST_NAME";
-export type SET_LAST_NAME = typeof SET_LAST_NAME;
+export const SET_SEARCH_QUERY = "properties/SET_SEARCH_QUERY";
+export type SET_SEARCH_QUERY = typeof SET_SEARCH_QUERY;
 
 export const SET_SEARCH_TYPE = "properties/SET_SEARCH_TYPE";
 export type SET_SEARCH_TYPE = typeof SET_SEARCH_TYPE;

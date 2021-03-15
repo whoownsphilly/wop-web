@@ -1,4 +1,8 @@
 import React, { ChangeEvent, FunctionComponent } from "react";
+
+import Form from "react-bootstrap/Form";
+import Button from "react-bootstrap/Button";
+
 import { APISearchMethod, APISearchType } from "../../../Utilities/types";
 
 import { PropertySearchState } from "../types";
@@ -42,19 +46,20 @@ const PropertySearchForm: FunctionComponent<Props> = (props: Props) => {
 
   const renderSearchForm = () => {
     return (
-      <form onSubmit={(e) => handleSubmit(e)}>
-        <label htmlFor="search-query">
-          Search Query:
-          <input
+      <Form onSubmit={(e) => handleSubmit(e)}>
+        <Form.Group controlId="search-query">
+          <Form.Label>Search Query</Form.Label>
+          <Form.Control
             type="text"
             id="search-query"
             value={searchQuery}
             onChange={handleSearchQueryChange}
           />
-        </label>
-        <label htmlFor="search-type">
-          Search Type:
-          <select
+        </Form.Group>
+        <Form.Group controlId="search-type">
+          <Form.Label>Search Type</Form.Label>
+          <Form.Control
+            as="select"
             id="search-type"
             value={searchType}
             onChange={handleSearchTypeChange}
@@ -65,11 +70,12 @@ const PropertySearchForm: FunctionComponent<Props> = (props: Props) => {
               Location By Mailing Address
             </option>
             <option value="mailing_address">Mailing Address</option>
-          </select>
-        </label>
-        <label htmlFor="search-method">
-          Search Method (Optional):
-          <select
+          </Form.Control>
+        </Form.Group>
+        <Form.Group controlId="search-method">
+          <Form.Label>Search Method</Form.Label>
+          <Form.Control
+            as="select"
             id="search-method"
             value={searchMethod}
             onChange={handleSearchMethodChange}
@@ -78,10 +84,12 @@ const PropertySearchForm: FunctionComponent<Props> = (props: Props) => {
             <option value="contains">Contains</option>
             <option value="starts_with">Starts With</option>
             <option value="ends_with">Ends With</option>
-          </select>
-        </label>
-        <input type="submit" value="Search" />
-      </form>
+          </Form.Control>
+        </Form.Group>
+        <Button variant="primary" type="submit">
+          Search
+        </Button>
+      </Form>
     );
   };
 

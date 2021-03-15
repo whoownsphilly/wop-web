@@ -2,6 +2,8 @@
 import React, { FunctionComponent, useMemo } from "react";
 import { useTable } from "react-table";
 
+import Table from "react-bootstrap/Table";
+
 import { Property } from "../types";
 
 interface Props {
@@ -153,10 +155,16 @@ const PropertyDataTable: FunctionComponent<Props> = (props: Props) => {
 
   const renderTable = () => {
     return (
-      <table {...getTableProps()}>
+      <Table
+        {...getTableProps()}
+        responsive
+        bordered
+        hover
+        style={{ height: "50vw" }}
+      >
         {renderTableHead()}
         {renderTableBody()}
-      </table>
+      </Table>
     );
   };
 

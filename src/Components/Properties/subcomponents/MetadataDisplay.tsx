@@ -1,11 +1,14 @@
 import React, { FunctionComponent } from "react";
 import { connect } from "react-redux";
 
+import Table from "react-bootstrap/Table";
+import ListGroup from "react-bootstrap/ListGroup";
+import Button from "react-bootstrap/Button";
+
 import { selectPropertyMetadata } from "../redux/selectors";
+import { RootState } from "../../../Store/RootReducer";
 
 import { PropertyMetadata } from "../types";
-
-import { RootState } from "../../../Store/RootReducer";
 
 interface StateProps {
   metadata: PropertyMetadata;
@@ -26,36 +29,67 @@ const MetadataDisplay: FunctionComponent<Props> = (props: Props) => {
     title,
   } = metadata;
 
+  const renderMetadataTable = () => {
+    return (
+      <>
+        <h1>Search Metadata</h1>
+        <Table size="sm">
+          <thead>
+            <tr>
+              <th>Metadata Key</th>
+              <th>Metadata Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Title</td>
+              <td>{title}</td>
+            </tr>
+            <tr>
+              <td>Search Query</td>
+              <td>{searchQuery}</td>
+            </tr>
+            <tr>
+              <td>Search Type</td>
+              <td>{searchType}</td>
+            </tr>
+            <tr>
+              <td>Search Method</td>
+              <td>{searchMethod}</td>
+            </tr>
+          </tbody>
+        </Table>
+      </>
+    );
+  };
+
+  const renderOpenDataPhillyTable = () => {
+    return (
+      <>
+        <h1>Open Data Philly Data Reference</h1>
+        <ListGroup variant="flush">
+          <ListGroup.Item>
+            <Button variant="link" href={cartoDbLink}>
+              CartoDb Link
+            </Button>
+          </ListGroup.Item>
+          <ListGroup.Item>
+            CartoDb Table Name: {cartoDbTableName}
+          </ListGroup.Item>
+          <ListGroup.Item>
+            <Button variant="link" href={odbLink}>
+              ODB Link
+            </Button>
+          </ListGroup.Item>
+        </ListGroup>
+      </>
+    );
+  };
+
   return (
     <>
-      <div>
-        <p>Title</p>
-        <p>{title}</p>
-      </div>
-      <div>
-        <p>Search Type</p>
-        <p>{searchType}</p>
-      </div>
-      <div>
-        <p>Search Method</p>
-        <p>{searchMethod}</p>
-      </div>
-      <div>
-        <p>Search Query</p>
-        <p>{searchQuery}</p>
-      </div>
-      <div>
-        <p>CartoDb Link</p>
-        <p>{cartoDbLink}</p>
-      </div>
-      <div>
-        <p>cartoDbTableName</p>
-        <p>{cartoDbTableName}</p>
-      </div>
-      <div>
-        <p>odbLink</p>
-        <p>{odbLink}</p>
-      </div>
+      {renderMetadataTable()}
+      {renderOpenDataPhillyTable()}
     </>
   );
 };

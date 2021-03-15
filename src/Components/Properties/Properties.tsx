@@ -14,6 +14,8 @@ import MetadataDisplay from "./subcomponents/MetadataDisplay";
 import { selectPropertiesList } from "./redux/selectors";
 import { RootState } from "../../Store/RootReducer";
 
+import "./styles.css";
+
 interface StateProps {
   properties: Property[];
 }

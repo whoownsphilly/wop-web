@@ -21,8 +21,6 @@ from backend.api import (
 from backend.urls import table_api_urlpatterns
 
 
-
-
 @pytest.fixture
 def request_params():
     return {
@@ -106,7 +104,8 @@ def monkeypatch_airtable(monkeypatch):
                 ]
             }
         )
-    os.environ['BIOS_URL'] = 'FAKE_URL'
+
+    os.environ["BIOS_URL"] = "FAKE_URL"
     monkeypatch.setattr("requests.get", _fake_results)
 
 

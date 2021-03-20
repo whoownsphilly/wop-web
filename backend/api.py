@@ -144,5 +144,5 @@ def bios_response(request):
                 ):
                     output_response["results"] = r["fields"]
                     return JsonResponse(output_response)
-    output_response['error'] = "Can't find bio."
+    output_response["error"] = "Can't find bio."
     return JsonResponse(output_response, status=404)

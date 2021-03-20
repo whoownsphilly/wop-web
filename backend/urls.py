@@ -36,7 +36,11 @@ from .api import (
 api_urlpatterns = [
     path("api/", settings_response, name="settings"),
     path("api/v1/autocomplete/", autocomplete_response, name="autocomplete_list"),
-    path("api/v1/bios/", bios_response, name="bios_list",),
+    path(
+        "api/v1/bios/",
+        bios_response,
+        name="bios_list",
+    ),
     # Deprecated
     path("api/v1/properties/", properties_response, name="properties_list"),
     path("api/v1/permits/", permits_response, name="permits_list"),

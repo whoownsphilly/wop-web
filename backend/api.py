@@ -1,6 +1,6 @@
 from django.http import JsonResponse
-from phillydb import construct_search_query
-from phillydb.tables import (
+from phillydb import (
+    construct_search_query,
     Properties,
     Permits,
     Licenses,
@@ -27,13 +27,40 @@ def settings_response(request):
     )
 
 
+def autocomplete_response(request):
+    startswith_str = request.GET.get("startswith_str", "").upper()
+    column = request.GET.get("column", "location")
+    n_results = request.GET.get("n_results", 10)
+    df = Properties().query_by_single_str_column(
+        search_column=column,
+        search_to_match=startswith_str,
+        search_method="starts with",
+        result_columns=["location", "parcel_number"],
+        limit=n_results,
+    )
+    return JsonResponse(
+        {
+            "metadata": {
+                "startswith_str": startswith_str,
+                "column": column,
+                "n_results_limit": n_results,
+                "n_results_returned": len(df),
+            },
+            "results": df.to_dict("records"),
+        }
+    )
+
+
 def _table_response(table_obj, request):
+    search_to_match = request.GET.get("search_to_match", "")
     search_query = request.GET.get("search_query", "")
+    search_to_match = search_to_match if search_to_match else search_query
+
     search_type = request.GET.get("search_type", "")
     search_method = request.GET.get("search_method", "contains")
     try:
         opa_account_numbers_sql = construct_search_query(
-            search_query=search_query,
+            search_to_match=search_to_match,
             search_type=search_type,
             search_method=search_method,
         )
@@ -50,9 +77,9 @@ def _table_response(table_obj, request):
         "metadata": {
             "title": table_obj.title,
             "cartodb_table_name": table_obj.cartodb_table_name,
-            "odb_link": table_obj.get_odb_link(),
-            "cartodb_link": table_obj.get_cartodb_link(),
-            "search_query": search_query,
+            "data_links": table_obj.data_links,
+            "search_query": search_to_match,
+            "search_to_match": search_to_match,
             "search_type": search_type,
             "search_method": search_method,
         },

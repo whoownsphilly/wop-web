@@ -16,8 +16,7 @@ const initialState: PropertyState = {
     },
     properties: [],
   },
-  firstName: "",
-  lastName: "",
+  searchQuery: "",
   searchType: "owner",
   searchMethod: "contains",
 };
@@ -27,14 +26,10 @@ const PropertyReducer = (
   action: PropertyActions
 ): PropertyState => {
   switch (action.type) {
-    case ActionTypes.SET_FIRST_NAME:
-      const { firstName } = action;
+    case ActionTypes.SET_SEARCH_QUERY:
+      const { searchQuery } = action;
 
-      return { ...state, firstName };
-    case ActionTypes.SET_LAST_NAME:
-      const { lastName } = action;
-
-      return { ...state, lastName };
+      return { ...state, searchQuery };
     case ActionTypes.SET_SEARCH_TYPE:
       const { searchType } = action;
 

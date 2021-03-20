@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import { LinkContainer } from "react-router-bootstrap";
+
+import Navbar from "react-bootstrap/Navbar";
+import Nav from "react-bootstrap/Nav";
+import NavbarCollapse from "react-bootstrap/NavbarCollapse";
+import Container from "react-bootstrap/Container";
 
 import Properties from "./Components/Properties/Properties";
 import Home from "./Components/Home/Home";
@@ -16,21 +22,26 @@ function App(): React.ReactElement {
       });
   }, []);
 
-  const renderRouter = () => {
-    return (
-      <Router>
-        <div>
-          <nav>
-            <ul>
-              <li>
-                <Link to="/">Home</Link>
-              </li>
-              <li>
-                <Link to="/properties">Properties</Link>
-              </li>
-            </ul>
-          </nav>
-
+  const renderRouter = () => (
+    <Router>
+      <div>
+        <Navbar bg="dark" variant="dark" expand="lg" fixed="top">
+          <LinkContainer to="/">
+            <Navbar.Brand className="navText">PHL Tenant Tools</Navbar.Brand>
+          </LinkContainer>
+          <Navbar.Toggle aria-controls="basic-navbar-nav" />
+          <NavbarCollapse>
+            <Nav className="mr-auto">
+              <LinkContainer to="/" className="navText">
+                <Nav.Link>Home</Nav.Link>
+              </LinkContainer>
+              <LinkContainer to="/properties" className="navText">
+                <Nav.Link>Properties</Nav.Link>
+              </LinkContainer>
+            </Nav>
+          </NavbarCollapse>
+        </Navbar>
+        <Container style={{ marginTop: "5vw" }}>
           <Switch>
             <Route path="/properties">
               <Properties />
@@ -39,10 +50,10 @@ function App(): React.ReactElement {
               <Home />
             </Route>
           </Switch>
-        </div>
-      </Router>
-    );
-  };
+        </Container>
+      </div>
+    </Router>
+  );
 
   return (
     <div className="App">

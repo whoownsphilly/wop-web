@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { put, all, takeLatest } from "redux-saga/effects";
 import axios from "axios";
 
@@ -5,29 +6,23 @@ import parsePropertySearchQuery from "../../../Utilities/queryHelpers";
 
 import * as actionTypes from "./actionTypes";
 import {
-  setFirstName,
-  setLastName,
+  setSearchQuery,
   setSearchMethod,
   setSearchType,
   SubmitPropertySearchForm,
   setPropertyData,
 } from "./actions";
+import { PropertyMetadata } from "../types";
 
 function* submitSearchForm(action: SubmitPropertySearchForm): unknown {
   const { form, reject, resolve } = action;
-  const { firstName, lastName, searchMethod, searchType } = form;
+  const { searchQuery, searchMethod, searchType } = form;
 
-  let ownerName = `${lastName}`;
-  if (firstName) {
-    ownerName = `${lastName} ${firstName}`;
-  }
-
-  const query = parsePropertySearchQuery(ownerName, searchType);
+  const query = parsePropertySearchQuery(searchQuery, searchType);
 
   yield put(setSearchMethod(searchMethod));
   yield put(setSearchType(searchType));
-  yield put(setFirstName(firstName));
-  yield put(setLastName(lastName));
+  yield put(setSearchQuery(searchQuery));
 
   let success = false;
   let data;
@@ -47,10 +42,36 @@ function* submitSearchForm(action: SubmitPropertySearchForm): unknown {
     });
 
   if (success && data) {
-    yield put(setPropertyData(data));
+    const { results, metadata } = data;
+    const {
+      title,
+      cartodb_table_name,
+      odb_link,
+      cartodb_link,
+      search_query,
+      search_type,
+      search_method,
+    } = metadata;
+
+    const transformedMetadata: PropertyMetadata = {
+      title,
+      cartoDbTableName: cartodb_table_name,
+      odbLink: odb_link,
+      cartoDbLink: cartodb_link,
+      searchQuery: search_query,
+      searchType: search_type,
+      searchMethod: search_method,
+    };
+
+    const transformedData = {
+      properties: results,
+      metadata: transformedMetadata,
+    };
+
+    yield put(setPropertyData(transformedData));
     resolve();
   } else {
-    reject("Something went horribly wrong...");
+    reject("Something went horribly wrong submitting the search form.");
   }
 }
 

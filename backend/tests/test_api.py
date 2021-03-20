@@ -1,5 +1,5 @@
 from django.urls import reverse
-from phillydb.abstract import PhiladelphiaDataTable
+from phillydb.tables import PhiladelphiaCartoDataTable
 import pandas as pd
 import pytest
 
@@ -16,7 +16,7 @@ from backend.api import (
     real_estate_transfers_response,
     case_investigations_response,
 )
-from backend.urls import api_urlpatterns
+from backend.urls import table_api_urlpatterns
 
 
 from rest_framework.test import APIRequestFactory
@@ -32,7 +32,7 @@ def request_params():
 
 
 def test_api_responses(client):
-    for urlpattern in api_urlpatterns:
+    for urlpattern in table_api_urlpatterns:
         route = urlpattern.pattern._route
         assert client.get(f"/{route}") is not None
 
@@ -43,7 +43,17 @@ def monkeypatch_query_by_opa_account_numbers(monkeypatch):
         return pd.DataFrame([{"ABC": "DEF"}])
 
     monkeypatch.setattr(
-        PhiladelphiaDataTable, "query_by_opa_account_numbers", _fake_results
+        PhiladelphiaCartoDataTable, "query_by_opa_account_numbers", _fake_results
+    )
+
+
+@pytest.fixture
+def monkeypatch_query_by_single_str_column(monkeypatch):
+    def _fake_results(*args, **kwargs):
+        return pd.DataFrame([{kwargs.get("search_column"): "FAKE RESULT"}])
+
+    monkeypatch.setattr(
+        PhiladelphiaCartoDataTable, "query_by_single_str_column", _fake_results
     )
 
 
@@ -57,3 +67,20 @@ def test_property_response(
     request_params["search_method"] = "blah"
     response = client.get(reverse("properties_list"), request_params)
     assert response.status_code != 200
+
+
+def test_settings_response(client):
+    response = client.get(reverse("settings"))
+    assert response.status_code == 200
+
+
+def test_autocomplete_response(client, monkeypatch_query_by_single_str_column):
+    request_params = {"startswith_str": "1625 Chest"}
+    response = client.get(reverse("autocomplete_list"), request_params)
+    assert response.status_code == 200
+    assert response.json()["results"] == [{"location": "FAKE RESULT"}]
+
+    request_params = {"startswith_str": "DOMB ALLAN", "column": "owner_1"}
+    response = client.get(reverse("autocomplete_list"), request_params)
+    assert response.status_code == 200
+    assert response.json()["results"] == [{"owner_1": "FAKE RESULT"}]

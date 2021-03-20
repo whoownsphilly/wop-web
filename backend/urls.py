@@ -30,11 +30,13 @@ from .api import (
     real_estate_tax_delinquencies_response,
     real_estate_transfers_response,
     case_investigations_response,
+    bios_response,
 )
 
 api_urlpatterns = [
     path("api/", settings_response, name="settings"),
     path("api/v1/autocomplete/", autocomplete_response, name="autocomplete_list"),
+    path("api/v1/bios/", bios_response, name="bios_list",),
     # Deprecated
     path("api/v1/properties/", properties_response, name="properties_list"),
     path("api/v1/permits/", permits_response, name="permits_list"),

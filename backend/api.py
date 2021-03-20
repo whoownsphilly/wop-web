@@ -1,4 +1,5 @@
 from django.http import JsonResponse
+import os
 from phillydb import (
     construct_search_query,
     Properties,
@@ -12,13 +13,12 @@ from phillydb import (
     RealEstateTransfers,
     CaseInvestigations,
 )
-
 from phillydb.exceptions import (
     SearchTypeNotImplementedError,
     SearchMethodNotImplementedError,
 )
-
 from phillydb import __version__ as philly_db_version
+import requests
 
 
 def settings_response(request):
@@ -126,3 +126,23 @@ def real_estate_transfers_response(request):
 
 def case_investigations_response(request):
     return _table_response(CaseInvestigations(), request)
+
+
+def bios_response(request):
+    # currently only available for mailing street, but this may be extended some day.
+    mailing_street = request.GET.get("mailing_street", "")
+    output_response = {"metadata": {"mailing_street": mailing_street}}
+    if mailing_street:
+        airtable_url = os.environ.get("BIOS_URL")
+        # TODO (ssuffian): This should be synced to the db rather than called each time.
+        if airtable_url:
+            response = requests.get(airtable_url)
+            for r in response.json()["records"]:
+                if (
+                    r["fields"].get("mailing_street")
+                    and r["fields"]["mailing_street"] == mailing_street
+                ):
+                    output_response["results"] = r["fields"]
+                    return JsonResponse(output_response)
+    output_response['error'] = "Can't find bio."
+    return JsonResponse(output_response, status=404)

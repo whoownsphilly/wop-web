@@ -2,8 +2,6 @@ import React, { FunctionComponent } from "react";
 import { connect } from "react-redux";
 
 import Table from "react-bootstrap/Table";
-import ListGroup from "react-bootstrap/ListGroup";
-import Button from "react-bootstrap/Button";
 
 import { selectPropertyMetadata } from "../redux/selectors";
 import { RootState } from "../../../Store/RootReducer";
@@ -20,9 +18,8 @@ const MetadataDisplay: FunctionComponent<Props> = (props: Props) => {
   const { metadata } = props;
 
   const {
-    cartoDbLink,
     cartoDbTableName,
-    odbLink,
+    searchToMatch,
     searchMethod,
     searchQuery,
     searchType,
@@ -46,6 +43,10 @@ const MetadataDisplay: FunctionComponent<Props> = (props: Props) => {
               <td>{title}</td>
             </tr>
             <tr>
+              <td>Search to Match</td>
+              <td>{searchToMatch}</td>
+            </tr>
+            <tr>
               <td>Search Query</td>
               <td>{searchQuery}</td>
             </tr>
@@ -57,41 +58,17 @@ const MetadataDisplay: FunctionComponent<Props> = (props: Props) => {
               <td>Search Method</td>
               <td>{searchMethod}</td>
             </tr>
+            <tr>
+              <td>CartoDb Table Name</td>
+              <td>{cartoDbTableName}</td>
+            </tr>
           </tbody>
         </Table>
       </>
     );
   };
 
-  const renderOpenDataPhillyTable = () => {
-    return (
-      <>
-        <h1>Open Data Philly Data Reference</h1>
-        <ListGroup variant="flush">
-          <ListGroup.Item>
-            <Button variant="link" href={cartoDbLink}>
-              CartoDb Link
-            </Button>
-          </ListGroup.Item>
-          <ListGroup.Item>
-            CartoDb Table Name: {cartoDbTableName}
-          </ListGroup.Item>
-          <ListGroup.Item>
-            <Button variant="link" href={odbLink}>
-              ODB Link
-            </Button>
-          </ListGroup.Item>
-        </ListGroup>
-      </>
-    );
-  };
-
-  return (
-    <>
-      {renderMetadataTable()}
-      {renderOpenDataPhillyTable()}
-    </>
-  );
+  return <>{renderMetadataTable()}</>;
 };
 
 const mapStateToProps = (state: RootState) => ({

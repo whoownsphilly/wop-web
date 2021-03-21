@@ -6,9 +6,9 @@ import { PropertyState } from "../types";
 const initialState: PropertyState = {
   data: {
     metadata: {
-      cartoDbLink: "",
       cartoDbTableName: "",
-      odbLink: "",
+      searchToMatch: "",
+      dataLinks: [],
       searchMethod: "",
       searchQuery: "",
       searchType: "",

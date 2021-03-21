@@ -1,7 +1,9 @@
 from django.urls import reverse
 from phillydb.tables import PhiladelphiaCartoDataTable
+import os
 import pandas as pd
 import pytest
+from rest_framework.test import APIRequestFactory
 
 from backend.api import (
     settings_response,
@@ -17,9 +19,6 @@ from backend.api import (
     case_investigations_response,
 )
 from backend.urls import table_api_urlpatterns
-
-
-from rest_framework.test import APIRequestFactory
 
 
 @pytest.fixture
@@ -84,3 +83,37 @@ def test_autocomplete_response(client, monkeypatch_query_by_single_str_column):
     response = client.get(reverse("autocomplete_list"), request_params)
     assert response.status_code == 200
     assert response.json()["results"] == [{"owner_1": "FAKE RESULT"}]
+
+
+class MockBiosResponse:
+    def __init__(self, data=None):
+        self.status_code = 200
+        self.data = data if data else {}
+
+    def json(self):
+        return self.data
+
+
+@pytest.fixture
+def monkeypatch_airtable(monkeypatch):
+    def _fake_results(*args, **kwargs):
+        return MockBiosResponse(
+            {
+                "records": [
+                    {"fields": {"mailing_street": "ABC Capital", "Notes": "Blah"}}
+                ]
+            }
+        )
+
+    os.environ["BIOS_URL"] = "FAKE_URL"
+    monkeypatch.setattr("requests.get", _fake_results)
+
+
+def test_mailing_street_bios_response(client, monkeypatch_airtable):
+    request_params = {"mailing_street": "ABC Capital"}
+    response = client.get(reverse("mailing_street_bios_list"), request_params)
+    assert response.status_code == 200
+
+    request_params = {}
+    response = client.get(reverse("mailing_street_bios_list"), request_params)
+    assert response.status_code == 404

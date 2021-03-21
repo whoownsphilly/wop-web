@@ -29,3 +29,6 @@ yarn-error.log*
 # python
 poetry.lock
 **/__pycache__
+
+# environment variables
+.envrc

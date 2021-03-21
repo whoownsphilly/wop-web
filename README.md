@@ -31,6 +31,13 @@ python manage.py runserver
 yarn start
 ```
 
+If you want to reference the bios, you must supply the airtable table id and key as environment variables.
+
+```
+AIRTABLE_KEY=
+AIRTABLE_TABLE_ID=
+```
+
 Testing
 -------
 

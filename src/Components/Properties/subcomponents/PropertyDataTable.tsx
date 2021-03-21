@@ -1,11 +1,18 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { FunctionComponent, useMemo } from "react";
+import React, {
+  forwardRef,
+  FunctionComponent,
+  useEffect,
+  useMemo,
+} from "react";
 import { useSortBy, useTable } from "react-table";
 
 import Table from "react-bootstrap/Table";
-import Button from "react-bootstrap/Button";
 
 import { Property } from "../types";
+
+import TableLink from "../../Common/Table/TableLink";
 
 interface Props {
   properties: Property[];
@@ -66,16 +73,6 @@ const PropertyDataTable: FunctionComponent<Props> = (props: Props) => {
       };
     });
   }, [properties]);
-
-  const renderLink = (link: string, linkText: string) => {
-    const escapedLink = link.replace(" ", "%20");
-
-    return (
-      <Button variant="link" href={escapedLink} target="_blank">
-        {linkText}
-      </Button>
-    );
-  };
 
   const columns = useMemo(
     () => [
@@ -173,25 +170,30 @@ const PropertyDataTable: FunctionComponent<Props> = (props: Props) => {
           {
             Header: "Cyclomedia Street View",
             accessor: "linkCyclomediaStreetView",
-            Cell: ({ value }: { value: string }) =>
-              renderLink(value, "Street View"),
+            Cell: ({ value }: { value: string }) => (
+              <TableLink link={value} linkText="Street View" />
+            ),
           },
           {
             Header: "Property Phila Gov",
             accessor: "linkPropertyPhilaGov",
-            Cell: ({ value }: { value: string }) =>
-              renderLink(value, "Property Phila Gov"),
+            Cell: ({ value }: { value: string }) => (
+              <TableLink link={value} linkText="Property Phila Gov" />
+            ),
           },
           {
             Header: "Atlas",
             accessor: "linkAtlas",
-            Cell: ({ value }: { value: string }) => renderLink(value, "Atlas"),
+            Cell: ({ value }: { value: string }) => (
+              <TableLink link={value} linkText="Atlas" />
+            ),
           },
           {
             Header: "License & Inspections",
             accessor: "linkLicenseInspections",
-            Cell: ({ value }: { value: string }) =>
-              renderLink(value, "License & Inspections"),
+            Cell: ({ value }: { value: string }) => (
+              <TableLink link={value} linkText="License & Inspections" />
+            ),
           },
         ],
       },
@@ -211,6 +213,8 @@ const PropertyDataTable: FunctionComponent<Props> = (props: Props) => {
     headerGroups,
     rows,
     prepareRow,
+    allColumns,
+    getToggleHideAllColumnsProps,
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
   } = useTable({ columns, data: tableData }, useSortBy);
@@ -273,18 +277,84 @@ const PropertyDataTable: FunctionComponent<Props> = (props: Props) => {
     return <tbody {...getTableBodyProps()}>{renderTableRow()}</tbody>;
   };
 
+  interface ColumnCheckProps {
+    indeterminate?: boolean;
+  }
+
+  const useCombinedRefs = (...refs: any): React.MutableRefObject<any> => {
+    const targetRef = React.useRef();
+
+    React.useEffect(() => {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      refs.forEach((ref) => {
+        if (!ref) return;
+
+        if (typeof ref === "function") {
+          ref(targetRef.current);
+        } else {
+          // eslint-disable-next-line no-param-reassign
+          ref.current = targetRef.current;
+        }
+      });
+    }, [refs]);
+
+    return targetRef;
+  };
+
+  const IndeterminateCheckbox = forwardRef<HTMLInputElement, ColumnCheckProps>(
+    // eslint-disable-next-line react/prop-types
+    ({ indeterminate, ...rest }, ref: React.Ref<HTMLInputElement>) => {
+      const defaultRef = React.useRef(null);
+      const combinedRef = useCombinedRefs(ref, defaultRef);
+
+      useEffect(() => {
+        if (combinedRef?.current) {
+          combinedRef.current.indeterminate = indeterminate ?? false;
+        }
+      }, [combinedRef, indeterminate]);
+
+      return (
+        <>
+          <input type="checkbox" ref={combinedRef} {...rest} />
+        </>
+      );
+    }
+  );
+
   const renderTable = () => {
     return (
-      <Table
-        {...getTableProps()}
-        responsive
-        bordered
-        hover
-        style={{ height: "30vw" }}
-      >
-        {renderTableHead()}
-        {renderTableBody()}
-      </Table>
+      <>
+        <div>
+          <div>
+            <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} /> Toggle
+            All
+          </div>
+          {allColumns.map((column) => (
+            <div key={column.id}>
+              <label htmlFor="checks">
+                <input
+                  type="checkbox"
+                  id="checks"
+                  {...column.getToggleHiddenProps()}
+                />{" "}
+                {column.id}
+              </label>
+            </div>
+          ))}
+          <br />
+        </div>
+        <Table
+          {...getTableProps()}
+          responsive
+          bordered
+          hover
+          style={{ height: "30vw" }}
+        >
+          {renderTableHead()}
+          {renderTableBody()}
+        </Table>
+      </>
     );
   };
 

@@ -1,24 +1,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react/jsx-props-no-spreading */
-import React, {
-  forwardRef,
-  FunctionComponent,
-  useEffect,
-  useMemo,
-} from "react";
+import React, { FunctionComponent, useMemo, useState } from "react";
 import { useSortBy, useTable } from "react-table";
 
 import Table from "react-bootstrap/Table";
+import Button from "react-bootstrap/Button";
 
 import { Property } from "../types";
 
 import TableLink from "../../Common/Table/TableLink";
+import PropertiesColumnDisplayOptions from "./PropertiesColumnDisplayOptions";
+import TableSortingHeaders from "../../Common/Table/TableSortingHeaders";
 
 interface Props {
   properties: Property[];
 }
 
 const PropertyDataTable: FunctionComponent<Props> = (props: Props) => {
+  const [showTableOptions, updateShowTableOptions] = useState(false);
+
   const { properties } = props;
 
   const tableData = useMemo(() => {
@@ -77,12 +77,17 @@ const PropertyDataTable: FunctionComponent<Props> = (props: Props) => {
   const columns = useMemo(
     () => [
       {
-        Header: "Location",
-        accessor: "location",
-      },
-      {
-        Header: "Unit",
-        accessor: "unit",
+        Header: "General",
+        columns: [
+          {
+            Header: "Location",
+            accessor: "location",
+          },
+          {
+            Header: "Unit",
+            accessor: "unit",
+          },
+        ],
       },
       {
         Header: "Coordinates",
@@ -201,6 +206,10 @@ const PropertyDataTable: FunctionComponent<Props> = (props: Props) => {
     []
   );
 
+  const initialTableState = {
+    hiddenColumns: ["mailingStreet", "mailingCityState", "lat", "lng"],
+  };
+
   /**
    * Why is this ignored? Well React Table doesn't play nice with TS
    * and I got covid brain right now
@@ -215,25 +224,16 @@ const PropertyDataTable: FunctionComponent<Props> = (props: Props) => {
     prepareRow,
     allColumns,
     getToggleHideAllColumnsProps,
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-  } = useTable({ columns, data: tableData }, useSortBy);
-
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  const renderSortingHeaders = (column) => {
-    const { isSorted, isSortedDesc } = column;
-
-    let sortingDisplay = "";
-    if (isSorted) {
-      sortingDisplay = " 🔼";
-      if (isSortedDesc) {
-        sortingDisplay = " 🔽";
-      }
-    }
-
-    return sortingDisplay;
-  };
+  } = useTable(
+    {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      columns,
+      data: tableData,
+      initialState: initialTableState,
+    },
+    useSortBy
+  );
 
   const renderTableHead = () => {
     return (
@@ -245,7 +245,7 @@ const PropertyDataTable: FunctionComponent<Props> = (props: Props) => {
               // @ts-ignore
               <th {...column.getHeaderProps(column.getSortByToggleProps())}>
                 {column.render("Header")}
-                <span>{renderSortingHeaders(column)}</span>
+                <TableSortingHeaders column={column} />
               </th>
             ))}
           </tr>
@@ -254,7 +254,6 @@ const PropertyDataTable: FunctionComponent<Props> = (props: Props) => {
     );
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const renderTableData = (cell: any) => {
     return <td {...cell.getCellProps()}>{cell.render("Cell")}</td>;
   };
@@ -277,90 +276,50 @@ const PropertyDataTable: FunctionComponent<Props> = (props: Props) => {
     return <tbody {...getTableBodyProps()}>{renderTableRow()}</tbody>;
   };
 
-  interface ColumnCheckProps {
-    indeterminate?: boolean;
-  }
-
-  const useCombinedRefs = (...refs: any): React.MutableRefObject<any> => {
-    const targetRef = React.useRef();
-
-    React.useEffect(() => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      refs.forEach((ref) => {
-        if (!ref) return;
-
-        if (typeof ref === "function") {
-          ref(targetRef.current);
-        } else {
-          // eslint-disable-next-line no-param-reassign
-          ref.current = targetRef.current;
-        }
-      });
-    }, [refs]);
-
-    return targetRef;
-  };
-
-  const IndeterminateCheckbox = forwardRef<HTMLInputElement, ColumnCheckProps>(
-    // eslint-disable-next-line react/prop-types
-    ({ indeterminate, ...rest }, ref: React.Ref<HTMLInputElement>) => {
-      const defaultRef = React.useRef(null);
-      const combinedRef = useCombinedRefs(ref, defaultRef);
-
-      useEffect(() => {
-        if (combinedRef?.current) {
-          combinedRef.current.indeterminate = indeterminate ?? false;
-        }
-      }, [combinedRef, indeterminate]);
-
-      return (
-        <>
-          <input type="checkbox" ref={combinedRef} {...rest} />
-        </>
+  const renderTableOptions = () => {
+    let buttonText = "Show Table Options";
+    let tableOptionsTSX = null;
+    if (showTableOptions) {
+      buttonText = "Hide Table Options";
+      tableOptionsTSX = (
+        <PropertiesColumnDisplayOptions
+          getToggleHideAllColumnsProps={getToggleHideAllColumnsProps}
+          allColumns={allColumns}
+        />
       );
     }
-  );
+
+    return (
+      <>
+        <Button
+          type="button"
+          onClick={() => updateShowTableOptions(!showTableOptions)}
+        >
+          {buttonText}
+        </Button>
+        {tableOptionsTSX}
+      </>
+    );
+  };
 
   const renderTable = () => {
     return (
-      <>
-        <div>
-          <div>
-            <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} /> Toggle
-            All
-          </div>
-          {allColumns.map((column) => (
-            <div key={column.id}>
-              <label htmlFor="checks">
-                <input
-                  type="checkbox"
-                  id="checks"
-                  {...column.getToggleHiddenProps()}
-                />{" "}
-                {column.id}
-              </label>
-            </div>
-          ))}
-          <br />
-        </div>
-        <Table
-          {...getTableProps()}
-          responsive
-          bordered
-          hover
-          style={{ height: "30vw" }}
-        >
-          {renderTableHead()}
-          {renderTableBody()}
-        </Table>
-      </>
+      <Table
+        {...getTableProps()}
+        responsive
+        bordered
+        hover
+        style={{ height: "30vw" }}
+      >
+        {renderTableHead()}
+        {renderTableBody()}
+      </Table>
     );
   };
 
   return (
     <>
-      <h1>Property Data Table</h1>
+      {renderTableOptions()}
       {renderTable()}
     </>
   );

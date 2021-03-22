@@ -2,7 +2,7 @@
 import { put, all, takeLatest } from "redux-saga/effects";
 import axios from "axios";
 
-import parsePropertySearchQuery from "../../../Utilities/queryHelpers";
+import parseSearchQuery from "../../../Utilities/queryHelpers";
 
 import * as actionTypes from "./actionTypes";
 import {
@@ -18,7 +18,9 @@ function* submitSearchForm(action: SubmitPropertySearchForm): unknown {
   const { form, reject, resolve } = action;
   const { searchQuery, searchMethod, searchType } = form;
 
-  const query = parsePropertySearchQuery(searchQuery, searchType);
+  const ENDPOINT = `/api/v1/properties`;
+
+  const query = parseSearchQuery(ENDPOINT, searchQuery, searchType);
 
   yield put(setSearchMethod(searchMethod));
   yield put(setSearchType(searchType));
@@ -46,8 +48,8 @@ function* submitSearchForm(action: SubmitPropertySearchForm): unknown {
     const {
       title,
       cartodb_table_name,
-      odb_link,
-      cartodb_link,
+      data_links,
+      search_to_match,
       search_query,
       search_type,
       search_method,
@@ -56,8 +58,8 @@ function* submitSearchForm(action: SubmitPropertySearchForm): unknown {
     const transformedMetadata: PropertyMetadata = {
       title,
       cartoDbTableName: cartodb_table_name,
-      odbLink: odb_link,
-      cartoDbLink: cartodb_link,
+      dataLinks: data_links,
+      searchToMatch: search_to_match,
       searchQuery: search_query,
       searchType: search_type,
       searchMethod: search_method,

@@ -1,0 +1,4 @@
+.table-responsive {
+  height: 100vw !important;
+  overflow-y: auto !important;
+}

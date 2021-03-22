@@ -2,6 +2,7 @@ import React, { FunctionComponent } from "react";
 import { connect } from "react-redux";
 
 import Table from "react-bootstrap/Table";
+import Container from "react-bootstrap/Container";
 
 import {
   selectSearchQuery,
@@ -51,10 +52,10 @@ const SearchInfoDisplay: FunctionComponent<Props> = (props: Props) => {
   };
 
   return (
-    <>
-      <h1>Submitted Search Parameters</h1>
+    <Container style={{ width: "40%" }}>
+      <h4>Submitted Search Parameters</h4>
       {renderTable()}
-    </>
+    </Container>
   );
 };
 

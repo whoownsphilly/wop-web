@@ -2,6 +2,7 @@ import React, { FunctionComponent } from "react";
 import { connect } from "react-redux";
 
 import Table from "react-bootstrap/Table";
+import Container from "react-bootstrap/Container";
 
 import { selectPropertyMetadata } from "../redux/selectors";
 import { RootState } from "../../../Store/RootReducer";
@@ -28,8 +29,8 @@ const MetadataDisplay: FunctionComponent<Props> = (props: Props) => {
 
   const renderMetadataTable = () => {
     return (
-      <>
-        <h1>Search Metadata</h1>
+      <Container style={{ width: "40%" }}>
+        <h4>Search Metadata</h4>
         <Table size="sm">
           <thead>
             <tr>
@@ -64,7 +65,7 @@ const MetadataDisplay: FunctionComponent<Props> = (props: Props) => {
             </tr>
           </tbody>
         </Table>
-      </>
+      </Container>
     );
   };
 

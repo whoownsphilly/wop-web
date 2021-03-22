@@ -304,13 +304,7 @@ const PropertyDataTable: FunctionComponent<Props> = (props: Props) => {
 
   const renderTable = () => {
     return (
-      <Table
-        {...getTableProps()}
-        responsive
-        bordered
-        hover
-        style={{ height: "30vw" }}
-      >
+      <Table {...getTableProps()} responsive bordered hover>
         {renderTableHead()}
         {renderTableBody()}
       </Table>

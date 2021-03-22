@@ -73,7 +73,7 @@ const Properties: FunctionComponent<Props> = (props: Props) => {
     if (showMetadata) {
       buttonText = "Hide Metadata";
       metadataTSX = (
-        <Container style={{ margin: ".5vw" }}>
+        <Container style={{ margin: ".5vw", display: "flex" }}>
           <SearchInfoDisplay />
           <MetadataDisplay />
         </Container>
@@ -119,7 +119,7 @@ const Properties: FunctionComponent<Props> = (props: Props) => {
 
   return (
     <>
-      <h1>I am the properties page.</h1>
+      <h1>I am the Search page.</h1>
       <hr />
       <Container style={{ width: "75%" }}>
         <PropertySearchForm

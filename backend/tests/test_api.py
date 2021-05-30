@@ -5,20 +5,7 @@ import pandas as pd
 import pytest
 from rest_framework.test import APIRequestFactory
 
-from backend.api import (
-    settings_response,
-    properties_response,
-    permits_response,
-    licenses_response,
-    violations_response,
-    condominiums_response,
-    complaints_response,
-    appeals_response,
-    real_estate_tax_delinquencies_response,
-    real_estate_transfers_response,
-    case_investigations_response,
-)
-from backend.urls import table_api_urlpatterns
+from backend.urls import table_api_urlpatterns, table_schema_api_urlpatterns
 
 
 @pytest.fixture
@@ -33,6 +20,17 @@ def request_params():
 def test_api_responses(client):
     for urlpattern in table_api_urlpatterns:
         route = urlpattern.pattern._route
+        assert client.get(f"/{route}") is not None
+
+
+def test_schema_api_responses(client, monkeypatch):
+    for urlpattern in table_schema_api_urlpatterns:
+        route = urlpattern.pattern._route
+
+        def _fake_results(*args, **kwargs):
+            return [{"ABC": "DEF"}]
+
+        monkeypatch.setattr(PhiladelphiaCartoDataTable, "get_schema", _fake_results)
         assert client.get(f"/{route}") is not None
 
 
@@ -111,9 +109,9 @@ def monkeypatch_airtable(monkeypatch):
 
 def test_mailing_street_bios_response(client, monkeypatch_airtable):
     request_params = {"mailing_street": "ABC Capital"}
-    response = client.get(reverse("mailing_street_bios_list"), request_params)
+    response = client.get(reverse("bios_list"), request_params)
     assert response.status_code == 200
 
     request_params = {}
-    response = client.get(reverse("mailing_street_bios_list"), request_params)
+    response = client.get(reverse("bios_list"), request_params)
     assert response.status_code == 404

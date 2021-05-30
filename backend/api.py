@@ -1,33 +1,28 @@
 from django.http import JsonResponse
 import os
-from phillydb import (
-    construct_search_query,
-    Properties,
-    Permits,
-    Licenses,
-    Violations,
-    Condominiums,
-    Complaints,
-    Appeals,
-    RealEstateTaxDelinquencies,
-    RealEstateTransfers,
-    CaseInvestigations,
-)
 from phillydb.exceptions import (
     SearchTypeNotImplementedError,
     SearchMethodNotImplementedError,
 )
 from phillydb import __version__ as philly_db_version
+from phillydb import Properties, construct_search_query
 import requests
 
 
+class PrettifiableJsonResponse(JsonResponse):
+    def __init__(self, *args, pretty_print=False, **kwargs):
+        json_dumps_params = {"indent": 4} if pretty_print else {}
+        super().__init__(*args, json_dumps_params=json_dumps_params, **kwargs)
+
+
 def settings_response(request):
-    return JsonResponse(
+    return PrettifiableJsonResponse(
         {"latest_api_version": "v1", "phillydb_version": philly_db_version.__version__}
     )
 
 
 def autocomplete_response(request):
+    pretty_print = request.GET.get("pretty", "").upper() == "TRUE"
     startswith_str = request.GET.get("startswith_str", "").upper()
     column = request.GET.get("column", "location")
     n_results = request.GET.get("n_results", 10)
@@ -38,7 +33,7 @@ def autocomplete_response(request):
         result_columns=["location", "parcel_number"],
         limit=n_results,
     )
-    return JsonResponse(
+    return PrettifiableJsonResponse(
         {
             "metadata": {
                 "startswith_str": startswith_str,
@@ -47,11 +42,13 @@ def autocomplete_response(request):
                 "n_results_returned": len(df),
             },
             "results": df.to_dict("records"),
-        }
+        },
+        pretty_print=pretty_print,
     )
 
 
 def _table_response(table_obj, request):
+    pretty_print = request.GET.get("pretty", "").upper() == "TRUE"
     search_to_match = request.GET.get("search_to_match", "")
     search_query = request.GET.get("search_query", "")
     search_to_match = search_to_match if search_to_match else search_query
@@ -65,9 +62,13 @@ def _table_response(table_obj, request):
             search_method=search_method,
         )
     except SearchTypeNotImplementedError as e:
-        return JsonResponse({"error": e.message}, status=400)
+        return PrettifiableJsonResponse(
+            {"error": e.message}, status=400, pretty_print=pretty_print
+        )
     except SearchMethodNotImplementedError as e:
-        return JsonResponse({"error": e.message}, status=400)
+        return PrettifiableJsonResponse(
+            {"error": e.message}, status=400, pretty_print=pretty_print
+        )
 
     df = table_obj.query_by_opa_account_numbers(
         opa_account_numbers=opa_account_numbers_sql
@@ -85,50 +86,19 @@ def _table_response(table_obj, request):
         },
         "results": df.to_dict("records"),
     }
-    return JsonResponse(data)
+    return PrettifiableJsonResponse(data, pretty_print=pretty_print)
 
 
-def properties_response(request):
-    return _table_response(Properties(), request)
-
-
-def permits_response(request):
-    return _table_response(Permits(), request)
-
-
-def licenses_response(request):
-    return _table_response(Licenses(), request)
-
-
-def violations_response(request):
-    return _table_response(Violations(), request)
-
-
-def condominiums_response(request):
-    return _table_response(Condominiums(), request)
-
-
-def complaints_response(request):
-    return _table_response(Complaints(), request)
-
-
-def appeals_response(request):
-    return _table_response(Appeals(), request)
-
-
-def real_estate_tax_delinquencies_response(request):
-    return _table_response(RealEstateTaxDelinquencies(), request)
-
-
-def real_estate_transfers_response(request):
-    return _table_response(RealEstateTransfers(), request)
-
-
-def case_investigations_response(request):
-    return _table_response(CaseInvestigations(), request)
+def _table_schema_response(table_obj, request):
+    pretty_print = request.GET.get("pretty", "").upper() == "TRUE"
+    schema = table_obj.get_schema()
+    schema = schema if schema else []
+    data = {"metadata": {"url": table_obj._get_schema_link()}, "results": schema}
+    return PrettifiableJsonResponse(data, pretty_print=pretty_print)
 
 
 def bios_response(request):
+    pretty_print = request.GET.get("pretty", "").upper() == "TRUE"
     # currently only available for mailing street, but this may be extended some day.
     mailing_street = request.GET.get("mailing_street", "")
     output_response = {"metadata": {"mailing_street": mailing_street}}
@@ -143,6 +113,10 @@ def bios_response(request):
                     and r["fields"]["mailing_street"] == mailing_street
                 ):
                     output_response["results"] = r["fields"]
-                    return JsonResponse(output_response)
+                    return PrettifiableJsonResponse(
+                        output_response, pretty_print=pretty_print
+                    )
     output_response["error"] = "Can't find bio."
-    return JsonResponse(output_response, status=404)
+    return PrettifiableJsonResponse(
+        output_response, pretty_print=pretty_print, status=404
+    )

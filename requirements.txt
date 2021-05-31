@@ -20,5 +20,5 @@ pytest-cov==2.11.1
 pytest-xdist==2.2.1
 pytest-benchmark==3.2.3
 pytest-profiling==1.7.0
-pytest-django==4.1.0
+pytest-django==4.3.0
 coverage[toml]==5.5

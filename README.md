@@ -1,10 +1,9 @@
 # phillydb-web
-This was built using [this](https://dev.to/shakib609/deploy-your-django-react-js-app-to-heroku-2bck).
 
 Local Development
 -----------------
 
-To develop locally, you need to start up the django server. The django server points to the built JS, so if you want a hot-reload on your JS, you also need to separately start up the react server.
+To develop locally, you need to start up the django server. The django server points to the built JS, so if you want a hot-reload on your JS, you also need to separately start up the vue server.
 
 ```
 ### DJANGO ###
@@ -35,7 +34,7 @@ Testing
 -------
 
 ```
-# this will run the django server which will also serve the built react JS.
+# this will run the django server which will also serve the built vue JS.
 poetry python run manage.py runserver
 
 # you can run this as well if you need a hot-reload for the frontend

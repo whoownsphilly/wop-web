@@ -1,5 +1,5 @@
 from django.urls import reverse
-from phillydb.tables import PhiladelphiaCartoDataTable
+from phillydb import PhillyCartoTable
 import os
 import pandas as pd
 import pytest
@@ -12,7 +12,7 @@ from backend.urls import table_api_urlpatterns, table_schema_api_urlpatterns
 def request_params():
     return {
         "search_query": "ABC",
-        "search_type": "owner",
+        "search_type": "mailing_address",
         "search_method": "contains",
     }
 
@@ -23,6 +23,23 @@ def test_api_responses(client):
         assert client.get(f"/{route}") is not None
 
 
+class MockPhillyQueryResult:
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def to_dataframe(self):
+        return pd.DataFrame(
+            [
+                {
+                    "location": "DEF",
+                    "owner_1": "Joe",
+                    "owner_2": "Jill",
+                    "parcel_number": "1234",
+                }
+            ]
+        )
+
+
 def test_schema_api_responses(client, monkeypatch):
     for urlpattern in table_schema_api_urlpatterns:
         route = urlpattern.pattern._route
@@ -30,28 +47,24 @@ def test_schema_api_responses(client, monkeypatch):
         def _fake_results(*args, **kwargs):
             return [{"ABC": "DEF"}]
 
-        monkeypatch.setattr(PhiladelphiaCartoDataTable, "get_schema", _fake_results)
+        monkeypatch.setattr(PhillyCartoTable, "get_schema", _fake_results)
         assert client.get(f"/{route}") is not None
 
 
 @pytest.fixture
 def monkeypatch_query_by_opa_account_numbers(monkeypatch):
     def _fake_results(*args, **kwargs):
-        return pd.DataFrame([{"ABC": "DEF"}])
+        return MockPhillyQueryResult()
 
-    monkeypatch.setattr(
-        PhiladelphiaCartoDataTable, "query_by_opa_account_numbers", _fake_results
-    )
+    monkeypatch.setattr(PhillyCartoTable, "query_by_opa_account_numbers", _fake_results)
 
 
 @pytest.fixture
 def monkeypatch_query_by_single_str_column(monkeypatch):
     def _fake_results(*args, **kwargs):
-        return pd.DataFrame([{kwargs.get("search_column"): "FAKE RESULT"}])
+        return MockPhillyQueryResult()
 
-    monkeypatch.setattr(
-        PhiladelphiaCartoDataTable, "query_by_single_str_column", _fake_results
-    )
+    monkeypatch.setattr(PhillyCartoTable, "query_by_single_str_column", _fake_results)
 
 
 def test_property_response(
@@ -59,7 +72,7 @@ def test_property_response(
 ):
     response = client.get(reverse("properties_list"), request_params)
     assert response.status_code == 200
-    assert response.json()["results"] == [{"ABC": "DEF"}]
+    assert response.json()["results"]["rows"][0]["location"] == "DEF"
 
     request_params["search_method"] = "blah"
     response = client.get(reverse("properties_list"), request_params)
@@ -75,12 +88,12 @@ def test_autocomplete_response(client, monkeypatch_query_by_single_str_column):
     request_params = {"startswith_str": "1625 Chest"}
     response = client.get(reverse("autocomplete_list"), request_params)
     assert response.status_code == 200
-    assert response.json()["results"] == [{"location": "FAKE RESULT"}]
+    assert response.json()["success"] == True
 
     request_params = {"startswith_str": "DOMB ALLAN", "column": "owner_1"}
     response = client.get(reverse("autocomplete_list"), request_params)
     assert response.status_code == 200
-    assert response.json()["results"] == [{"owner_1": "FAKE RESULT"}]
+    assert response.json()["success"] == True
 
 
 class MockBiosResponse:

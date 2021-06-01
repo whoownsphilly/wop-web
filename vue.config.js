@@ -1,7 +1,7 @@
 // const IS_PRODUCTION = process.env.NODE_ENV === 'production'
 
 module.exports = {
-    outputDir: '../build',
+    outputDir: 'build',
     assetsDir: 'static',
     // baseUrl: IS_PRODUCTION
     // ? 'http://cdn123.com'

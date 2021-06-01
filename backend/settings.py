@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "django.contrib.staticfiles",
     "django_nose",
+    "webpack_loader",
 ]
 
 MIDDLEWARE = [
@@ -132,7 +133,6 @@ django_heroku.settings(locals())
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
-STATIC_URL = "/static/"
 # Place static in the same location as webpack build files
 STATIC_ROOT = os.path.join(BASE_DIR, "build", "static")
 STATICFILES_DIRS = []
@@ -153,3 +153,17 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
     "http://192.168.1.169:8080",
 ]
+
+VUE_FRONTEND_DIR = os.path.join(BASE_DIR, 'frontend')
+
+WEBPACK_LOADER = {
+    'DEFAULT': {
+        'CACHE': not DEBUG,
+        'BUNDLE_DIR_NAME': 'vue/',  # must end with slash
+        'STATS_FILE': os.path.join(VUE_FRONTEND_DIR, 'webpack-stats.json'),
+        'POLL_INTERVAL': 0.1,
+        'TIMEOUT': None,
+        'IGNORE': [r'.+\.hot-update.js', r'.+\.map']
+    }
+}
+

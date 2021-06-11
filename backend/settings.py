@@ -150,8 +150,10 @@ TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
 NOSE_ARGS = ["--with-coverage", "--cover-package=backend"]
 
 CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8081",
     "http://localhost:8080",
     "http://192.168.1.169:8080",
+    "http://192.168.1.169:8081",
 ]
 
 VUE_FRONTEND_DIR = os.path.join(BASE_DIR, 'frontend')

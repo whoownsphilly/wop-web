@@ -1,11 +1,21 @@
 <template>
   <div>
+    <span v-for="ownerName in ownersList" :key="ownerName.owner_name">
+        <sui-button
+        :content="ownerName.owner_name"
+            toggle
+            :active="isActive[ownerName.owner_name]"
+            @click="changeActiveOwners"
+      />
+    </span>
     <div v-if="timelineData">
         <vue-timeline :data="timelineDataForGraph"></vue-timeline>
     </div>
-    <div v-for="table in tables" :key="table.name">
-      <h2> {{table.title }}</h2>
-      <historical-tab-table searchType="owner" :searchToMatch="owner" :tableName="table.name"/>
+    <div v-if="loadTables">
+        <div v-for="table in tables" :key="table.name">
+          <h2> {{table.title }}</h2>
+          <historical-tab-table searchType="owner" :searchToMatch="owner" :tableName="table.name"/>
+        </div>
     </div>
   </div>
 </template>
@@ -26,7 +36,11 @@ export default {
   },
   data() {
     return {
+        loadTables: false,
         timelineData: null,
+        ownersList: [],
+        isActive: {},
+        isActiveA: false,
         tables: [
             {"title": "Violations", "name": "violations"},
             {"title": "Complaints", "name": "complaints"},
@@ -41,9 +55,21 @@ export default {
           return this.timelineData.slice(0, 5)
     },
 },
+  methods: {
+      changeActiveOwners(thisButton) {
+          const thisButtonName = thisButton.srcElement.innerText;
+          console.log(thisButtonName)
+          this.isActive[thisButtonName] = !this.isActive[thisButtonName]
+          this.isActive.__ob__.dep.notify() //I know this is hacky but I'm learning.
+      }
+  },
   created() {
       getOwnersTimelineTableInfo(this.owner).then(data => {
           const timelineData = []
+          this.ownersList = data.owners_list
+          for(let i in data.owners_list){
+              this.isActive[data.owners_list[i].owner_name] = true
+          }
           for(let i in data.owner_timeline){
               let row = data.owner_timeline[i]
               row.name = row.location + " " + (row.unit || "")
@@ -59,6 +85,6 @@ export default {
             }
             this.timelineData = timelineData
           });
-  }
+  },
 };
 </script>

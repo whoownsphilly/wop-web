@@ -1,10 +1,12 @@
 from django.http import JsonResponse
 import os
+import pandas as pd
 from phillydb.exceptions import (
     SearchTypeNotImplementedError,
     SearchMethodNotImplementedError,
 )
 from phillydb import __version__ as philly_db_version
+from phillydb import PhillyCartoQuery
 from phillydb.owner_search_queries import OwnerQuery, OwnerQueryResult
 from phillydb.utils import get_normalized_address
 from phillydb import Properties, construct_search_query
@@ -37,40 +39,116 @@ def autocomplete_response(request):
     is_valid_address = True
     try:
         search_to_match = get_normalized_address(startswith_str)
-        search_to_match = "%".join(search_to_match.split(" "))
     except:
         is_valid_address = False
         search_to_match = startswith_str
+
+    def _add_formatted_results(
+        results, results_df, name, description_col="parcel_number", url_override=None
+    ):
+        results_df["url"] = url_override if url_override else name
+        cols = [name, "url"]
+        col_names = {name: "title"}
+        if description_col:
+            cols += [description_col]
+            col_names[description_col] = "description"
+        result_records = results_df[cols].rename(columns=col_names).to_dict("records")
+        results[name] = {"name": name, "results": result_records}
+        return results
+
     if is_valid_address:
+
+        def _get_where_str(search_str):
+            search = search_str.split(" ")
+            # This more complicated SQL allows for things like
+            # 1850 ABC St, 1846 ABC St, and 1840 ABC St
+            # to all be captured if a property is labelled internally
+            # as 1844-1850 ABC St
+            includes_dir = len(search) > 1 and search[1] in ["N", "S", "E", "W"]
+            first_word_split = search[0].split("-")
+            address_low = int(first_word_split[0])
+            address_high = (
+                int(first_word_split[1]) if len(first_word_split) > 1 else None
+            )
+            street_name = (
+                search[1]
+                if not includes_dir and len(search) > 1
+                else (search[2] if len(search) > 2 else "")
+            )
+            address_floor = address_low - (address_low % 100)
+            address_remainder = address_low - address_floor
+            address_ceil = address_high + address_floor if address_high else address_low
+
+            return f"""
+            (
+                (
+                    (
+                        cast(HOUSE_NUMBER as int) >= {address_low}
+                        AND cast(HOUSE_NUMBER as int) <= {address_ceil}
+                    )
+                    OR (
+                        cast(HOUSE_NUMBER as int)>= {address_floor}
+                        AND cast(HOUSE_NUMBER as int) <= {address_ceil}
+                        AND cast(HOUSE_EXTENSION as int) >= {address_remainder}
+                    )
+                )
+                AND STREET_NAME LIKE '%{street_name}%'
+            )
+            """
+
+        alternate_where_sql = _get_where_str(search_to_match)
+        search_to_match_like_str = "%".join(search_to_match.split(" "))
+        where_sql = f"""location like '{search_to_match_like_str}%'
+            OR ({alternate_where_sql})
+            """
+
         addresses_df = (
-            Properties()
-            .query_by_single_str_column(
-                search_column=column,
-                search_to_match=search_to_match,
-                search_method="starts with",
-                result_columns=["location", "parcel_number", "owner_1", "owner_2"],
+            Properties().list(
+                columns=["location", "parcel_number", "owner_1", "owner_2"],
+                where_sql=where_sql,
                 limit=n_results,
             )
-            .to_dataframe()
-        )
-
-        def _add_formatted_results(results, results_df, name):
-            result_records = (
-                results_df[[name, "parcel_number"]]
-                .rename(columns={name: "title", "parcel_number": "description"})
-                .to_dict("records")
-            )
-            results[name] = {"name": name, "results": result_records}
-            return results
+        ).to_dataframe()
 
         results = _add_formatted_results(results, addresses_df, "location")
-        results = _add_formatted_results(results, addresses_df, "owner_1")
-        results = _add_formatted_results(results, addresses_df, "owner_2")
+        results = _add_formatted_results(
+            results, addresses_df, "owner_1", url_override="owner"
+        )
+        results = _add_formatted_results(
+            results, addresses_df, "owner_2", url_override="owner"
+        )
 
         n_results_returned += len(addresses_df)
 
     else:
-        pass
+
+        search_to_match_like_str = "%".join(search_to_match.split(" "))
+
+        search_to_match_like_str_rev = "%".join(search_to_match.split(" ")[::-1])
+        owners_df = (
+            PhillyCartoQuery(
+                f"""
+        SELECT distinct(owner) from (
+            SELECT distinct(owner_1) as owner
+            FROM opa_properties_public
+            WHERE (
+                owner_1 like '{search_to_match_like_str}%' OR
+                owner_1 like '{search_to_match_like_str_rev}%'
+            )
+            UNION ALL
+            SELECT distinct(owner_2) as owner
+            FROM opa_properties_public
+            WHERE (
+                owner_2 like '{search_to_match_like_str}%' OR
+                owner_2 like '{search_to_match_like_str_rev}%'
+            )
+        ) as owners
+        """
+            )
+            .execute()
+            .to_dataframe()
+        )
+        results = _add_formatted_results(results, owners_df, "owner", "owner")
 
     return PrettifiableJsonResponse(
         {
@@ -152,7 +230,7 @@ def _table_response(table_obj, request):
         },
         "results": {
             "columns": columns,
-            "rows": df.to_dict("records"),
+            "rows": df.where(pd.notnull(df), None).to_dict("records"),
         },
     }
     return PrettifiableJsonResponse(data, pretty_print=pretty_print)
@@ -210,7 +288,8 @@ def owners_timeline_response(request):
     )
     owners_timeline_df = owner_query_result_obj.owners_timeline_df
     output_response = {
-        "owner_timeline": owner_query_result_obj.owners_timeline_df.to_dict("records")
+        "owners_list": owner_query_obj.owner_df.to_dict("records"),
+        "owner_timeline": owner_query_result_obj.owners_timeline_df.to_dict("records"),
     }
 
     return JsonResponse(

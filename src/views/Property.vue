@@ -7,10 +7,10 @@
         <p>{{ buildingDescription }}</p>
 
     <h2 is="sui-header">Links</h2>
-      <a :href="result.link_atlas">Link to Atlas</a>,
-      <a :href="result.link_cyclomedia_street_view">Link to Cyclomedia Street View</a>,
-      <a :href="result.link_property_phila_gov">Link to property.phila.gov</a>,
-      <a :href="result.link_license_inspections">Link to li.phila.gov</a>
+      <a :href="result.link_atlas" target="_blank">Link to Atlas</a>,
+      <a :href="result.link_cyclomedia_street_view" target="_blank">Link to Cyclomedia Street View</a>,
+      <a :href="result.link_property_phila_gov" target="_blank">Link to property.phila.gov</a>,
+      <a :href="result.link_license_inspections" target="_blank">Link to li.phila.gov</a>
     <h2 v-for="owner in owners" :key="owner">Owner: {{ owner }}</h2>
     </sui-container>
        <sui-tab>

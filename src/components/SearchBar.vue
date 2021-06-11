@@ -28,8 +28,17 @@ export default {
   },
   methods: {
     select(selection) {
-      const parcelNumber = selection["description"];
-      this.$router.push("/property/" + parcelNumber);
+        console.log(selection)
+      // Used the url param to pass the selection type (part of the search bar)
+      const selection_type = selection["url"]
+      if(selection_type === "location"){
+          const parcelNumber = selection["description"];
+          this.$router.push("/property/" + parcelNumber);
+      }
+      else if(selection_type === "owner"){
+          const owner = selection["description"];
+          this.$router.push("/owner/" + owner)
+      }
     }
   }
 };

@@ -24,6 +24,12 @@ const routes = [
     name: "Property",
     component: () =>
       import(/* webpackChunkName: "about" */ "../views/Property.vue")
+  },
+  {
+    path: "/owner/:ownerName",
+    name: "Owner",
+    component: () =>
+      import(/* webpackChunkName: "about" */ "../views/Owner.vue")
   }
 ];
 

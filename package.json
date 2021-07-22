@@ -10,6 +10,7 @@
   "dependencies": {
     "core-js": "^3.6.5",
     "leaflet": "^1.7.1",
+    "linkifyjs": "^3.0.0-beta.3",
     "semantic-ui-css": "^2.4.1",
     "semantic-ui-vue": "^0.11.0",
     "vue": "^2.6.11",

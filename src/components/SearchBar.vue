@@ -28,7 +28,6 @@ export default {
   },
   methods: {
     select(selection) {
-        console.log(selection)
       // Used the url param to pass the selection type (part of the search bar)
       const selection_type = selection["url"]
       if(selection_type === "location"){
@@ -38,6 +37,10 @@ export default {
       else if(selection_type === "owner"){
           const owner = selection["description"];
           this.$router.push("/owner/" + owner)
+      }
+      else if(selection_type === "mailing-address"){
+          const mailing_street = selection["description"];
+          this.$router.push("/mailing_address/" + mailing_street)
       }
     }
   }

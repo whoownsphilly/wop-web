@@ -52,7 +52,12 @@ def autocomplete_response(request):
         if description_col:
             cols += [description_col]
             col_names[description_col] = "description"
-        result_records = results_df[cols].rename(columns=col_names).to_dict("records")
+        result_records = (
+            results_df[cols]
+            .dropna()
+            .rename(columns=col_names)
+            .to_dict("records")
+        )
         results[name] = {"name": name, "results": result_records}
         return results
 
@@ -104,7 +109,14 @@ def autocomplete_response(request):
 
         addresses_df = (
             Properties().list(
-                columns=["location", "parcel_number", "owner_1", "owner_2"],
+                columns=[
+                    "location",
+                    "unit",
+                    "parcel_number",
+                    "owner_1",
+                    "owner_2",
+                    "mailing_street",
+                ],
                 where_sql=where_sql,
                 limit=n_results,
             )
@@ -124,6 +136,13 @@ def autocomplete_response(request):
             "owner_2",
             description_col="owner_2",
             url_override="owner",
+        )
+        results = _add_formatted_results(
+            results,
+            addresses_df,
+            "mailing_street",
+            description_col="mailing_street",
+            url_override="mailing-address",
         )
 
         n_results_returned += len(addresses_df)
@@ -288,7 +307,10 @@ def bios_response(request):
 
 
 def owners_timeline_response(request):
-    owner_name = request.GET.get("owner_name")
+    owner_name = request.GET["owner_name"]
+
+    # optionally add all owners that share that mailing address
+    mailing_address = request.GET.get("mailing_address")
     owner_query_obj = OwnerQuery(owner_name)
 
     owner_query_result_obj = OwnerQueryResult(

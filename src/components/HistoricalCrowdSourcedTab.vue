@@ -2,15 +2,15 @@
   <div>
     <h2> {{ mailingStreet }}</h2>
     This is crowd-sourced information keyed on the mailing street
-    <sui-container text>
+    <sui-container>
         <div v-for="bioResult, i in bioResults" :key="i">
           <h2 is="sui-header">Entry {{ i }}</h2>
           <div v-for="(val, key) in bioResult" :key="key">
             <p v-if="key === 'link_to_owner_website'">
-                <b>{{ key }}:</b><a :href=val target="_blank">{{ val }}</a>
+                <b>{{ key }}:</b>{{ linkifyTheHtml(val) }}
             </p>
             <p v-else>
-                <b>{{ key }}:</b> {{ val }}
+                <b>{{ key }}:</b>{{ linkifyTheHtml(val) }}
             </p>
           </div>
         </div>
@@ -22,6 +22,7 @@
 <script>
 
 import { getBioTableInfo } from '@/api/singleTable'
+import linkifyHtml from 'linkifyjs/html';
 
 export default {
   name: "HistoricalCrowdSourcedTab",
@@ -36,6 +37,11 @@ export default {
         bioResults: [],
         airTableUrl: "https://airtable.com/embed/shrAacunffP2mP3PC?backgroundColor=orange&prefill_mailing_street=" + this.mailingStreet,
     }
+  },
+  methods: {
+      linkifyTheHtml(val) {
+          return linkifyHtml("" + val)
+      }
   },
   created() {
       getBioTableInfo(this.mailingStreet).then(data => {

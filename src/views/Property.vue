@@ -20,6 +20,9 @@
       <sui-tab-pane v-for="owner in owners" :key="owner" :title="owner">
         <historical-owner-tab :owner="owner"/>
       </sui-tab-pane>
+      <sui-tab-pane title="Mailing Address">
+        <mailing-address-tab :mailingStreet="mailingStreetOrLocation"/>
+      </sui-tab-pane>
       <sui-tab-pane title="Crowd-Sourced Info">
         <historical-crowd-sourced-tab :mailingStreet="mailingStreetOrLocation"/>
       </sui-tab-pane>
@@ -32,6 +35,7 @@
 import HistoricalPropertyTab from '@/components/HistoricalPropertyTab'
 import HistoricalOwnerTab from '@/components/HistoricalOwnerTab'
 import HistoricalCrowdSourcedTab from '@/components/HistoricalCrowdSourcedTab'
+import MailingAddressTab from '@/components/MailingAddressTab'
 import { getTableInfo } from '@/api/singleTable'
 
 export default {
@@ -40,6 +44,7 @@ export default {
       HistoricalPropertyTab,
       HistoricalOwnerTab,
       HistoricalCrowdSourcedTab,
+      MailingAddressTab,
 },
   data() {
     return {

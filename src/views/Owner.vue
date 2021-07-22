@@ -1,20 +1,20 @@
 <template>
   <div class="property">
     <sui-container text>
-        <h2>{{ owner }}</h2>
-        <historical-owner-tab :owner="owner"/>
+      <h2>{{ owner }}</h2>
+      <historical-owner-tab :owner="owner" />
     </sui-container>
   </div>
 </template>
 
 <script>
-import HistoricalOwnerTab from '@/components/HistoricalOwnerTab'
+import HistoricalOwnerTab from "@/components/HistoricalOwnerTab";
 
 export default {
   name: "Property",
   components: {
-      HistoricalOwnerTab,
-},
+    HistoricalOwnerTab
+  },
   data() {
     return {
       owner: this.$route.params.ownerName,
@@ -22,9 +22,7 @@ export default {
       resultLoaded: false
     };
   },
-  computed: {
-  },
-  created() {
-  }
+  computed: {},
+  created() {}
 };
 </script>

@@ -26,7 +26,6 @@ python manage.py runserver
 - `pip install -r requirements.txt`
 - `./django_serve.sh`
 
-### React ###
 yarn start
 ```
 
@@ -96,3 +95,8 @@ yarn lint
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
+
+Special Thanks
+--------------
+
+- Timeline code based off of [vue-timeline-component](https://github.com/0xdv/vue-timeline-component)

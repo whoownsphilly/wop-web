@@ -1,13 +1,16 @@
 <template>
-  <div>
-      <vue-good-table
+  <div v-if="loading">
+    Loading table data...
+  </div>
+  <div v-else>
+    <vue-good-table
       :columns="columns"
       :rows="rows"
       :search-options="{
         enabled: true,
         trigger: 'enter',
         skipDiacritics: true,
-        placeholder: 'Search this table',
+        placeholder: 'Search this table'
       }"
       :pagination-options="{
         enabled: true,
@@ -22,45 +25,48 @@
         rowsPerPageLabel: 'Rows per page',
         ofLabel: 'of',
         pageLabel: 'page', // for 'pages' mode
-        allLabel: 'All',
+        allLabel: 'All'
       }"
-      />
+    />
   </div>
 </template>
 
 <script>
-
-import { getTableInfo } from '@/api/singleTable'
+import { getTableInfo } from "@/api/singleTable";
 
 export default {
   name: "HistoricalTabTable",
   props: {
-      searchType: {
-          type: String,
-          required: true,
-      },
-      searchToMatch: {
-          type: String,
-          required: true,
-      },
-      tableName: {
-          type: String,
-          required: true,
-     }
+    searchType: {
+      type: String,
+      required: true
+    },
+    searchToMatch: {
+      type: String,
+      required: true
+    },
+    tableName: {
+      type: String,
+      required: true
+    }
   },
   data() {
     return {
+      loading: true,
       columns: [],
       rows: []
-      };
+    };
   },
   created() {
-      getTableInfo(this.tableName, this.searchType, this.searchToMatch).then(data => {
+    getTableInfo(this.tableName, this.searchType, this.searchToMatch).then(
+      data => {
         if ("results" in data) {
-            this.columns = data.results.columns
-            this.rows = data.results.rows
+          this.columns = data.results.columns;
+          this.rows = data.results.rows;
         }
-      });
+        this.loading = false;
+      }
+    );
   }
 };
 </script>

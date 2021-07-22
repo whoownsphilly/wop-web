@@ -112,10 +112,18 @@ def autocomplete_response(request):
 
         results = _add_formatted_results(results, addresses_df, "location")
         results = _add_formatted_results(
-            results, addresses_df, "owner_1", url_override="owner"
+            results,
+            addresses_df,
+            "owner_1",
+            description_col="owner_1",
+            url_override="owner",
         )
         results = _add_formatted_results(
-            results, addresses_df, "owner_2", url_override="owner"
+            results,
+            addresses_df,
+            "owner_2",
+            description_col="owner_2",
+            url_override="owner",
         )
 
         n_results_returned += len(addresses_df)

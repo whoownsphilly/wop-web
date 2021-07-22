@@ -1,6 +1,7 @@
 <template>
   <div class="property">
     <sui-container text>
+        <h2>{{ owner }}</h2>
         <historical-owner-tab :owner="owner"/>
     </sui-container>
   </div>

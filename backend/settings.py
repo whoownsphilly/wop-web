@@ -156,16 +156,15 @@ CORS_ALLOWED_ORIGINS = [
     "http://192.168.1.169:8081",
 ]
 
-VUE_FRONTEND_DIR = os.path.join(BASE_DIR, 'frontend')
+VUE_FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
 
 WEBPACK_LOADER = {
-    'DEFAULT': {
-        'CACHE': not DEBUG,
-        'BUNDLE_DIR_NAME': 'vue/',  # must end with slash
-        'STATS_FILE': os.path.join(VUE_FRONTEND_DIR, 'webpack-stats.json'),
-        'POLL_INTERVAL': 0.1,
-        'TIMEOUT': None,
-        'IGNORE': [r'.+\.hot-update.js', r'.+\.map']
+    "DEFAULT": {
+        "CACHE": not DEBUG,
+        "BUNDLE_DIR_NAME": "vue/",  # must end with slash
+        "STATS_FILE": os.path.join(VUE_FRONTEND_DIR, "webpack-stats.json"),
+        "POLL_INTERVAL": 0.1,
+        "TIMEOUT": None,
+        "IGNORE": [r".+\.hot-update.js", r".+\.map"],
     }
 }
-

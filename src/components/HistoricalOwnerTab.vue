@@ -10,6 +10,7 @@
     </span>
     <div v-if="timelineData">
         <vue-timeline :data="timelineDataForGraph"></vue-timeline>
+        <leaflet-map :latLngs="latLngs"/>
     </div>
     <div v-if="loadTables">
         <div v-for="table in tables" :key="table.name">
@@ -22,12 +23,13 @@
 
 <script>
 import HistoricalTabTable from '@/components/HistoricalTabTable'
+import LeafletMap from '@/components/LeafletMap'
 import { getOwnersTimelineTableInfo } from '@/api/singleTable'
 import VueTimeline from "vue-timeline-component"
 
 export default {
   name: "HistoricalOwnerTab",
-  components: {HistoricalTabTable, VueTimeline},
+  components: {HistoricalTabTable, VueTimeline, LeafletMap},
   props: {
       owner: {
           type: String,
@@ -36,6 +38,7 @@ export default {
   },
   data() {
     return {
+        latLngs: [],
         loadTables: false,
         timelineData: null,
         ownersList: [],
@@ -63,28 +66,28 @@ export default {
           this.isActive.__ob__.dep.notify() //I know this is hacky but I'm learning.
       }
   },
-  created() {
-      getOwnersTimelineTableInfo(this.owner).then(data => {
-          const timelineData = []
-          this.ownersList = data.owners_list
-          for(let i in data.owners_list){
-              this.isActive[data.owners_list[i].owner_name] = true
+  async created() {
+      const data = await getOwnersTimelineTableInfo(this.owner)
+      const timelineData = []
+      this.ownersList = data.owners_list
+      for(let i in data.owners_list){
+          this.isActive[data.owners_list[i].owner_name] = true
+      }
+      for(let i in data.owner_timeline){
+          let row = data.owner_timeline[i]
+          row.name = row.location + " " + (row.unit || "")
+          row.start = new Date(Date.parse(row.start_dt))
+          row.end = new Date(Date.parse(row.end_dt) || Date())
+          let output = {
+              name: row.name,
+              start: row.start,
+              end: row.end,
           }
-          for(let i in data.owner_timeline){
-              let row = data.owner_timeline[i]
-              row.name = row.location + " " + (row.unit || "")
-              row.start = new Date(Date.parse(row.start_dt))
-              row.end = new Date(Date.parse(row.end_dt) || Date())
-              let output = {
-                  name: row.name,
-                  start: row.start,
-                  end: row.end,
-              }
-              timelineData.push(output)
+          timelineData.push(output)
+          this.latLngs.push({"lat": row.lat, "lng": row.lng})
 
-            }
-            this.timelineData = timelineData
-          });
+        }
+        this.timelineData = timelineData
   },
 };
 </script>

@@ -53,10 +53,7 @@ def autocomplete_response(request):
             cols += [description_col]
             col_names[description_col] = "description"
         result_records = (
-            results_df[cols]
-            .dropna()
-            .rename(columns=col_names)
-            .to_dict("records")
+            results_df[cols].dropna().rename(columns=col_names).to_dict("records")
         )
         results[name] = {"name": name, "results": result_records}
         return results

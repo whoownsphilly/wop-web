@@ -38,8 +38,10 @@ def autocomplete_response(request):
 
     is_valid_address = True
     try:
+        print(startswith_str)
         search_to_match = get_normalized_address(startswith_str)
-    except:
+        print(search_to_match)
+    except Exception:
         is_valid_address = False
         search_to_match = startswith_str
 
@@ -77,6 +79,11 @@ def autocomplete_response(request):
                 if not includes_dir and len(search) > 1
                 else (search[2] if len(search) > 2 else "")
             )
+            unit = ""
+            for i, maybe_unit_str in enumerate(search):
+                if 'UNIT' in maybe_unit_str and len(search) > i:
+                    unit = search[i+1]
+
             address_floor = address_low - (address_low % 100)
             address_remainder = address_low - address_floor
             address_ceil = address_high + address_floor if address_high else address_low
@@ -95,12 +102,13 @@ def autocomplete_response(request):
                     )
                 )
                 AND STREET_NAME LIKE '%{street_name}%'
+                AND UNIT LIKE '%{unit}%'
             )
             """
 
         alternate_where_sql = _get_where_str(search_to_match)
         search_to_match_like_str = "%".join(search_to_match.split(" "))
-        where_sql = f"""location like '{search_to_match_like_str}%'
+        where_sql = f"""location||' '||unit like '{search_to_match_like_str}%'
             OR ({alternate_where_sql})
             """
 
@@ -118,8 +126,9 @@ def autocomplete_response(request):
                 limit=n_results,
             )
         ).to_dataframe()
+        addresses_df['location_unit'] = addresses_df['location'] + ' ' + addresses_df['unit']
 
-        results = _add_formatted_results(results, addresses_df, "location")
+        results = _add_formatted_results(results, addresses_df, "location_unit")
         results = _add_formatted_results(
             results,
             addresses_df,

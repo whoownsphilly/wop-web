@@ -25,11 +25,10 @@
       <sui-accordion-title>
         <h2><sui-icon name="dropdown" />Timeline</h2>
       </sui-accordion-title>
-      <sui-accordion-content>
-      </sui-accordion-content>
-    <div v-if="timelineData">
-      <vue-timeline :data="timelineDataForGraph"></vue-timeline>
-    </div>
+      <sui-accordion-content> </sui-accordion-content>
+      <div v-if="timelineData">
+        <vue-timeline :data="timelineDataForGraph"></vue-timeline>
+      </div>
       <div v-if="loadTables">
         <div v-for="table in tables" :key="table.name">
           <sui-accordion-title>
@@ -113,7 +112,7 @@ export default {
       this.latLngs.push({ lat: row.lat, lng: row.lng });
     }
     // sort by newest to oldest
-    timelineData.sort((a,b) => a.start < b.start ? 1 : -1)
+    timelineData.sort((a, b) => (a.start < b.start ? 1 : -1));
     this.timelineData = timelineData;
     this.loading = false;
   }

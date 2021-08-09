@@ -1,4 +1,7 @@
 from django.http import JsonResponse
+from django.core.cache import cache
+import base64
+
 import os
 import pandas as pd
 from phillydb.exceptions import (
@@ -211,61 +214,66 @@ def _table_response(table_obj, request):
     search_type = request.GET.get("search_type", "")
     search_method = request.GET.get("search_method", "contains")
 
-    try:
-        if search_type == "owner":
-            owner_query_obj = OwnerQuery(search_to_match)
-            opa_account_numbers_sql = owner_query_obj.parcel_num_sql
-        else:
-            opa_account_numbers_sql = construct_search_query(
-                search_to_match=search_to_match,
-                search_type=search_type,
-                search_method=search_method,
+    data_key = base64.b64encode(f"{search_to_match}_{search_type}_{search_method}".encode('utf-8'))
+
+    data = cache.get(data_key)
+    if not data:
+        try:
+            if search_type == "owner":
+                owner_query_obj = OwnerQuery(search_to_match)
+                opa_account_numbers_sql = owner_query_obj.parcel_num_sql
+            else:
+                opa_account_numbers_sql = construct_search_query(
+                    search_to_match=search_to_match,
+                    search_type=search_type,
+                    search_method=search_method,
+                )
+        except SearchTypeNotImplementedError as e:
+            return PrettifiableJsonResponse(
+                {"error": e.message}, status=400, pretty_print=pretty_print
             )
-    except SearchTypeNotImplementedError as e:
-        return PrettifiableJsonResponse(
-            {"error": e.message}, status=400, pretty_print=pretty_print
-        )
-    except SearchMethodNotImplementedError as e:
-        return PrettifiableJsonResponse(
-            {"error": e.message}, status=400, pretty_print=pretty_print
-        )
+        except SearchMethodNotImplementedError as e:
+            return PrettifiableJsonResponse(
+                {"error": e.message}, status=400, pretty_print=pretty_print
+            )
 
-    df = table_obj.query_by_opa_account_numbers(
-        opa_account_numbers=opa_account_numbers_sql
-    ).to_dataframe()
+        df = table_obj.query_by_opa_account_numbers(
+            opa_account_numbers=opa_account_numbers_sql
+        ).to_dataframe()
 
-    if search_type == "owner":
-        owner_query_result_obj = OwnerQueryResult(
-            owner_query_obj.parcel_num_sql, owner_query_obj.owners_list
-        )
-        df = owner_query_result_obj.get_filtered_df(df, table_obj.dt_column)
+        if search_type == "owner":
+            owner_query_result_obj = OwnerQueryResult(
+                owner_query_obj.parcel_num_sql, owner_query_obj.owners_list
+            )
+            df = owner_query_result_obj.get_filtered_df(df, table_obj.dt_column)
 
-    def _make_col_dict(col):
-        # for vue-good-tables format
-        column_dict = {"label": col, "field": col, "tooltip": f"Tooltip for {col}"}
-        column_dict["filterOptions"] = {"enabled": True}
-        if col.endswith("date"):
-            column_dict["type"] = "date"
-            column_dict["dateInputFormat"] = "yyyy-MM-dd'T'HH':'mm':'ss'Z'"
-            column_dict["dateOutputFormat"] = "MMM do yyy"
-        return column_dict
+        def _make_col_dict(col):
+            # for vue-good-tables format
+            column_dict = {"label": col, "field": col, "tooltip": f"Tooltip for {col}"}
+            column_dict["filterOptions"] = {"enabled": True}
+            if col.endswith("date"):
+                column_dict["type"] = "date"
+                column_dict["dateInputFormat"] = "yyyy-MM-dd'T'HH':'mm':'ss'Z'"
+                column_dict["dateOutputFormat"] = "MMM do yyy"
+            return column_dict
 
-    columns = [_make_col_dict(col) for col in df.columns]
-    data = {
-        "metadata": {
-            "title": table_obj.title,
-            "cartodb_table_name": table_obj.cartodb_table_name,
-            "data_links": table_obj.data_links,
-            "search_query": search_to_match,
-            "search_to_match": search_to_match,
-            "search_type": search_type,
-            "search_method": search_method,
-        },
-        "results": {
-            "columns": columns,
-            "rows": df.where(pd.notnull(df), None).to_dict("records"),
-        },
-    }
+        columns = [_make_col_dict(col) for col in df.columns]
+        data = {
+            "metadata": {
+                "title": table_obj.title,
+                "cartodb_table_name": table_obj.cartodb_table_name,
+                "data_links": table_obj.data_links,
+                "search_query": search_to_match,
+                "search_to_match": search_to_match,
+                "search_type": search_type,
+                "search_method": search_method,
+            },
+            "results": {
+                "columns": columns,
+                "rows": df.where(pd.notnull(df), None).to_dict("records"),
+            },
+        }
+        cache.set(data_key, data)
     return PrettifiableJsonResponse(data, pretty_print=pretty_print)
 
 
@@ -314,20 +322,23 @@ def bios_response(request):
 
 def owners_timeline_response(request):
     owner_name = request.GET["owner_name"]
-
     # optionally add all owners that share that mailing address
     mailing_address = request.GET.get("mailing_address")
-    owner_query_obj = OwnerQuery(owner_name)
 
-    owner_query_result_obj = OwnerQueryResult(
-        owner_query_obj.parcel_num_sql, owner_query_obj.owners_list
-    )
-    owners_timeline_df = owner_query_result_obj.owners_timeline_df
-    output_response = {
-        "owners_list": owner_query_obj.owner_df.to_dict("records"),
-        "owner_timeline": owner_query_result_obj.owners_timeline_df.to_dict("records"),
-    }
+    data_key = base64.b64encode(f"{owner_name}_{mailing_address}".encode('utf-8'))
+    data = cache.get(data_key)
+    if not data:
+        owner_query_obj = OwnerQuery(owner_name)
 
-    return JsonResponse(
-        simplejson.loads(simplejson.dumps(output_response, ignore_nan=True))
-    )
+        owner_query_result_obj = OwnerQueryResult(
+            owner_query_obj.parcel_num_sql, owner_query_obj.owners_list
+        )
+        owners_timeline_df = owner_query_result_obj.owners_timeline_df
+        output_response = {
+            "owners_list": owner_query_obj.owner_df.to_dict("records"),
+            "owner_timeline": owner_query_result_obj.owners_timeline_df.to_dict("records"),
+        }
+
+        data = simplejson.loads(simplejson.dumps(output_response, ignore_nan=True))
+        cache.set(data_key, data)
+    return JsonResponse(data)

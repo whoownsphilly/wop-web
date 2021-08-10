@@ -9,8 +9,8 @@ export default (config) => {
 
     return d3.zoom()
         //.translateExtent([[ -1200, -700 ], [ 800, 800 ]])
-        .on('zoom', () => {
-            let { k, x, y } = d3.event.transform
+        .on('zoom', (event) => {
+            let { k, x, y } = event.transform
 
             let scale = d3.zoomIdentity
                             .translate(x,y)

@@ -3,6 +3,7 @@ import App from "./App.vue";
 import SuiVue from "semantic-ui-vue";
 import router from "./router";
 import VueGoodTablePlugin from 'vue-good-table';
+import ToggleSwitch from 'vuejs-toggle-switch'
 
 // import the styles
 import "semantic-ui-css/semantic.min.css";
@@ -23,7 +24,9 @@ Vue.config.productionTip = false;
 // add plugins
 Vue.use(SuiVue);
 Vue.use(VueGoodTablePlugin);
+Vue.use(ToggleSwitch)
 
+Vue.prototype.$siteMode = Vue.observable({mode: 'basic'})
 
 new Vue({
   router,

@@ -1,33 +1,38 @@
 <template>
-  <div v-if="loading">
-    Loading table data...
-  </div>
-  <div v-else>
-    <vue-good-table
-      :columns="columns"
-      :rows="rows"
-      :search-options="{
-        enabled: true,
-        trigger: 'enter',
-        skipDiacritics: true,
-        placeholder: 'Search this table'
-      }"
-      :pagination-options="{
-        enabled: true,
-        mode: 'records',
-        perPage: 5,
-        position: 'top',
-        perPageDropdown: [10, 20],
-        dropdownAllowAll: true,
-        setCurrentPage: 1,
-        nextLabel: 'next',
-        prevLabel: 'prev',
-        rowsPerPageLabel: 'Rows per page',
-        ofLabel: 'of',
-        pageLabel: 'page', // for 'pages' mode
-        allLabel: 'All'
-      }"
-    />
+      <div>
+  <sui-accordion-title>
+    <h2>
+        <sui-icon name="dropdown" v-if="$siteMode.mode !== 'basic'"/>
+    {{ table.title }} ({{ this.rows.length }})</h2>
+  </sui-accordion-title>
+  <sui-accordion-content>
+        <vue-good-table
+          :columns="columns"
+          :rows="rows"
+          :isLoading="loading"
+          :search-options="{
+            enabled: true,
+            trigger: 'enter',
+            skipDiacritics: true,
+            placeholder: 'Search ' + table.name
+          }"
+          :pagination-options="{
+            enabled: true,
+            mode: 'records',
+            perPage: 5,
+            position: 'top',
+            perPageDropdown: [10, 20],
+            dropdownAllowAll: true,
+            setCurrentPage: 1,
+            nextLabel: 'next',
+            prevLabel: 'prev',
+            rowsPerPageLabel: 'Rows per page',
+            ofLabel: 'of',
+            pageLabel: 'page', // for 'pages' mode
+            allLabel: 'All'
+          }"
+        />
+  </sui-accordion-content>
   </div>
 </template>
 
@@ -45,8 +50,8 @@ export default {
       type: String,
       required: true
     },
-    tableName: {
-      type: String,
+    table: {
+      type: Object,
       required: true
     }
   },
@@ -58,7 +63,7 @@ export default {
     };
   },
   created() {
-    getTableInfo(this.tableName, this.searchType, this.searchToMatch).then(
+    getTableInfo(this.table.name, this.searchType, this.searchToMatch).then(
       data => {
         if ("results" in data) {
           this.columns = data.results.columns;

@@ -1,47 +1,57 @@
 <template lang="html">
-  <sui-search action="search category" @select="select" fluid ref="searchBar">
-    <template v-slot:input="{ props, handlers }">
-      <div v-if="$siteMode.mode !== 'basic'">
-        Search By:
-        <sui-button
-          size="tiny"
-          data-tooltip="Search by owner or address"
-          data-position="top center"
-          attached="left"
-          :color="searchType === 'addressOrOwner' ? 'green' : 'grey'"
-          v-on:click="searchType = 'addressOrOwner'"
-          >Owner or Location</sui-button
-        >
-        <sui-button
-          size="tiny"
-          attached="right"
-          :color="searchType === 'mailingAddress' ? 'green' : 'grey'"
-          data-tooltip="Search by mailing address"
-          data-position="top center"
-          v-on:click="searchType = 'mailingAddress'"
-          >Owner's Mailing Address</sui-button
-        >
-        <sui-divider hidden />
+  <div>
+    <h2>
+      <a :href="bioResult.link_to_owner_website">{{
+        bioResult.name_of_possible_owner
+      }}</a>
+    </h2>
+    <p>Ownership Confidence: {{ bioResult.confidence }}/5</p>
+    <p>{{ bioResult.bio_of_owner }}</p>
+    <p>
+      <b>Links to Sources:</b><br />
+      <span
+        v-for="(link, key2) in bioResult.links_to_sources.split(';')"
+        :key="key2"
+      >
+        - <a :href="link">{{ link }}</a
+        ><br />
+      </span>
+    </p>
+    <div v-if="$siteMode.mode === 'beta'">
+      <h2 is="sui-header">Entry {{ index }}</h2>
+      <div v-for="(val, key) in bioResult" :key="key">
+        <p v-if="key === 'link_to_owner_website'">
+          <b>{{ key }}:</b><a :href="val" target="_blank">{{ val }}</a>
+        </p>
+        <p v-if="key === 'links_to_sources'">
+          <b>{{ key }}</b
+          ><br />
+          <span v-for="(link, key2) in val.split(';')" :key="key2">
+            - <a :href="link">{{ link }}</a
+            ><br />
+          </span>
+        </p>
+        <p v-else>
+          <b>{{ key }}:</b>{{ val }}
+        </p>
       </div>
-      <sui-input
-        size="massive"
-        v-bind="props"
-        v-on:blur="handlers.blur"
-        v-on:input="handlers.input"
-        v-on:focus="handlers.focus"
-        v-model="selection"
-        icon="search"
-        :placeholder="searchBarPlaceholder"
-        focus
-        fluid
-      />
-    </template>
-  </sui-search>
+    </div>
+  </div>
 </template>
 
 <script>
 export default {
-  name: "SearchBar",
+  name: "BioResult",
+  props: {
+    bioResult: {
+      type: Object,
+      required: true
+    },
+    index: {
+      type: Object,
+      required: true
+    }
+  },
   data() {
     return {
       test: "abc",

@@ -143,7 +143,7 @@ def autocomplete_response(request):
         addresses_df["location_unit"] = (
             addresses_df["location"] + " " + addresses_df["unit"].fillna("")
         ).str.strip()
-        addresses_df['mailing_address_1'].fillna('', inplace=True)
+        addresses_df["mailing_address_1"].fillna("", inplace=True)
 
         results = _add_formatted_results(results, addresses_df, "location_unit")
         results = _add_formatted_results(
@@ -308,7 +308,12 @@ def bios_response(request):
     # currently only available for mailing street, but this may be extended some day.
     mailing_street = request.GET.get("mailing_street", "")
     mailing_address_1 = request.GET.get("mailing_address_1", "")
-    output_response = {"metadata": {"mailing_street": mailing_street, "mailing_address_1": mailing_address_1}}
+    output_response = {
+        "metadata": {
+            "mailing_street": mailing_street,
+            "mailing_address_1": mailing_address_1,
+        }
+    }
     if mailing_street:
         airtable_url = os.environ.get("BIOS_URL")
         # TODO (ssuffian): This should be synced to the db rather than called each time.
@@ -317,9 +322,12 @@ def bios_response(request):
             invisible_fields = ["last_modified_by", "researcher"]
             params = {
                 "filterByFormula": 'IF(AND({mailing_street}="'
-                + mailing_street + '",'
-                + '{mailing_address_1}="'+mailing_address_1+'"),'
-                + 'TRUE(), FALSE())',
+                + mailing_street
+                + '",'
+                + '{mailing_address_1}="'
+                + mailing_address_1
+                + '"),'
+                + "TRUE(), FALSE())",
                 #'fields': [],
             }
             response = requests.get(airtable_url, params=params)

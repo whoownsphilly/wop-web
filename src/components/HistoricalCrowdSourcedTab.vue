@@ -1,19 +1,20 @@
 <template>
   <div>
     <sui-container>
-    <p>This is crowd-sourced information keyed on the mailing street
-    and currently contains <b>{{ bioResults.length }}</b> existing results.</p>
+      <p>
+        This is crowd-sourced information keyed on the mailing street and
+        currently contains <b>{{ bioResults.length }}</b> existing results.
+      </p>
       <div v-for="(bioResult, i) in bioResults" :key="i">
-        <BioResult :bioResult="bioResult" :index="i"/>
-            <sui-divider />
-
+        <BioResult :bioResult="bioResult" :index="i" />
+        <sui-divider />
       </div>
     </sui-container>
     <sui-accordion>
-        <sui-accordion-title>
-          <h2><sui-icon name="dropdown" /> Submit your own information</h2>
-        </sui-accordion-title>
-        <sui-accordion-content>
+      <sui-accordion-title>
+        <h2><sui-icon name="dropdown" /> Submit your own information</h2>
+      </sui-accordion-title>
+      <sui-accordion-content>
         <iframe
           class="airtable-embed"
           :src="airTableUrl"
@@ -23,7 +24,7 @@
           height="533"
           style="background: transparent; border: 1px solid #ccc;"
         />
-        </sui-accordion-content>
+      </sui-accordion-content>
     </sui-accordion>
   </div>
 </template>
@@ -35,8 +36,8 @@ import BioResult from "@/components/BioResult";
 export default {
   name: "HistoricalCrowdSourcedTab",
   components: {
-      BioResult
-},
+    BioResult
+  },
   props: {
     mailingStreet: {
       type: String,

@@ -12,8 +12,8 @@
       <leaflet-map :latLngs="latLngs" />
       <sui-accordion-title>
         <h2>
-        <sui-icon name="dropdown"/>
-        Owners ({{ ownersList.length }})
+          <sui-icon name="dropdown" />
+          Owners ({{ ownersList.length }})
         </h2>
       </sui-accordion-title>
       <sui-accordion-content>
@@ -28,16 +28,16 @@
       </sui-accordion-content>
       <div v-if="loadTables">
         <div v-for="table in tables" :key="table.name">
-            <historical-tab-table
-              searchType="owner"
-              :searchToMatch="owner"
-              :table="table"
-            />
+          <historical-tab-table
+            searchType="owner"
+            :searchToMatch="owner"
+            :table="table"
+          />
         </div>
       </div>
     </sui-accordion>
     <div v-if="timelineData && $siteMode.mode !== 'basic'">
-        <vue-timeline :data="timelineDataForGraph"></vue-timeline>
+      <vue-timeline :data="timelineDataForGraph"></vue-timeline>
     </div>
   </div>
 </template>

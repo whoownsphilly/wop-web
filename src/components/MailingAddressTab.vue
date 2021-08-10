@@ -17,10 +17,9 @@ export default {
     mailingStreet: {
       type: String,
       required: true
-    },
+    }
   },
-  computed: {
-},
+  computed: {},
   data() {
     return {
       bioResults: [],

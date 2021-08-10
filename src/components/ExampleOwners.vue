@@ -3,7 +3,7 @@
     <sui-card>
       <sui-card-content>
         <a href="/#/owner/14%20WA%20PARTNERS%20LP">
-        <sui-card-header>Pearl Properties</sui-card-header>
+          <sui-card-header>Pearl Properties</sui-card-header>
         </a>
         <sui-card-meta>110 S 19th St Suite 300</sui-card-meta>
         <sui-card-description>

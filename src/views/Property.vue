@@ -27,7 +27,10 @@
           <historical-owner-tab :owner="owner" />
         </sui-tab-pane>
         <sui-tab-pane title="Mailing Address">
-          <mailing-address-tab :mailingStreet="mailingStreetOrLocation" :mailingAddress1="mailingAddress1"/>
+          <mailing-address-tab
+            :mailingStreet="mailingStreetOrLocation"
+            :mailingAddress1="mailingAddress1"
+          />
         </sui-tab-pane>
         <sui-tab-pane title="Crowd-Sourced Info">
           <historical-crowd-sourced-tab

@@ -20,7 +20,9 @@ export const getBioTableInfo = (mailingStreet, mailingAddress1) => {
   const url =
     process.env.VUE_APP_DJANGO_URL +
     "/api/v1/bios/?mailing_street=" +
-    mailingStreet+"&mailing_address_1="+mailingAddress1;
+    mailingStreet +
+    "&mailing_address_1=" +
+    mailingAddress1;
   return fetch(url, {
     method: "GET"
   }).then(response => {

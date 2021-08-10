@@ -11,7 +11,9 @@
         <b>Can't find the address?</b> Click
         <a href="https://atlas.phila.gov"> here</a> or
         <a href="https://phillypropertylookup.herokuapp.com">here</a> to see how
-        the city formats addresses and owner names. We try our best to search in a similar way, but sometimes the city renames addresses in ways we can't detect.
+        the city formats addresses and owner names. We try our best to search in
+        a similar way, but sometimes the city renames addresses in ways we can't
+        detect.
       </p>
     </div>
     <sui-divider hidden />
@@ -19,9 +21,11 @@
     <sui-divider hidden />
     <ExampleOwners />
     <cookie-law theme="dark-lime">
-<div slot="message">
-    Disclaimer Text here... We store some local cookies (largely the one to keep this banner from showing up again) <router-link to="data-explained">Explanation</router-link>
-  </div>
+      <div slot="message">
+        Disclaimer Text here... We store some local cookies (largely the one to
+        keep this banner from showing up again)
+        <router-link to="data-explained">Explanation</router-link>
+      </div>
     </cookie-law>
   </div>
 </template>
@@ -31,7 +35,7 @@
 
 import SearchBar from "@/components/SearchBar";
 import ExampleOwners from "@/components/ExampleOwners";
-import CookieLaw from 'vue-cookie-law'
+import CookieLaw from "vue-cookie-law";
 
 export default {
   name: "Home",

@@ -27,7 +27,8 @@
       </div>
       <b>Who Owns Philly?</b><br>
       <router-link to="/">Home</router-link> |
-      <router-link to="/about"><b>Click Here to Take Action</b></router-link>
+      <router-link to="/info"><b>Click Here to Take Action</b></router-link> <span v-if="$siteMode.mode !== 'basic'">|
+      <router-link  to="/data-explained"><b>Data and Methods Expained</b></router-link></span>
     </div>
     <router-view />
   </div>

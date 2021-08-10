@@ -1,6 +1,5 @@
 <template>
   <div>
-    <h2>{{ mailingStreet }}</h2>
     Mailing Address Information
   </div>
 </template>
@@ -11,11 +10,17 @@ import { getBioTableInfo } from "@/api/singleTable";
 export default {
   name: "HistoricalCrowdSourcedTab",
   props: {
+    mailingAddress1: {
+      type: String,
+      required: true
+    },
     mailingStreet: {
       type: String,
       required: true
-    }
+    },
   },
+  computed: {
+},
   data() {
     return {
       bioResults: [],
@@ -25,7 +30,7 @@ export default {
     };
   },
   created() {
-    getBioTableInfo(this.mailingStreet).then(data => {
+    getBioTableInfo(this.mailingStreet, this.mailingAddress1).then(data => {
       this.bioResults = data.results;
     });
   }

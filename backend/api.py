@@ -84,14 +84,22 @@ def autocomplete_response(request):
             )
             unit = ""
             for i, maybe_unit_str in enumerate(search):
-                if 'UNIT' in maybe_unit_str and len(search) > i:
-                    unit = search[i+1]
+                if "UNIT" in maybe_unit_str and len(search) > i:
+                    unit = search[i + 1]
 
             address_floor = address_low - (address_low % 100)
             address_remainder = address_low - address_floor
             address_ceil = address_high + address_floor if address_high else address_low
+            unit_str = f"AND UNIT LIKE '%{unit}%'" if unit else ""
+            street_dir_str = (
+                f"AND STREET_DIRECTION LIKE '%{search[1]}%'" if includes_dir else ""
+            )
 
-            return f"""
+            pandas_loc_sql_string = "location"
+            pandas_loc_sql_string += "||' '||unit" if unit else ""
+            return (
+                pandas_loc_sql_string,
+                f"""
             (
                 (
                     (
@@ -105,13 +113,15 @@ def autocomplete_response(request):
                     )
                 )
                 AND STREET_NAME LIKE '%{street_name}%'
-                AND UNIT LIKE '%{unit}%'
+                {street_dir_str}
+                {unit_str}
             )
-            """
+            """,
+            )
 
-        alternate_where_sql = _get_where_str(search_to_match)
+        pandas_loc_sql_string, alternate_where_sql = _get_where_str(search_to_match)
         search_to_match_like_str = "%".join(search_to_match.split(" "))
-        where_sql = f"""location||' '||unit like '{search_to_match_like_str}%'
+        where_sql = f"""{pandas_loc_sql_string} like '{search_to_match_like_str}%'
             OR ({alternate_where_sql})
             """
 
@@ -124,12 +134,16 @@ def autocomplete_response(request):
                     "owner_1",
                     "owner_2",
                     "mailing_street",
+                    "mailing_address_1",
                 ],
                 where_sql=where_sql,
                 limit=n_results,
             )
         ).to_dataframe()
-        addresses_df['location_unit'] = addresses_df['location'] + ' ' + addresses_df['unit']
+        addresses_df["location_unit"] = (
+            addresses_df["location"] + " " + addresses_df["unit"].fillna("")
+        ).str.strip()
+        addresses_df['mailing_address_1'].fillna('', inplace=True)
 
         results = _add_formatted_results(results, addresses_df, "location_unit")
         results = _add_formatted_results(
@@ -150,8 +164,8 @@ def autocomplete_response(request):
             results,
             addresses_df,
             "mailing_street",
-            description_col="mailing_street",
-            url_override="mailing-address",
+            description_col="mailing_address_1",
+            url_override="full_mailing_address",
         )
 
         n_results_returned += len(addresses_df)
@@ -214,7 +228,11 @@ def _table_response(table_obj, request):
     search_type = request.GET.get("search_type", "")
     search_method = request.GET.get("search_method", "contains")
 
-    data_key = base64.b64encode(f"{search_to_match}_{search_type}_{search_method}".encode('utf-8'))
+    data_key = base64.b64encode(
+        f"{table_obj.cartodb_table_name}_"
+        f"{search_to_match}_{search_type}_"
+        f"{search_method}".encode("utf-8")
+    )
 
     data = cache.get(data_key)
     if not data:
@@ -289,7 +307,8 @@ def bios_response(request):
     pretty_print = request.GET.get("pretty", "").upper() == "TRUE"
     # currently only available for mailing street, but this may be extended some day.
     mailing_street = request.GET.get("mailing_street", "")
-    output_response = {"metadata": {"mailing_street": mailing_street}}
+    mailing_address_1 = request.GET.get("mailing_address_1", "")
+    output_response = {"metadata": {"mailing_street": mailing_street, "mailing_address_1": mailing_address_1}}
     if mailing_street:
         airtable_url = os.environ.get("BIOS_URL")
         # TODO (ssuffian): This should be synced to the db rather than called each time.
@@ -297,9 +316,10 @@ def bios_response(request):
             # TODO Change to visible fields to lock it down better
             invisible_fields = ["last_modified_by", "researcher"]
             params = {
-                "filterByFormula": 'IF({mailing_street}="'
-                + mailing_street
-                + '",TRUE(), FALSE())',
+                "filterByFormula": 'IF(AND({mailing_street}="'
+                + mailing_street + '",'
+                + '{mailing_address_1}="'+mailing_address_1+'"),'
+                + 'TRUE(), FALSE())',
                 #'fields': [],
             }
             response = requests.get(airtable_url, params=params)
@@ -325,7 +345,7 @@ def owners_timeline_response(request):
     # optionally add all owners that share that mailing address
     mailing_address = request.GET.get("mailing_address")
 
-    data_key = base64.b64encode(f"{owner_name}_{mailing_address}".encode('utf-8'))
+    data_key = base64.b64encode(f"{owner_name}_{mailing_address}".encode("utf-8"))
     data = cache.get(data_key)
     if not data:
         owner_query_obj = OwnerQuery(owner_name)
@@ -336,7 +356,9 @@ def owners_timeline_response(request):
         owners_timeline_df = owner_query_result_obj.owners_timeline_df
         output_response = {
             "owners_list": owner_query_obj.owner_df.to_dict("records"),
-            "owner_timeline": owner_query_result_obj.owners_timeline_df.to_dict("records"),
+            "owner_timeline": owner_query_result_obj.owners_timeline_df.to_dict(
+                "records"
+            ),
         }
 
         data = simplejson.loads(simplejson.dumps(output_response, ignore_nan=True))

@@ -10,7 +10,7 @@
           attached="left"
           :color="searchType === 'addressOrOwner' ? 'green' : 'grey'"
           v-on:click="searchType = 'addressOrOwner'"
-          >Owner or Address</sui-button
+          >Owner or Location</sui-button
         >
         <sui-button
           size="tiny"
@@ -19,7 +19,7 @@
           data-tooltip="Search by mailing address"
           data-position="top center"
           v-on:click="searchType = 'mailingAddress'"
-          >Owner Mailing Address</sui-button
+          >Owner's Mailing Address</sui-button
         >
         <sui-divider hidden />
       </div>
@@ -64,15 +64,17 @@ export default {
     select(selection) {
       // Used the url param to pass the selection type (part of the search bar)
       const selection_type = selection["url"];
-      if (selection_type === "location") {
+      if (selection_type === "location_unit") {
         const parcelNumber = selection["description"];
         this.$router.push("/property/" + parcelNumber);
       } else if (selection_type === "owner") {
         const owner = selection["description"];
         this.$router.push("/owner/" + owner);
-      } else if (selection_type === "mailing-address") {
-        const mailing_street = selection["description"];
-        this.$router.push("/mailing_address/" + mailing_street);
+      } else if (selection_type === "full_mailing_address") {
+        //title is mailing street, description is amiling address
+        const mailing_street = selection["title"];
+        const mailing_address_1 = selection["description"];
+        this.$router.push("/mailing_address/" + mailing_street + "|" + mailing_address_1);
       }
     }
   }

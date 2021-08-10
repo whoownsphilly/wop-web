@@ -18,6 +18,11 @@
     <SearchBar />
     <sui-divider hidden />
     <ExampleOwners />
+    <cookie-law theme="dark-lime">
+<div slot="message">
+    Disclaimer Text here... We store some local cookies (largely the one to keep this banner from showing up again) <router-link to="data-explained">Explanation</router-link>
+  </div>
+    </cookie-law>
   </div>
 </template>
 
@@ -26,12 +31,14 @@
 
 import SearchBar from "@/components/SearchBar";
 import ExampleOwners from "@/components/ExampleOwners";
+import CookieLaw from 'vue-cookie-law'
 
 export default {
   name: "Home",
   components: {
     SearchBar,
-    ExampleOwners
+    ExampleOwners,
+    CookieLaw
   }
 };
 </script>

@@ -7,10 +7,14 @@
     </sui-dimmer>
   </div>
   <div v-else>
+    <h2>connected to {{ timelineData.length }} properties</h2>
     <sui-accordion exclusive>
       <leaflet-map :latLngs="latLngs" />
       <sui-accordion-title>
-        <h2><sui-icon name="dropdown" />Edit Owner List</h2>
+        <h2>
+        <sui-icon name="dropdown"/>
+        Owners ({{ ownersList.length }})
+        </h2>
       </sui-accordion-title>
       <sui-accordion-content>
         <span v-for="ownerName in ownersList" :key="ownerName.owner_name">
@@ -22,28 +26,19 @@
           />
         </span>
       </sui-accordion-content>
-      <sui-accordion-title>
-        <h2><sui-icon name="dropdown" />Timeline</h2>
-      </sui-accordion-title>
-      <sui-accordion-content> </sui-accordion-content>
-      <div v-if="timelineData">
-        <vue-timeline :data="timelineDataForGraph"></vue-timeline>
-      </div>
       <div v-if="loadTables">
         <div v-for="table in tables" :key="table.name">
-          <sui-accordion-title>
-            <h2><sui-icon name="dropdown" /> {{ table.title }}</h2>
-          </sui-accordion-title>
-          <sui-accordion-content>
             <historical-tab-table
               searchType="owner"
               :searchToMatch="owner"
-              :tableName="table.name"
+              :table="table"
             />
-          </sui-accordion-content>
         </div>
       </div>
     </sui-accordion>
+    <div v-if="timelineData && $siteMode.mode !== 'basic'">
+        <vue-timeline :data="timelineDataForGraph"></vue-timeline>
+    </div>
   </div>
 </template>
 
@@ -86,7 +81,6 @@ export default {
   methods: {
     changeActiveOwners(thisButton) {
       const thisButtonName = thisButton.srcElement.innerText;
-      console.log(thisButtonName);
       this.isActive[thisButtonName] = !this.isActive[thisButtonName];
       this.isActive.__ob__.dep.notify(); //I know this is hacky but I'm learning.
     }

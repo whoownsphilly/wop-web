@@ -8418,10 +8418,10 @@ vue-template-es2015-compiler@^1.9.0:
   resolved "https://registry.yarnpkg.com/vue-template-es2015-compiler/-/vue-template-es2015-compiler-1.9.1.tgz#1ee3bc9a16ecbf5118be334bb15f9c46f82f5825"
   integrity sha512-4gDntzrifFnCEvyoO8PqyJDmguXgVPxKiIxrBKjIowvL9l+N66196+72XVYR8BBf1Uv1Fgt3bGevJ+sEmxfZzw==
 
-vue-timeline-component@^0.1.4:
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/vue-timeline-component/-/vue-timeline-component-0.1.4.tgz#b18f52db97aa958a740fe1fddfc4d113ef372ed2"
-  integrity sha512-GIr+zR2pSM8r8gY+zqU2v7y4ZiHp857m0wL29uhVeIa4ztPP0EDS3CwnFMo+q3OmVTNZbsS+2k7+IA+qBHUAOg==
+vue-timeline-component@^0.1.5:
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/vue-timeline-component/-/vue-timeline-component-0.1.5.tgz#bc08907dd7221e58dcc7e44a9f3bee3ca744d5e5"
+  integrity sha512-evyxIDWV9630HSTcmQgaH+iv+rLIDQjiLSrWhZcjf79CIOuDTmhI3l4PxyUc83JzlVxZnmnaleZNi3G8qd9L4Q==
   dependencies:
     d3 "^5.15.0"
 

@@ -14,7 +14,7 @@ requests==2.26.0
 simplejson==3.17.3
 urllib3==1.26.6
 whitenoise==5.3.0
-pylibmc==1.5.2
+pylibmc==1.6.1
 
 # testing
 pytest==6.2.4

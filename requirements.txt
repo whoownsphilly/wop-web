@@ -19,7 +19,7 @@ pylibmc==1.5.2
 # testing
 pytest==6.2.4
 pytest-cov==2.12.1
-pytest-xdist==2.2.1
+pytest-xdist==2.3.0
 pytest-benchmark==3.4.1
 pytest-profiling==1.7.0
 pytest-django==4.3.0

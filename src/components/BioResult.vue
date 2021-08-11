@@ -48,7 +48,7 @@ export default {
       required: true
     },
     index: {
-      type: Object,
+      type: Number,
       required: true
     }
   },

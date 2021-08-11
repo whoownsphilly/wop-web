@@ -30,6 +30,7 @@ export default {
   },
   created() {
     getBioTableInfo(this.mailingStreet, this.mailingAddress1).then(data => {
+     console.log(data.results)
       this.bioResults = data.results;
     });
   }

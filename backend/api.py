@@ -326,7 +326,8 @@ def bios_response(request):
                 + '",'
                 + '{mailing_address_1}="'
                 + mailing_address_1
-                + '"),'
+                + '",'
+                + '{show_on_website}=TRUE()),'
                 + "TRUE(), FALSE())",
                 #'fields': [],
             }

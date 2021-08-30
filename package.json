@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "d3": "^7.0.1",
-    "core-js": "^3.16.3",
+    "core-js": "^3.16.4",
     "leaflet": "^1.7.1",
     "semantic-ui-css": "^2.4.1",
     "semantic-ui-vue": "^0.11.0",

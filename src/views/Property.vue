@@ -2,9 +2,7 @@
   <div class="property">
     <div v-if="loading">
       <sui-dimmer active inverted>
-        <sui-loader
-          content="Finding All Property Related information (may take some time)..."
-        />
+        <sui-loader :content="loadingContent" />
       </sui-dimmer>
     </div>
     <div v-else>
@@ -22,35 +20,67 @@
                 {{ propertyResult.location }} {{ propertyResult.unit }}
               </h2>
               <p>{{ buildingDescription }}</p>
-              <h2 v-for="owner in owners" :key="owner">Owner(s): {{ owner }}</h2>
-              <h2> This portfolio is associated with {{ numberOfUniqueProperties }} properties</h2>
+              <h3>Top 5 most common 311 complaints by owner</h3>
+              <p v-if="complaints">
+                <span
+                  v-for="(complaintByName, i) in complaints.value_counts"
+                  :key="i"
+                >
+                  <span v-if="i < 5">
+                    - {{ complaintByName.complaintcodename }}:
+                    {{ complaintByName.count }}<br />
+                  </span>
+                </span>
+              </p>
+              <p v-else>Loading...</p>
+              <h3>Top 5 most common violations by owner</h3>
+              <p v-if="violations">
+                <span
+                  v-for="(violationByTitle, i) in violations.value_counts"
+                  :key="i"
+                >
+                  <span v-if="i < 5">
+                    - {{ violationByTitle.violationcodetitle }}:
+                    {{ violationByTitle.count }}<br />
+                  </span>
+                </span>
+              </p>
+              <p v-else>Loading...</p>
+              <h2 v-for="owner in owners" :key="owner">
+                Owner(s): {{ owner }}
+              </h2>
+              <h2>
+                This portfolio is associated with
+                {{ numberOfUniqueProperties }} properties
+              </h2>
               <sui-accordion>
                 <sui-accordion-title>
-                    <sui-icon name="dropdown" />
-                    Related Owners ({{ fullOwnersList.length }})
+                  <sui-icon name="dropdown" />
+                  Related Owners ({{ fullOwnersList.length }})
                 </sui-accordion-title>
                 <sui-accordion-content>
                   <span v-for="(owner, i) in fullOwnersList" :key="i">
-                    - {{ owner.owner_name }}, Relation Score: {{ owner.score }}<br>
+                    - {{ owner.owner_name }}, Relation Score: {{ owner.score
+                    }}<br />
                   </span>
                 </sui-accordion-content>
               </sui-accordion>
-    <historical-crowd-sourced-tab
-      :mailingStreet="propertyResult.mailing_street"
-      :mailingAddress1="propertyResult.mailing_address_1"
-    />
+              <historical-crowd-sourced-tab
+                :mailingStreet="propertyResult.mailing_street"
+                :mailingAddress1="propertyResult.mailing_address_1"
+              />
               <h2 is="sui-header">Links</h2>
               <a :href="propertyResult.link_atlas" target="_blank"
                 >Link to Atlas</a
-              ><br>
+              ><br />
               <a
                 :href="propertyResult.link_cyclomedia_street_view"
                 target="_blank"
                 >Link to Cyclomedia Street View</a
-              ><br>
+              ><br />
               <a :href="propertyResult.link_property_phila_gov" target="_blank"
                 >Link to property.phila.gov</a
-              ><br>
+              ><br />
               <a :href="propertyResult.link_license_inspections" target="_blank"
                 >Link to li.phila.gov</a
               >
@@ -106,20 +136,29 @@ export default {
   data() {
     return {
       loading: false,
+      loadingStep: "",
       parcelNumber: this.$route.params.parcelNumber,
       propertyResult: null,
-      propertyResultLoaded: false,
       properties: [],
-      fullOwnersList: [],
+      complaints: [],
+      violations: [],
+      fullOwnersList: []
     };
   },
   computed: {
+    loadingContent() {
+      return (
+        "Finding all " +
+        this.loadingStep +
+        " related information (may take some time)..."
+      );
+    },
     numberOfUniqueProperties() {
-        let uniqueParcelNumbers = new Set()
-        this.properties.forEach(property => {
-            uniqueParcelNumbers.add(property.parcel_number)
-        })
-        return uniqueParcelNumbers.size
+      let uniqueParcelNumbers = new Set();
+      this.properties.forEach(property => {
+        uniqueParcelNumbers.add(property.parcel_number);
+      });
+      return uniqueParcelNumbers.size;
     },
     mailingStreetOrLocation() {
       if (this.propertyResult !== null) {
@@ -168,6 +207,7 @@ export default {
   },
   async created() {
     this.loading = true;
+    this.loadingStep = "property";
     const data = await getTableInfo(
       "properties",
       "parcel_number",
@@ -180,6 +220,7 @@ export default {
         lat: this.propertyResult.lat,
         lng: this.propertyResult.lng
       };
+      this.loadingStep = "owner timeline";
     }
     // Owner-Based Data
     const ownerRelatedPropertyData = await getOwnersTimelineTableInfo(
@@ -187,11 +228,12 @@ export default {
     );
     if (ownerRelatedPropertyData.success) {
       ownerRelatedPropertyData.owner_timeline.forEach(row => {
-        row['color'] = 'yellow'
-        row['relation'] = 'owner'
+        row["color"] = "yellow";
+        row["relation"] = "owner";
         this.properties.push(row);
       });
-      this.fullOwnersList = ownerRelatedPropertyData.owners_list
+      this.fullOwnersList = ownerRelatedPropertyData.owners_list;
+      this.loadingStep = "mailing address";
     }
     // Mailing Address-Based Data
     const mailingAddressData = await getTableInfo(
@@ -201,17 +243,34 @@ export default {
     );
     if (mailingAddressData.results.rows) {
       mailingAddressData.results.rows.forEach(row => {
-        row['color'] = 'red'
-        row['relation'] = 'mailing_address'
+        row["color"] = "red";
+        row["relation"] = "mailing_address";
         this.properties.push(row);
       });
+      this.loadingStep = "complaints";
     }
-    // Owner-based complaints data
-    let complaints = await getTableInfo("complaints", "owner", this.propertyResult.owner_1, ["complaintcodename", "complaintstatus"])
-    console.log(complaints)
-
-
     this.loading = false;
+
+    // Owner-based complaints data
+    let complaintsResult = await getTableInfo(
+      "complaints",
+      "owner",
+      this.propertyResult.owner_1,
+      ["complaintcodename"]
+    );
+    // Owner-based violations data
+    let violationsResult = await getTableInfo(
+      "violations",
+      "owner",
+      this.propertyResult.owner_1,
+      ["violationcodetitle"]
+    );
+    if (complaintsResult.results.rows) {
+      this.complaints = complaintsResult.results;
+    }
+    if (violationsResult.results.rows) {
+      this.violations = violationsResult.results;
+    }
   }
 };
 </script>

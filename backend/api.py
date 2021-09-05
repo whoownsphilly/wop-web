@@ -216,7 +216,14 @@ def _table_response(table_obj, request):
                 owner_query_obj.parcel_num_sql, owner_query_obj.owners_list
             )
             df = owner_query_result_obj.get_filtered_df(df, table_obj.dt_column)
-        value_counts = df.value_counts(groupby_cols).reset_index().rename(columns={0:'count'}).to_dict('records') if groupby_cols else {}
+        value_counts = (
+            df.value_counts(groupby_cols)
+            .reset_index()
+            .rename(columns={0: "count"})
+            .to_dict("records")
+            if groupby_cols
+            else {}
+        )
 
         def _make_col_dict(col):
             # for vue-good-tables format
@@ -306,14 +313,12 @@ def bios_response(request):
 
 
 def mailing_address_response(request):
-    """Return all properties associated with this mailing address
-    
-    """
+    """Return all properties associated with this mailing address"""
     mailing_street = request.GET["mailing_street"]
     mailing_address_1 = request.GET["mailing_address_1"]
     ## given a mailing address, it returns all properties associated with that address
     ## and plots them?
-    where_sql="mailing_street={mailing_street}"
+    where_sql = "mailing_street={mailing_street}"
     addresses_df = (
         Properties().list(
             columns=[

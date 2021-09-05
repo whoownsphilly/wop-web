@@ -1,5 +1,10 @@
-export const getTableInfo = (tableName, searchType, searchToMatch, groupByCols=[]) => {
-  let groupbyColString = groupByCols.join()
+export const getTableInfo = (
+  tableName,
+  searchType,
+  searchToMatch,
+  groupByCols = []
+) => {
+  let groupbyColString = groupByCols.join();
   const url =
     process.env.VUE_APP_DJANGO_URL +
     "/api/v1/table/" +
@@ -8,9 +13,10 @@ export const getTableInfo = (tableName, searchType, searchToMatch, groupByCols=[
     "?search_to_match=" +
     searchToMatch +
     "&search_type=" +
-    searchType+
-  "&search_method=equals"+
-    "&groupby_cols="+groupbyColString;
+    searchType +
+    "&search_method=equals" +
+    "&groupby_cols=" +
+    groupbyColString;
   return fetch(url, {
     method: "GET"
   }).then(response => {

@@ -2,15 +2,15 @@
   <div>
     <sui-container>
       <p>
-        The following crowd-sourced information is keyed on the mailing street and
-        currently contains <b>{{ bioResults.length }}</b> existing results. 
+        The following crowd-sourced information is keyed on the mailing street
+        and currently contains <b>{{ bioResults.length }}</b> existing results.
       </p>
       <div v-for="(bioResult, i) in bioResults" :key="i">
         <BioResult :bioResult="bioResult" :index="i" />
         <sui-divider />
       </div>
     </sui-container>
-        <sui-button @click.native="toggle">Submit your own information</sui-button>
+    <sui-button @click.native="toggle">Submit your own information</sui-button>
 
     <sui-modal v-model="modalOpen">
       <sui-modal-header>Submit form</sui-modal-header>
@@ -63,9 +63,9 @@ export default {
     };
   },
   methods: {
-   toggle() {
+    toggle() {
       this.modalOpen = !this.modalOpen;
-    },
+    }
   },
   created() {
     getBioTableInfo(this.mailingStreet, this.mailingAddress1).then(data => {

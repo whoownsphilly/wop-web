@@ -16,6 +16,20 @@
     </sui-card>
     <sui-card>
       <sui-card-content>
+        <a href="/#/property/871288650">
+          <sui-card-header>Allan Domb Realty</sui-card-header>
+        </a>
+        <sui-card-meta>1200 Callowhill St Suite 403</sui-card-meta>
+        <sui-card-description>
+          Example description.
+        </sui-card-description>
+      </sui-card-content>
+      <sui-card-content extra>
+        <sui-icon name="sitemap" /> N Properties
+      </sui-card-content>
+    </sui-card>
+    <sui-card>
+      <sui-card-content>
         <a href="/#/owner/14%20WA%20PARTNERS%20LP">
           <sui-card-header>Pearl Properties</sui-card-header>
         </a>

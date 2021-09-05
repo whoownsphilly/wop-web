@@ -12,9 +12,11 @@
         <l-circle-marker :lat-lng="marker.latLng" :color="marker.color" />
       </div>
       <div v-if="highlightedMapMarker">
-        <l-circle-marker :lat-lng="highlightedMapMarker.latLng" 
-        zIndeOffset=0
-        :color="highlightedMapMarker.color" />
+        <l-circle-marker
+          :lat-lng="highlightedMapMarker.latLng"
+          zIndeOffset="0"
+          :color="highlightedMapMarker.color"
+        />
       </div>
     </l-map>
   </div>
@@ -55,15 +57,22 @@ export default {
   computed: {
     highlightedMapMarker() {
       if (this.highlightedLatLng) {
-        return {"latLng": latLng(this.highlightedLatLng.lat, this.highlightedLatLng.lng), "color": "black"};
+        return {
+          latLng: latLng(
+            this.highlightedLatLng.lat,
+            this.highlightedLatLng.lng
+          ),
+          color: "black"
+        };
       } else {
         return null;
       }
     },
     mapMarkers() {
-      return this.latLngs.map(latLngTuple =>
-        ({"latLng": latLng(latLngTuple.lat, latLngTuple.lng), "color": latLngTuple.color})
-      );
+      return this.latLngs.map(latLngTuple => ({
+        latLng: latLng(latLngTuple.lat, latLngTuple.lng),
+        color: latLngTuple.color
+      }));
     },
     mapBounds() {
       return latLngBounds(

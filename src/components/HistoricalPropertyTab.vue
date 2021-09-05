@@ -20,7 +20,7 @@
           <historical-tab-table
             searchType="parcel_number"
             :searchToMatch="parcelNumber"
-            :tableName="table.name"
+            :table="table"
           />
         </sui-accordion-content>
       </div>

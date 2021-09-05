@@ -1,20 +1,32 @@
 <template>
   <div>
     <sui-container>
-      <p>
-        This is crowd-sourced information keyed on the mailing street and
-        currently contains <b>{{ bioResults.length }}</b> existing results.
+      <p v-if="bioResults.length > 0">
+        The following information was developed and maintained by volunteers.
+        The information includes data from secondary sources, which are not
+        guaranteed to be checked for accuracy and do not necessarily reflect the
+        opinions of any organization or group. No organization, group, or
+        volunteer endorses or accepts responsibility over any external sites
+        that may be linked in this information. The volunteers who contributed
+        to this information make absolutely no guarantees as to the currency,
+        accuracy, completeness, or quality of information written and/or
+        archived on the website, and no organization, group, or volunteer
+        assumes any liability for the currency, accuracy, completeness, or
+        quality of information written and/or archived on the website. The
+        inclusion of names, links and other references is purely on the basis of
+        their relevance to the information. It currently contains
+        <b>{{ bioResults.length }}</b> existing results.
       </p>
       <div v-for="(bioResult, i) in bioResults" :key="i">
         <BioResult :bioResult="bioResult" :index="i" />
         <sui-divider />
       </div>
     </sui-container>
-    <sui-accordion>
-      <sui-accordion-title>
-        <h2><sui-icon name="dropdown" /> Submit your own information</h2>
-      </sui-accordion-title>
-      <sui-accordion-content>
+    <sui-button @click.native="toggle">Submit your own information</sui-button>
+
+    <sui-modal v-model="modalOpen">
+      <sui-modal-header>Submit form</sui-modal-header>
+      <sui-modal-content scrolling image>
         <iframe
           class="airtable-embed"
           :src="airTableUrl"
@@ -24,8 +36,13 @@
           height="533"
           style="background: transparent; border: 1px solid #ccc;"
         />
-      </sui-accordion-content>
-    </sui-accordion>
+      </sui-modal-content>
+      <sui-modal-actions>
+        <sui-button positive @click.native="toggle">
+          Ok
+        </sui-button>
+      </sui-modal-actions>
+    </sui-modal>
   </div>
 </template>
 
@@ -50,16 +67,21 @@ export default {
   },
   data() {
     return {
+      modalOpen: false,
       bioResults: [],
       airTableUrl:
         "https://airtable.com/embed/shrAacunffP2mP3PC?backgroundColor=orange&prefill_mailing_street=" +
         this.mailingStreet
     };
   },
-  methods: {},
+  methods: {
+    toggle() {
+      this.modalOpen = !this.modalOpen;
+    }
+  },
   created() {
     getBioTableInfo(this.mailingStreet, this.mailingAddress1).then(data => {
-      this.bioResults = data.results;
+      this.bioResults = data.results || [];
     });
   }
 };

@@ -17,12 +17,15 @@ export default {
   },
   data() {
     return {
-      owner: this.$route.params.ownerName,
       result: null,
       resultLoaded: false
     };
   },
-  computed: {},
+  computed: {
+    owner() {
+      return this.$route.params.ownerName;
+    }
+  },
   created() {}
 };
 </script>

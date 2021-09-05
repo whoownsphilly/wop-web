@@ -61,9 +61,20 @@ export default {
     }
   },
   methods: {
+    // This is triggered when clicking on the selection, the populating of the
+    // auto-complete itself happens due to an api call that is defined in main.js
+    // due to the way that semantic-ui-vue's search bar requires.
     select(selection) {
       // Used the url param to pass the selection type (part of the search bar)
-      const selection_type = selection["url"];
+      const selectionIndex = selection["url"];
+      let selectedResult = this.$store.state.searchResults[selectionIndex];
+
+      // Save the selection to vuex so it can be referenced later.
+      this.$store.dispatch("updateSelectedResult", selectedResult);
+
+      let selectedParcelNumber = selectedResult["parcel_number"];
+      this.$router.push("/property/" + selectedParcelNumber);
+      /*
       if (selection_type === "location_unit") {
         const parcelNumber = selection["description"];
         this.$router.push("/property/" + parcelNumber);
@@ -71,13 +82,14 @@ export default {
         const owner = selection["description"];
         this.$router.push("/owner/" + owner);
       } else if (selection_type === "full_mailing_address") {
-        //title is mailing street, description is amiling address
+        //title is mailing street, description is mailing address
         const mailing_street = selection["title"];
         const mailing_address_1 = selection["description"];
         this.$router.push(
           "/mailing_address/" + mailing_street + "|" + mailing_address_1
         );
       }
+      */
     }
   }
 };

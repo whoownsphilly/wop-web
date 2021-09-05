@@ -22,9 +22,7 @@
     <ExampleOwners />
     <cookie-law theme="dark-lime">
       <div slot="message">
-        Disclaimer Text here... We store some local cookies (largely the one to
-        keep this banner from showing up again)
-        <router-link to="data-explained">Explanation</router-link>
+      The volunteers who contributed to this website make absolutely no guarantees as to the currency, accuracy, completeness, or quality of the information and data. No organization, group, or volunteer assumes any liability for the currency, accuracy, completeness, or quality of the information or data. The User assumes all responsibility and risk for the use of this site.
       </div>
     </cookie-law>
   </div>

@@ -209,8 +209,7 @@ def _table_response(table_obj, request):
             )
 
         df = table_obj.query_by_opa_account_numbers(
-            opa_account_numbers=opa_account_numbers_sql,
-            columns="all"
+            opa_account_numbers=opa_account_numbers_sql, columns="all"
         ).to_dataframe()
         if search_type == "owner":
             owner_query_result_obj = OwnerQueryResult(
@@ -308,9 +307,7 @@ def bios_response(request):
                     output_response["results"].append(outputs)
                 return JsonResponse(output_response)
     output_response["error"] = "Can't find bio."
-    return PrettifiableJsonResponse(
-        output_response, pretty_print=pretty_print
-    )
+    return PrettifiableJsonResponse(output_response, pretty_print=pretty_print)
 
 
 def mailing_address_response(request):

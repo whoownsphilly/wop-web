@@ -9,11 +9,11 @@
     >
       <l-tile-layer :url="url" :attribution="attribution" />
       <div v-for="(marker, index) in mapMarkers" :key="index">
-        <l-circle-marker :lat-lng="marker.latLng" :color="marker.color"> 
-          <l-popup >
-          <div @click="jumpToProperty(marker.parcelNumber)">
-          {{ marker.popUp }}
-          </div>
+        <l-circle-marker :lat-lng="marker.latLng" :color="marker.color">
+          <l-popup>
+            <div @click="jumpToProperty(marker.parcelNumber)">
+              {{ marker.popUp }}
+            </div>
           </l-popup>
         </l-circle-marker>
       </div>
@@ -22,10 +22,10 @@
           :lat-lng="highlightedMapMarker.latLng"
           zIndexOffset="0"
           :color="highlightedMapMarker.color"
-          >
+        >
           <l-popup>
             {{ highlightedMapMarker.popUp }}
-            </l-popup>
+          </l-popup>
         </l-circle-marker>
       </div>
     </l-map>
@@ -75,7 +75,10 @@ export default {
           ),
           color: "black",
           parcelNumber: this.highlightedLatLng.parcel_number,
-          popUp: this.highlightedLatLng.location + " " + (this.highlightedLatLng.unit || "")
+          popUp:
+            this.highlightedLatLng.location +
+            " " +
+            (this.highlightedLatLng.unit || "")
         };
       } else {
         return null;
@@ -85,8 +88,8 @@ export default {
       return this.latLngs.map(latLngTuple => ({
         latLng: latLng(latLngTuple.lat, latLngTuple.lng),
         color: latLngTuple.color,
-          popUp: latLngTuple.location + " " + (latLngTuple.unit || ""),
-          parcelNumber: latLngTuple.parcel_number
+        popUp: latLngTuple.location + " " + (latLngTuple.unit || ""),
+        parcelNumber: latLngTuple.parcel_number
       }));
     },
     mapBounds() {
@@ -96,9 +99,9 @@ export default {
     }
   },
   methods: {
-      jumpToProperty(parcelNumber){
-         this.$router.push("/property/" + parcelNumber);
-         this.$router.go();
+    jumpToProperty(parcelNumber) {
+      this.$router.push("/property/" + parcelNumber);
+      this.$router.go();
     }
   },
   async created() {}

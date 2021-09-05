@@ -17,14 +17,23 @@
           <sui-grid-column :width="4">
             <sui-container text>
               <h3>
-                This portfolio is associated with {{ uniqueProperties.length }} properties valued at {{ totalValueOfProperties }}
+                This portfolio is associated with
+                {{ uniqueProperties.length }} properties valued at
+                {{ totalValueOfProperties }}
               </h3>
               <h4 is="sui-header">
                 {{ propertyResult.location }} {{ propertyResult.unit }}
               </h4>
               <p>{{ buildingDescription }}</p>
-              <h3> The owners of this property according to the latest deed transfer are: 
-              {{ latestTransaction.grantees + (latestTransaction.legal_remarks || "") }} who purchased it from {{ latestTransaction.grantors }} on {{latestTransaction.receipt_date }}.
+              <h3>
+                The owners of this property according to the latest deed
+                transfer are:
+                {{
+                  latestTransaction.grantees +
+                    (latestTransaction.legal_remarks || "")
+                }}
+                who purchased it from {{ latestTransaction.grantors }} on
+                {{ latestTransaction.receipt_date }}.
               </h3>
               <sui-accordion>
                 <sui-accordion-title>
@@ -39,9 +48,9 @@
                 </sui-accordion-content>
               </sui-accordion>
               <h3>Top 5 most common 311 complaints by owner</h3>
-              <p v-if="complaints !== null ">
+              <p v-if="complaints !== null">
                 <span v-if="complaints.rows.length === 0">
-                 No complaints filed.
+                  No complaints filed.
                 </span>
                 <span
                   v-for="(complaintByName, i) in complaints.value_counts"
@@ -57,7 +66,7 @@
               <h3>Top 5 most common violations by owner</h3>
               <p v-if="violations !== null">
                 <span v-if="violations.rows.length === 0">
-                 No violations filed.
+                  No violations filed.
                 </span>
                 <span
                   v-for="(violationByTitle, i) in violations.value_counts"
@@ -70,7 +79,11 @@
                 </span>
               </p>
               <p v-else>Loading...</p>
-              <h4>Crowd-Sourced Information for properties with mailing address: {{propertyResult.mailing_street }} {{ propertyResult.mailing_address_1 }}</h4> 
+              <h4>
+                Crowd-Sourced Information for properties with mailing address:
+                {{ propertyResult.mailing_street }}
+                {{ propertyResult.mailing_address_1 }}
+              </h4>
               <historical-crowd-sourced-tab
                 :mailingStreet="propertyResult.mailing_street || ''"
                 :mailingAddress1="propertyResult.mailing_address_1 || ''"
@@ -164,23 +177,23 @@ export default {
       let uniqueParcelNumbers = new Set();
       let uniqueProperties = [];
       this.properties.forEach(property => {
-        if(!uniqueParcelNumbers.has(property.parcel_number)){
-            uniqueProperties.push(property)
+        if (!uniqueParcelNumbers.has(property.parcel_number)) {
+          uniqueProperties.push(property);
         }
         uniqueParcelNumbers.add(property.parcel_number);
       });
       return uniqueProperties;
     },
     totalValueOfProperties() {
-       let totalValue = 0
-       this.uniqueProperties.forEach(function(row) {
-           totalValue+=row.market_value
-        })
-    var formatter = new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    });
-       return formatter.format(totalValue)
+      let totalValue = 0;
+      this.uniqueProperties.forEach(function(row) {
+        totalValue += row.market_value;
+      });
+      var formatter = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD"
+      });
+      return formatter.format(totalValue);
     },
     mailingStreetOrLocation() {
       if (this.propertyResult !== null) {
@@ -198,8 +211,8 @@ export default {
     },
     owners() {
       const ownerList = [];
-      let grantees = this.latestGrantees
-      if (this.propertyResult !== null & this.latestGrantees !== null) {
+      let grantees = this.latestGrantees;
+      if ((this.propertyResult !== null) & (this.latestGrantees !== null)) {
         if (this.propertyResult.owner_1) {
           ownerList.push(this.propertyResult.owner_1);
         }
@@ -208,7 +221,7 @@ export default {
         }
         return grantees;
       }
-      return "Loading..."
+      return "Loading...";
     },
     buildingDescription() {
       let year_built_estimate_str = "";
@@ -243,33 +256,35 @@ export default {
       "parcel_number",
       this.parcelNumber
     );
-    if("results" in deedData) {
-          let prevEndDate = null;
-          let sortedData = deedData.results.rows;
-          sortedData = sortedData.sort((a, b) => (a.recording_date > b.recording_date ? 1 : -1));
-          sortedData = sortedData.filter(
-            a =>
-              a.document_type === "DEED" ||
-              a.document_type === "DEED SHERIFF" ||
-              a.document_type === "DEED OF CONDEMNATION" ||
-              a.document_type === "DEED MISCELLANEOUS" ||
-              a.document_type === " DEED LAND BANK"
+    if ("results" in deedData) {
+      let prevEndDate = null;
+      let sortedData = deedData.results.rows;
+      sortedData = sortedData.sort((a, b) =>
+        a.recording_date > b.recording_date ? 1 : -1
+      );
+      sortedData = sortedData.filter(
+        a =>
+          a.document_type === "DEED" ||
+          a.document_type === "DEED SHERIFF" ||
+          a.document_type === "DEED OF CONDEMNATION" ||
+          a.document_type === "DEED MISCELLANEOUS" ||
+          a.document_type === " DEED LAND BANK"
+      );
+      for (let i in sortedData) {
+        let row = sortedData[i];
+        row.name = row.grantors;
+        if (i == 0) {
+          row.start = new Date(
+            row.year_built !== "0000" ? row.year_built : row.receipt_date
           );
-          for (let i in sortedData) {
-            let row = sortedData[i];
-            row.name = row.grantors;
-            if (i == 0) {
-              row.start = new Date(
-                row.year_built !== "0000" ? row.year_built : row.receipt_date
-              );
-            } else {
-              row.start = new Date(Date.parse(prevEndDate));
-            }
-            row.end = new Date(Date.parse(row.receipt_date));
-            prevEndDate = row.end;
-            this.latestTransaction = row;
-          }
+        } else {
+          row.start = new Date(Date.parse(prevEndDate));
         }
+        row.end = new Date(Date.parse(row.receipt_date));
+        prevEndDate = row.end;
+        this.latestTransaction = row;
+      }
+    }
     if ("results" in data && data.results.rows.length == 1) {
       this.propertyResult = data.results.rows[0];
       this.address = this.propertyResult.location;

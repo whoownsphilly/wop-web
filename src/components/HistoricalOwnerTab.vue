@@ -8,8 +8,31 @@
   </div>
   <div v-else>
     <h2>connected to {{ timelineData.length }} properties</h2>
+    <sui-grid celled>
+      <sui-grid-row>
+        <sui-grid-column :width="5">
+          <leaflet-map
+            :latLngs="latLngs"
+            :highlightedLatLng="highlightedLatLng"
+          />
+        </sui-grid-column>
+        <sui-grid-column :width="13">
+          <docs-wireframe name="centered-paragraph" />
+        </sui-grid-column>
+      </sui-grid-row>
+      <sui-grid-row>
+        <sui-grid-column :width="3">
+          <docs-wireframe name="image" />
+        </sui-grid-column>
+        <sui-grid-column :width="10">
+          <docs-wireframe name="paragraph" />
+        </sui-grid-column>
+        <sui-grid-column :width="3">
+          <docs-wireframe name="image" />
+        </sui-grid-column>
+      </sui-grid-row>
+    </sui-grid>
     <sui-accordion exclusive>
-      <leaflet-map :latLngs="latLngs" />
       <sui-accordion-title>
         <h2>
           <sui-icon name="dropdown" />
@@ -55,11 +78,17 @@ export default {
     owner: {
       type: String,
       required: true
+    },
+    highlightedProperty: {
+      type: Object,
+      required: false,
+      default: () => null
     }
   },
   data() {
     return {
       latLngs: [],
+      highlightedLatLng: null,
       loading: true,
       loadTables: true,
       timelineData: null,
@@ -86,6 +115,16 @@ export default {
     }
   },
   async created() {
+    // First get the lat lng for the selected property
+    if (this.highlightedProperty !== null) {
+      this.highlightedLatLng = {
+        lat: this.highlightedProperty.lat,
+        lng: this.highlightedProperty.lng
+      };
+    }
+
+    // Next get the owner timeline which is necessary for getting counts of
+    // violations/complaints/etc.
     const data = await getOwnersTimelineTableInfo(this.owner);
     const timelineData = [];
     this.ownersList = data.owners_list;

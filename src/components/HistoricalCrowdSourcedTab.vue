@@ -2,19 +2,19 @@
   <div>
     <sui-container>
       <p>
-        This is crowd-sourced information keyed on the mailing street and
-        currently contains <b>{{ bioResults.length }}</b> existing results.
+        The following crowd-sourced information is keyed on the mailing street and
+        currently contains <b>{{ bioResults.length }}</b> existing results. 
       </p>
       <div v-for="(bioResult, i) in bioResults" :key="i">
         <BioResult :bioResult="bioResult" :index="i" />
         <sui-divider />
       </div>
     </sui-container>
-    <sui-accordion>
-      <sui-accordion-title>
-        <h2><sui-icon name="dropdown" /> Submit your own information</h2>
-      </sui-accordion-title>
-      <sui-accordion-content>
+        <sui-button @click.native="toggle">Submit your own information</sui-button>
+
+    <sui-modal v-model="modalOpen">
+      <sui-modal-header>Submit form</sui-modal-header>
+      <sui-modal-content scrolling image>
         <iframe
           class="airtable-embed"
           :src="airTableUrl"
@@ -24,8 +24,13 @@
           height="533"
           style="background: transparent; border: 1px solid #ccc;"
         />
-      </sui-accordion-content>
-    </sui-accordion>
+      </sui-modal-content>
+      <sui-modal-actions>
+        <sui-button positive @click.native="toggle">
+          Ok
+        </sui-button>
+      </sui-modal-actions>
+    </sui-modal>
   </div>
 </template>
 
@@ -50,13 +55,18 @@ export default {
   },
   data() {
     return {
+      modalOpen: false,
       bioResults: [],
       airTableUrl:
         "https://airtable.com/embed/shrAacunffP2mP3PC?backgroundColor=orange&prefill_mailing_street=" +
         this.mailingStreet
     };
   },
-  methods: {},
+  methods: {
+   toggle() {
+      this.modalOpen = !this.modalOpen;
+    },
+  },
   created() {
     getBioTableInfo(this.mailingStreet, this.mailingAddress1).then(data => {
       this.bioResults = data.results;

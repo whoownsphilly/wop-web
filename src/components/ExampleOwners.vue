@@ -2,7 +2,7 @@
   <sui-card-group :items-per-row="3">
     <sui-card>
       <sui-card-content>
-        <a href="/#/mailing_address/1200 CALLOWHILL ST|STE 403">
+        <a href="/#/property/011455700">
           <sui-card-header>Odin Properties</sui-card-header>
         </a>
         <sui-card-meta>1200 Callowhill St Suite 300</sui-card-meta>
@@ -35,10 +35,8 @@
 export default {
   name: "ExampleOwners",
   data() {
-    return {
-    };
+    return {};
   },
-  methods: {
-  }
+  methods: {}
 };
 </script>

@@ -44,7 +44,6 @@ new Vue({
         },
         onSelect() {return false},
         onResponse(response) {
-          console.log("api hit")
           store.dispatch('updateSearchResults',response.results);
           let searchBarResults = []
           response.results.forEach((result, index) => {

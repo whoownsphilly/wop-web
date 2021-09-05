@@ -9,14 +9,24 @@
     >
       <l-tile-layer :url="url" :attribution="attribution" />
       <div v-for="(marker, index) in mapMarkers" :key="index">
-        <l-circle-marker :lat-lng="marker.latLng" :color="marker.color" />
+        <l-circle-marker :lat-lng="marker.latLng" :color="marker.color"> 
+          <l-popup >
+          <div @click="jumpToProperty(marker.parcelNumber)">
+          {{ marker.popUp }}
+          </div>
+          </l-popup>
+        </l-circle-marker>
       </div>
       <div v-if="highlightedMapMarker">
         <l-circle-marker
           :lat-lng="highlightedMapMarker.latLng"
-          zIndeOffset="0"
+          zIndexOffset="0"
           :color="highlightedMapMarker.color"
-        />
+          >
+          <l-popup>
+            {{ highlightedMapMarker.popUp }}
+            </l-popup>
+        </l-circle-marker>
       </div>
     </l-map>
   </div>
@@ -24,13 +34,14 @@
 
 <script>
 import { latLngBounds, latLng } from "leaflet";
-import { LMap, LTileLayer, LCircleMarker } from "vue2-leaflet";
+import { LMap, LTileLayer, LCircleMarker, LPopup } from "vue2-leaflet";
 
 export default {
-  name: "Example",
+  name: "LeafletMap",
   components: {
     LMap,
     LTileLayer,
+    LPopup,
     LCircleMarker
   },
   props: {
@@ -62,7 +73,9 @@ export default {
             this.highlightedLatLng.lat,
             this.highlightedLatLng.lng
           ),
-          color: "black"
+          color: "black",
+          parcelNumber: this.highlightedLatLng.parcel_number,
+          popUp: this.highlightedLatLng.location + " " + (this.highlightedLatLng.unit || "")
         };
       } else {
         return null;
@@ -71,13 +84,21 @@ export default {
     mapMarkers() {
       return this.latLngs.map(latLngTuple => ({
         latLng: latLng(latLngTuple.lat, latLngTuple.lng),
-        color: latLngTuple.color
+        color: latLngTuple.color,
+          popUp: latLngTuple.location + " " + (latLngTuple.unit || ""),
+          parcelNumber: latLngTuple.parcel_number
       }));
     },
     mapBounds() {
       return latLngBounds(
         this.latLngs.map(latLngTuple => [latLngTuple.lat, latLngTuple.lng])
       );
+    }
+  },
+  methods: {
+      jumpToProperty(parcelNumber){
+         this.$router.push("/property/" + parcelNumber);
+         this.$router.go();
     }
   },
   async created() {}

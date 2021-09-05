@@ -209,7 +209,8 @@ def _table_response(table_obj, request):
             )
 
         df = table_obj.query_by_opa_account_numbers(
-            opa_account_numbers=opa_account_numbers_sql
+            opa_account_numbers=opa_account_numbers_sql,
+            columns="all"
         ).to_dataframe()
         if search_type == "owner":
             owner_query_result_obj = OwnerQueryResult(
@@ -221,7 +222,7 @@ def _table_response(table_obj, request):
             .reset_index()
             .rename(columns={0: "count"})
             .to_dict("records")
-            if groupby_cols
+            if groupby_cols and not df.empty
             else {}
         )
 
@@ -308,7 +309,7 @@ def bios_response(request):
                 return JsonResponse(output_response)
     output_response["error"] = "Can't find bio."
     return PrettifiableJsonResponse(
-        output_response, status=404, pretty_print=pretty_print
+        output_response, pretty_print=pretty_print
     )
 
 
@@ -349,6 +350,9 @@ def owners_timeline_response(request):
             owner_query_obj.parcel_num_sql, owner_query_obj.owners_list
         )
         owners_timeline_df = owner_query_result_obj.owners_timeline_df
+        owners_timeline_df["location_unit"] = (
+            owners_timeline_df["location"] + " " + owners_timeline_df["unit"].fillna("")
+        ).str.strip()
         output_response = {
             "success": True,
             "owners_list": owner_query_obj.owner_df.to_dict("records"),

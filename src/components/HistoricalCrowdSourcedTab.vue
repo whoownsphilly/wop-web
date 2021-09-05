@@ -51,7 +51,7 @@ export default {
     },
     mailingAddress1: {
       type: String,
-      required: true
+      required: true,
     }
   },
   data() {
@@ -70,7 +70,7 @@ export default {
   },
   created() {
     getBioTableInfo(this.mailingStreet, this.mailingAddress1).then(data => {
-      this.bioResults = data.results;
+      this.bioResults = data.results || [];
     });
   }
 };

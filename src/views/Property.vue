@@ -65,6 +65,7 @@
                   </span>
                 </sui-accordion-content>
               </sui-accordion>
+              <h4>Crowd-Sourced Information for properties with mailing address: {{propertyResult.mailing_street }} {{ propertyResult.mailing_address_1 }}</h4> 
               <historical-crowd-sourced-tab
                 :mailingStreet="propertyResult.mailing_street"
                 :mailingAddress1="propertyResult.mailing_address_1"

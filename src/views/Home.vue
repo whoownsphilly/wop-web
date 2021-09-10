@@ -22,7 +22,12 @@
     <ExampleOwners />
     <cookie-law theme="dark-lime">
       <div slot="message">
-      The volunteers who contributed to this website make absolutely no guarantees as to the currency, accuracy, completeness, or quality of the information and data. No organization, group, or volunteer assumes any liability for the currency, accuracy, completeness, or quality of the information or data. The User assumes all responsibility and risk for the use of this site.
+        The volunteers who contributed to this website make absolutely no
+        guarantees as to the currency, accuracy, completeness, or quality of the
+        information and data. No organization, group, or volunteer assumes any
+        liability for the currency, accuracy, completeness, or quality of the
+        information or data. The User assumes all responsibility and risk for
+        the use of this site.
       </div>
     </cookie-law>
   </div>

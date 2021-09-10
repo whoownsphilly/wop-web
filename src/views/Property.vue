@@ -36,8 +36,8 @@
                 {{ latestTransaction.receipt_date }}.
               </h3>
               <h3 v-else>
-                The owners of this property according to the latest property assessment
-                are {{ owners }}.
+                The owners of this property according to the latest property
+                assessment are {{ owners }}.
               </h3>
               <sui-accordion>
                 <sui-accordion-title>
@@ -223,7 +223,7 @@ export default {
           ownerList.push(this.propertyResult.owner_2);
         }
       }
-      return ownerList.join()
+      return ownerList.join();
     },
     buildingDescription() {
       let year_built_estimate_str = "";

@@ -124,7 +124,3 @@ def test_mailing_street_bios_response(client, monkeypatch_airtable):
     request_params = {"mailing_street": "ABC Capital"}
     response = client.get(reverse("bios_list"), request_params)
     assert response.status_code == 200
-
-    request_params = {}
-    response = client.get(reverse("bios_list"), request_params)
-    assert response.status_code == 404

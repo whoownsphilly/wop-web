@@ -25,7 +25,7 @@
                 {{ propertyResult.location }} {{ propertyResult.unit }}
               </h4>
               <p>{{ buildingDescription }}</p>
-              <h3>
+              <h3 v-if="latestTransaction !== null">
                 The owners of this property according to the latest deed
                 transfer are:
                 {{
@@ -34,6 +34,10 @@
                 }}
                 who purchased it from {{ latestTransaction.grantors }} on
                 {{ latestTransaction.receipt_date }}.
+              </h3>
+              <h3 v-else>
+                The owners of this property according to the latest property assessment
+                are {{ owners }}.
               </h3>
               <sui-accordion>
                 <sui-accordion-title>
@@ -211,7 +215,6 @@ export default {
     },
     owners() {
       const ownerList = [];
-      let grantees = this.latestGrantees;
       if ((this.propertyResult !== null) & (this.latestGrantees !== null)) {
         if (this.propertyResult.owner_1) {
           ownerList.push(this.propertyResult.owner_1);
@@ -219,9 +222,8 @@ export default {
         if (this.propertyResult.owner_2) {
           ownerList.push(this.propertyResult.owner_2);
         }
-        return grantees;
       }
-      return "Loading...";
+      return ownerList.join()
     },
     buildingDescription() {
       let year_built_estimate_str = "";

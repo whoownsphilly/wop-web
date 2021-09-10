@@ -37,9 +37,115 @@ def autocomplete_response(request):
     column = request.GET.get("column", "location")
     n_results = request.GET.get("n_results", 10)
 
+    search_by_owner = False
     try:
         search_to_match = get_normalized_address(startswith_str)
     except Exception:
+        search_by_owner = True
+        search_to_match = startswith_str
+
+    if not search_by_owner:
+
+        def _get_where_str(search_str):
+            search = search_str.split(" ")
+            # This more complicated SQL allows for things like
+            # 1850 ABC St, 1846 ABC St, and 1840 ABC St
+            # to all be captured if a property is labelled internally
+            # as 1844-1850 ABC St
+            includes_dir = len(search) > 1 and search[1] in ["N", "S", "E", "W"]
+            first_word_split = search[0].split("-")
+            address_low = int(first_word_split[0])
+            address_high = int(first_word_split[1]) if len(first_word_split) > 1 else None
+            street_name = (
+                search[1]
+                if not includes_dir and len(search) > 1
+                else (search[2] if len(search) > 2 else "")
+            )
+            unit = ""
+            for i, maybe_unit_str in enumerate(search):
+                if "UNIT" in maybe_unit_str and len(search) > i:
+                    unit = search[i + 1]
+
+            address_floor = address_low - (address_low % 100)
+            address_remainder = address_low - address_floor
+            address_ceil = address_high + address_floor if address_high else address_low
+            unit_str = f"AND UNIT LIKE '%{unit}%'" if unit else ""
+            street_dir_str = (
+                f"AND STREET_DIRECTION LIKE '%{search[1]}%'" if includes_dir else ""
+            )
+
+            pandas_loc_sql_string = "location"
+            pandas_loc_sql_string += "||' '||unit" if unit else ""
+            return (
+                pandas_loc_sql_string,
+                f"""
+            (
+                (
+                    (
+                        cast(HOUSE_NUMBER as int) >= {address_low}
+                        AND cast(HOUSE_NUMBER as int) <= {address_ceil}
+                    )
+                    OR (
+                        cast(HOUSE_NUMBER as int)>= {address_floor}
+                        AND cast(HOUSE_NUMBER as int) <= {address_ceil}
+                        AND cast(HOUSE_EXTENSION as int) >= {address_remainder}
+                    )
+                )
+                AND STREET_NAME LIKE '%{street_name}%'
+                {street_dir_str}
+                {unit_str}
+            )
+            """,
+            )
+
+        pandas_loc_sql_string, alternate_where_sql = _get_where_str(search_to_match)
+        search_to_match_like_str = "%".join(search_to_match.split(" "))
+        where_sql = f"""{pandas_loc_sql_string} like '{search_to_match_like_str}%'
+            OR ({alternate_where_sql})
+            """
+
+        addresses_df = (
+            Properties().list(
+                columns=[
+                    "location",
+                    "unit",
+                    "parcel_number",
+                    "owner_1",
+                    "owner_2",
+                    "mailing_street",
+                    "mailing_address_1",
+                ],
+                where_sql=where_sql,
+                limit=n_results,
+            )
+        ).to_dataframe()
+
+    if search_by_owner or addresses_df.empty:
+        search_to_match_like_str = "%".join(search_to_match.split(" "))
+        search_to_match_like_str_rev = "%".join(search_to_match.split(" ")[::-1])
+        where_sql=f"""
+            owner_1 like '{search_to_match_like_str}%' OR
+            owner_1 like '{search_to_match_like_str_rev}%' OR
+            owner_2 like '{search_to_match_like_str}%' OR
+            owner_2 like '{search_to_match_like_str_rev}%'
+        """
+        addresses_df = (
+            Properties().list(
+                columns=[
+                    "location",
+                    "unit",
+                    "parcel_number",
+                    "owner_1",
+                    "owner_2",
+                    "mailing_street",
+                    "mailing_address_1",
+                ],
+                where_sql=where_sql,
+                limit=n_results,
+            )
+        ).to_dataframe()
+
+    if addresses_df.empty:
         return PrettifiableJsonResponse(
             {
                 "success": True,
@@ -48,124 +154,51 @@ def autocomplete_response(request):
             },
             pretty_print=pretty_print,
         )
+    else:
 
-    def _get_where_str(search_str):
-        search = search_str.split(" ")
-        # This more complicated SQL allows for things like
-        # 1850 ABC St, 1846 ABC St, and 1840 ABC St
-        # to all be captured if a property is labelled internally
-        # as 1844-1850 ABC St
-        includes_dir = len(search) > 1 and search[1] in ["N", "S", "E", "W"]
-        first_word_split = search[0].split("-")
-        address_low = int(first_word_split[0])
-        address_high = int(first_word_split[1]) if len(first_word_split) > 1 else None
-        street_name = (
-            search[1]
-            if not includes_dir and len(search) > 1
-            else (search[2] if len(search) > 2 else "")
-        )
-        unit = ""
-        for i, maybe_unit_str in enumerate(search):
-            if "UNIT" in maybe_unit_str and len(search) > i:
-                unit = search[i + 1]
+        ### Clean up some of the strings that will be shown on the search bar
+        addresses_df["location_unit"] = (
+            addresses_df["location"] + " " + addresses_df["unit"].fillna("")
+        ).str.strip()
 
-        address_floor = address_low - (address_low % 100)
-        address_remainder = address_low - address_floor
-        address_ceil = address_high + address_floor if address_high else address_low
-        unit_str = f"AND UNIT LIKE '%{unit}%'" if unit else ""
-        street_dir_str = (
-            f"AND STREET_DIRECTION LIKE '%{search[1]}%'" if includes_dir else ""
-        )
+        def _compile_owner_str(x):
+            owner_str = x["owner_1"]
+            if x.get("owner_2") is not None:
+                owner_str += ", " + x["owner_2"]
+            return owner_str
 
-        pandas_loc_sql_string = "location"
-        pandas_loc_sql_string += "||' '||unit" if unit else ""
-        return (
-            pandas_loc_sql_string,
-            f"""
-        (
-            (
-                (
-                    cast(HOUSE_NUMBER as int) >= {address_low}
-                    AND cast(HOUSE_NUMBER as int) <= {address_ceil}
-                )
-                OR (
-                    cast(HOUSE_NUMBER as int)>= {address_floor}
-                    AND cast(HOUSE_NUMBER as int) <= {address_ceil}
-                    AND cast(HOUSE_EXTENSION as int) >= {address_remainder}
-                )
-            )
-            AND STREET_NAME LIKE '%{street_name}%'
-            {street_dir_str}
-            {unit_str}
+        def _compile_if_not_none(x, columns, join_str):
+            out_str_list = []
+            for col in columns:
+                if pd.notnull(x[col]) and len(x[col]) > 0:
+                    out_str_list.append(x[col])
+            return join_str.join(out_str_list)
+
+        addresses_df["owners"] = addresses_df.apply(
+            lambda x: _compile_if_not_none(x, ["owner_1", "owner_2"], join_str=", "), axis=1
         )
-        """,
+        addresses_df["full_mailing_address"] = addresses_df.apply(
+            lambda x: _compile_if_not_none(
+                x, ["mailing_street", "mailing_address_1"], join_str=" "
+            ),
+            axis=1,
+        )
+        addresses_df["description"] = addresses_df.apply(
+            lambda x: _compile_if_not_none(
+                x, ["owners", "full_mailing_address"], join_str="|"
+            ),
+            axis=1,
         )
 
-    pandas_loc_sql_string, alternate_where_sql = _get_where_str(search_to_match)
-    search_to_match_like_str = "%".join(search_to_match.split(" "))
-    where_sql = f"""{pandas_loc_sql_string} like '{search_to_match_like_str}%'
-        OR ({alternate_where_sql})
-        """
-
-    addresses_df = (
-        Properties().list(
-            columns=[
-                "location",
-                "unit",
-                "parcel_number",
-                "owner_1",
-                "owner_2",
-                "mailing_street",
-                "mailing_address_1",
-            ],
-            where_sql=where_sql,
-            limit=n_results,
+        results = addresses_df.to_dict("records")
+        return PrettifiableJsonResponse(
+            {
+                "success": True,
+                "metadata": {},
+                "results": results,
+            },
+            pretty_print=pretty_print,
         )
-    ).to_dataframe()
-
-    ### Clean up some of the strings that will be shown on the search bar
-    addresses_df["location_unit"] = (
-        addresses_df["location"] + " " + addresses_df["unit"].fillna("")
-    ).str.strip()
-
-    def _compile_owner_str(x):
-        owner_str = x["owner_1"]
-        if x.get("owner_2") is not None:
-            owner_str += ", " + x["owner_2"]
-        return owner_str
-
-    def _compile_if_not_none(x, columns, join_str):
-        out_str_list = []
-        for col in columns:
-            if pd.notnull(x[col]) and len(x[col]) > 0:
-                out_str_list.append(x[col])
-        return join_str.join(out_str_list)
-
-    addresses_df["owners"] = addresses_df.apply(
-        lambda x: _compile_if_not_none(x, ["owner_1", "owner_2"], join_str=", "), axis=1
-    )
-    addresses_df["full_mailing_address"] = addresses_df.apply(
-        lambda x: _compile_if_not_none(
-            x, ["mailing_street", "mailing_address_1"], join_str=" "
-        ),
-        axis=1,
-    )
-    addresses_df["description"] = addresses_df.apply(
-        lambda x: _compile_if_not_none(
-            x, ["owners", "full_mailing_address"], join_str="|"
-        ),
-        axis=1,
-    )
-
-    results = addresses_df.to_dict("records")
-    return PrettifiableJsonResponse(
-        {
-            "success": True,
-            "metadata": {},
-            "results": results,
-        },
-        pretty_print=pretty_print,
-    )
 
 
 def _table_response(table_obj, request):

@@ -55,7 +55,9 @@ def autocomplete_response(request):
             includes_dir = len(search) > 1 and search[1] in ["N", "S", "E", "W"]
             first_word_split = search[0].split("-")
             address_low = int(first_word_split[0])
-            address_high = int(first_word_split[1]) if len(first_word_split) > 1 else None
+            address_high = (
+                int(first_word_split[1]) if len(first_word_split) > 1 else None
+            )
             street_name = (
                 search[1]
                 if not includes_dir and len(search) > 1
@@ -123,7 +125,7 @@ def autocomplete_response(request):
     if search_by_owner or addresses_df.empty:
         search_to_match_like_str = "%".join(search_to_match.split(" "))
         search_to_match_like_str_rev = "%".join(search_to_match.split(" ")[::-1])
-        where_sql=f"""
+        where_sql = f"""
             owner_1 like '{search_to_match_like_str}%' OR
             owner_1 like '{search_to_match_like_str_rev}%' OR
             owner_2 like '{search_to_match_like_str}%' OR
@@ -175,7 +177,8 @@ def autocomplete_response(request):
             return join_str.join(out_str_list)
 
         addresses_df["owners"] = addresses_df.apply(
-            lambda x: _compile_if_not_none(x, ["owner_1", "owner_2"], join_str=", "), axis=1
+            lambda x: _compile_if_not_none(x, ["owner_1", "owner_2"], join_str=", "),
+            axis=1,
         )
         addresses_df["full_mailing_address"] = addresses_df.apply(
             lambda x: _compile_if_not_none(

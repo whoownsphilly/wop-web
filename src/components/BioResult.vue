@@ -8,13 +8,12 @@
     <p>Ownership Confidence: {{ bioResult.confidence }}/5</p>
     <p>{{ bioResult.bio_of_owner }}</p>
     <p>
-      <b>Links to Sources:</b><br />
+      <b>Sources:</b>
       <span
         v-for="(link, key2) in bioResult.links_to_sources.split(';')"
         :key="key2"
       >
-        - <a :href="link">{{ link }}</a
-        ><br />
+        <a :href="link">[{{ key2 }}]</a> 
       </span>
     </p>
     <div v-if="$siteMode.mode === 'beta'">

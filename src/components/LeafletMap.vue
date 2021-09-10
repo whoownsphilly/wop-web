@@ -120,7 +120,7 @@ export default {
 <style>
 .legend {
     background: white;
-    opacity: 0.5;
+    opacity: 0.9;
 }
 .legend i {
   width: 18px;

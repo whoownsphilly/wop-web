@@ -9,10 +9,10 @@
     >
       <l-tile-layer :url="url" :attribution="attribution" />
       <div v-for="(marker, index) in mapMarkers" :key="index">
-        <l-circle-marker :lat-lng="marker.latLng" :color="marker.color">
+        <l-circle-marker :lat-lng="marker.latLng" :color="marker.color" :fillColor="marker.color">
           <l-popup>
             <div @click="jumpToProperty(marker.parcelNumber)">
-              {{ marker.popUp }}
+              <a><u>{{ marker.popUp }}</u></a>
             </div>
           </l-popup>
         </l-circle-marker>
@@ -22,6 +22,7 @@
           :lat-lng="highlightedMapMarker.latLng"
           zIndexOffset="0"
           :color="highlightedMapMarker.color"
+          :fillColor="highlightedMapMarker.color"
         >
           <l-popup>
             {{ highlightedMapMarker.popUp }}

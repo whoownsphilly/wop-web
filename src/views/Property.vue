@@ -36,8 +36,8 @@
                 {{ latestTransaction.receipt_date }}.
               </h3>
               <h3 v-else>
-                The owners of this property according to the latest property assessment
-                are {{ owners }}.
+                The owners of this property according to the latest property
+                assessment are {{ owners }}.
               </h3>
               <sui-accordion>
                 <sui-accordion-title>
@@ -51,7 +51,10 @@
                   </span>
                 </sui-accordion-content>
               </sui-accordion>
-              <h3>Top {{ numResultsString(this.complaints) }} most common 311 complaints by owner</h3>
+              <h3>
+                Top {{ numResultsString(this.complaints) }} most common 311
+                complaints by owner
+              </h3>
               <p v-if="complaints !== null">
                 <span v-if="complaints.rows.length === 0">
                   No complaints filed.
@@ -67,7 +70,10 @@
                 </span>
               </p>
               <p v-else>Loading...</p>
-              <h3>Top {{ numResultsString(this.violations) }}  most common violations by owner</h3>
+              <h3>
+                Top {{ numResultsString(this.violations) }} most common
+                violations by owner
+              </h3>
               <p v-if="violations !== null">
                 <span v-if="violations.rows.length === 0">
                   No violations filed.
@@ -166,16 +172,16 @@ export default {
       latestTransaction: null,
       complaints: null,
       violations: null,
-      fullOwnersList: [],
+      fullOwnersList: []
     };
   },
   computed: {
-    numComplaintsString() { 
-        if(this.complaints){ 
-            return Math.max(this.complaints.rows, 5)
-        } else {
-            return ""
-        }
+    numComplaintsString() {
+      if (this.complaints) {
+        return Math.max(this.complaints.rows, 5);
+      } else {
+        return "";
+      }
     },
     loadingContent() {
       return (
@@ -230,7 +236,7 @@ export default {
           ownerList.push(this.propertyResult.owner_2);
         }
       }
-      return ownerList.join()
+      return ownerList.join();
     },
     buildingDescription() {
       let year_built_estimate_str = "";
@@ -253,13 +259,12 @@ export default {
   },
   methods: {
     numResultsString(theseResults) {
-        if(theseResults && theseResults.rows.length > 0){
-            return Math.min(theseResults.rows.length, 5)
-        } else {
-            return ""
-        }
-    },
-
+      if (theseResults && theseResults.rows.length > 0) {
+        return Math.min(theseResults.rows.length, 5);
+      } else {
+        return "";
+      }
+    }
   },
   async created() {
     this.loading = true;

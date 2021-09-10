@@ -27,23 +27,28 @@
             {{ highlightedMapMarker.popUp }}
           </l-popup>
         </l-circle-marker>
-        <l-control
-        class="legend"
-        :position="'bottomright'"
-      >
-        <i style="background: black"></i><span>This Property</span><br>
-        <i style="background: yellow"></i><span>Same Mailing Address</span><br>
-        <i style="background: red"></i><span>Same Owner</span><br>
-      </l-control>
+        <l-control class="legend" :position="'bottomright'">
+          <i style="background: black"></i><span>This Property</span><br />
+          <i style="background: yellow"></i><span>Same Mailing Address</span
+          ><br />
+          <i style="background: red"></i><span>Same Owner</span><br />
+        </l-control>
       </div>
     </l-map>
-    Click on a property to see the address. If you click on the address that pops up, it will take you to that property's page.
+    Click on a property to see the address. If you click on the address that
+    pops up, it will take you to that property's page.
   </div>
 </template>
 
 <script>
 import { latLngBounds, latLng } from "leaflet";
-import { LMap, LTileLayer, LCircleMarker, LControl, LPopup } from "vue2-leaflet";
+import {
+  LMap,
+  LTileLayer,
+  LCircleMarker,
+  LControl,
+  LPopup
+} from "vue2-leaflet";
 
 export default {
   name: "LeafletMap",
@@ -119,8 +124,8 @@ export default {
 </script>
 <style>
 .legend {
-    background: white;
-    opacity: 0.9;
+  background: white;
+  opacity: 0.9;
 }
 .legend i {
   width: 18px;
@@ -129,5 +134,4 @@ export default {
   margin: 0 8px 0 0;
   opacity: 0.7;
 }
-
 </style>

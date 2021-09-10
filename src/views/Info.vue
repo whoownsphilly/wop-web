@@ -2,26 +2,22 @@
   <div class="about">
     <h1>Get Involved</h1>
     <p>
-      Interested in learning more about tenant organizing? There are several
-      organizations in the city of Philadelphia who would love to work with you!
+        Housing injustice is a deep and painful wound in Philly and across the United States. Rent is <a href="https://www.federalreserve.gov/econres/notes/feds-notes/assessing-the-severity-of-rent-burden-on-low-income-families-20171222.htm" target="_blank">especially burdensome</a> for people of color and for people who are economically marginalized. Evictions <a href="https://publicintegrity.org/inside-publici/newsletters/watchdog-newsletter/consequences-of-covid-evictions/" target="_blank">kill</a> and homelessness is horrific and <a href="https://www.seattletimes.com/opinion/our-homelessness-crisis-is-urgent-tragic-and-completely-solvable/" target="_blank">completely</a> solvable. A few capitalists expand their power by extracting rents from the many.
+    </p><p>
+        The arc to ending these travesties is long, but it will bend toward justice if and only if organized political movements grow. Your participation in this struggle is vital and we encourage you to become involved in housing politics, policy, and organizing through one of these two organizations:
     </p>
+    <p>For updated information about getting involved in supporting philly tenants, go to <a href="http://www.phillytenant.org" target="_blank">phillytenants.org</a></p>
+    <h2><a href="http://phillytenantsunion.org" target="_blank">Philly Tenants Union</a></h2>
+    <p>
+The Philadelphia Tenants Union (PTU) is a tenant-led organization dedicated to winning safe, decent, and affordable housing for every renter in Philly. The PTU is committed to fighting against this through grassroots direct action and campaigning for laws such as Just Cause that would protect vulnerable tenants from unfair evictions. We believe that unless tenants across the city band together to fight for their rights, landlords will only keep getting stronger, housing prices will continue to rise, and people will continue to be displaced from their neighborhoods. By <a href="http://phillytenantsunion.org/get-involved/" target="_blank">volunteering to help</a> you immediately start making Philly a better place for tenants and, more broadly, help us to lay the foundation for a more just society.
+    </p>
+    <h2><a href="https://www.phillydsa.org" target="_blank">Philly DSA</a></h2>
+    <p>
+    Through a strong Housing Committee begun in 2020 and a Stomp Out Slumlords
+campaign begun in 2021, the Philadelphia chapter of the Democratic Socialists of America organizes tenants and activists. As housing is connected to wealthy special interests, racism, education inequality, and everyday politics, the DSA also provides a home for you to explore multifaceted ways to pursue housing justice alongside other essential avenues to build racial and economic justice. <a href="https://www.phillydsa.org/events" target="_blank">RSVP for a Housing Committee meeting</a> or a New Members Meeting to learn more about how you can contribute to a more just society through Philly DSA.
+    </p>
+    <h2>Other Actions</h2>
     <sui-list bulleted>
-      <sui-list-item
-        >Tenant Organizations
-        <sui-list-list>
-          <sui-list-item
-            ><a href="http://phillytenantsunion.org"
-              >Philadelphia Tenants Union</a
-            ></sui-list-item
-          >
-          <sui-list-item
-            ><a href="https://www.phillydsa.org"
-              >Philly DSA - Stop Out Slumlords</a
-            ></sui-list-item
-          >
-          <sui-list-item><a href="">...</a></sui-list-item>
-        </sui-list-list>
-      </sui-list-item>
       <sui-list-item>
         Tenant Actions
         <sui-list-list>

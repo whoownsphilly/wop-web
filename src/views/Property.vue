@@ -6,25 +6,30 @@
       </sui-dimmer>
     </div>
     <div v-else class="dashboard">
-        <div class="propertyHeader">
+      <div class="propertyHeader">
         <sui-statistic horizontal>
-        <sui-statistic-value>{{ propertyResult.location }}</sui-statistic-value>
-        <sui-statistic-label>
-        is likely owned by</sui-statistic-label>
-      </sui-statistic>
+          <sui-statistic-value>{{
+            propertyResult.location
+          }}</sui-statistic-value>
+          <sui-statistic-label> is likely owned by</sui-statistic-label>
+        </sui-statistic>
         <sui-statistic horizontal>
-        <sui-statistic-value>
-            <span v-tooltip.bottom="propertySourceString">{{ latestOwnerString }}*</span></sui-statistic-value>
-      </sui-statistic>
-        </div>
+          <sui-statistic-value>
+            <span v-tooltip.bottom="propertySourceString"
+              >{{ latestOwnerString }}<sup>*</sup></span
+            ></sui-statistic-value
+          >
+        </sui-statistic>
+      </div>
       <sui-grid celled>
         <sui-grid-row>
           <sui-grid-column :width="6">
-              <div style="font-size: 18px">
-                The owner of this property is associated with
-                <b>{{ uniqueProperties.length }}</b> properties valued at
-                <b>{{ totalValueOfProperties }}</b>.
-              </div>
+            <div style="font-size: 18px">
+              The owner of this property is associated with
+              <b>{{ uniqueProperties.length }}</b> properties valued at
+              <b>{{ totalValueOfProperties }}</b
+              >.
+            </div>
             <leaflet-map
               :latLngs="properties"
               :highlightedLatLng="propertyResult"
@@ -32,10 +37,14 @@
           </sui-grid-column>
           <sui-grid-column :width="4">
             <sui-container text>
-              <p>{{ buildingDescription }}.
-              <span v-if="latestTransaction !== null">
-                This property was purchased from <b>{{ latestTransaction.grantors }}</b> on <b>{{ latestTransaction.receipt_date | luxon }}</b>.
-              </span>
+              <p>
+                {{ buildingDescription }}.
+                <span v-if="latestTransaction !== null">
+                  This property was purchased from
+                  <b>{{ latestTransaction.grantors }}</b> on
+                  <b>{{ latestTransaction.receipt_date | luxon }}</b
+                  >.
+                </span>
               </p>
               <sui-accordion>
                 <sui-accordion-title>
@@ -87,8 +96,12 @@
                 </span>
               </p>
               <p v-else>Loading...</p>
-              <router-link to="/info" class="ui button positive" tag="button">Click to take action!</router-link>
-              <sui-divider horizontal>Crowd-Sourced Owner Information</sui-divider>
+              <router-link to="/info" class="ui button positive" tag="button"
+                >Click to take action!</router-link
+              >
+              <sui-divider horizontal
+                >Crowd-Sourced Owner Information</sui-divider
+              >
               <h4>
                 Crowd-Sourced Information for properties with mailing address:
                 {{ propertyResult.mailing_street }}
@@ -99,22 +112,26 @@
                 :mailingAddress1="propertyResult.mailing_address_1 || ''"
               />
               <div v-if="$siteMode.mode !== 'basic'">
-                  <h2 is="sui-header">Links</h2>
-                  <a :href="propertyResult.link_atlas" target="_blank"
-                    >Link to Atlas</a
-                  ><br />
-                  <a
-                    :href="propertyResult.link_cyclomedia_street_view"
-                    target="_blank"
-                    >Link to Cyclomedia Street View</a
-                  ><br />
-                  <a :href="propertyResult.link_property_phila_gov" target="_blank"
-                    >Link to property.phila.gov</a
-                  ><br />
-                  <a :href="propertyResult.link_license_inspections" target="_blank"
-                    >Link to li.phila.gov</a
-                  >
-                </div>
+                <h2 is="sui-header">Links</h2>
+                <a :href="propertyResult.link_atlas" target="_blank"
+                  >Link to Atlas</a
+                ><br />
+                <a
+                  :href="propertyResult.link_cyclomedia_street_view"
+                  target="_blank"
+                  >Link to Cyclomedia Street View</a
+                ><br />
+                <a
+                  :href="propertyResult.link_property_phila_gov"
+                  target="_blank"
+                  >Link to property.phila.gov</a
+                ><br />
+                <a
+                  :href="propertyResult.link_license_inspections"
+                  target="_blank"
+                  >Link to li.phila.gov</a
+                >
+              </div>
             </sui-container>
           </sui-grid-column>
         </sui-grid-row>
@@ -180,11 +197,14 @@ export default {
   },
   computed: {
     latestOwnerString() {
-        if(this.latestTransaction !== null){
-            return this.latestTransaction.grantees + (this.latestTransaction.legal_remarks || "")
-        } else {
-            return this.owners
-        }
+      if (this.latestTransaction !== null) {
+        return (
+          this.latestTransaction.grantees +
+          (this.latestTransaction.legal_remarks || "")
+        );
+      } else {
+        return this.owners;
+      }
     },
     loadingContent() {
       return (
@@ -213,7 +233,7 @@ export default {
         style: "currency",
         currency: "USD"
       });
-      return formatter.format(totalValue).slice(0,-3);
+      return formatter.format(totalValue).slice(0, -3);
     },
     mailingStreetOrLocation() {
       if (this.propertyResult !== null) {
@@ -310,7 +330,7 @@ export default {
         row.end = new Date(Date.parse(row.receipt_date));
         prevEndDate = row.end;
         this.latestTransaction = row;
-        this.propertySourceString = "based on the latest deed transfer."
+        this.propertySourceString = "based on the latest deed transfer.";
       }
     }
     if ("results" in data && data.results.rows.length == 1) {
@@ -374,11 +394,11 @@ export default {
 };
 </script>
 <style>
-.propertyHeader{
-    text-align: center;
-    font-size: 16px;
+.propertyHeader {
+  text-align: center;
+  font-size: 16px;
 }
 .dashboard {
-    margin: 30px
+  margin: 30px;
 }
 </style>

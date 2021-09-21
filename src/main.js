@@ -54,7 +54,7 @@ new Vue({
             // This translates the results into the required data format
               // for the search bar
                 searchBarResults.push({"url": index.toString(), 
-                    "description": result['description'], 
+                    "description": "Owner(s): " +  result['description'].replace("|","| Owner's Mailing Address: "), 
                     "title": result['location_unit'],
                 })
 

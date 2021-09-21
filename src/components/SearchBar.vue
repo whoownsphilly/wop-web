@@ -44,7 +44,6 @@ export default {
   name: "SearchBar",
   data() {
     return {
-      test: "abc",
       searchType: "addressOrOwner",
       selection: null
     };

@@ -4,6 +4,8 @@ import SuiVue from "semantic-ui-vue";
 import router from "./router";
 import VueGoodTablePlugin from 'vue-good-table';
 import ToggleSwitch from 'vuejs-toggle-switch'
+import VueLuxon from "vue-luxon";
+import VTooltip from 'v-tooltip'
 
 // import the styles
 import "semantic-ui-css/semantic.min.css";
@@ -27,6 +29,8 @@ Vue.config.productionTip = false;
 Vue.use(SuiVue);
 Vue.use(VueGoodTablePlugin);
 Vue.use(ToggleSwitch);
+Vue.use(VueLuxon);
+Vue.use(VTooltip)
 
 Vue.prototype.$siteMode = Vue.observable({mode: 'basic'})
 

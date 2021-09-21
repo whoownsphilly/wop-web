@@ -5,10 +5,31 @@
         <sui-loader :content="loadingContent" />
       </sui-dimmer>
     </div>
-    <div v-else>
+    <div v-else class="dashboard">
+      <div class="propertyHeader">
+        <sui-statistic horizontal>
+          <sui-statistic-value>{{
+            propertyResult.location
+          }}</sui-statistic-value>
+          <sui-statistic-label> is likely owned by</sui-statistic-label>
+        </sui-statistic>
+        <sui-statistic horizontal>
+          <sui-statistic-value>
+            <span v-tooltip.bottom="propertySourceString"
+              >{{ latestOwnerString }}<sup>*</sup></span
+            ></sui-statistic-value
+          >
+        </sui-statistic>
+      </div>
       <sui-grid celled>
         <sui-grid-row>
           <sui-grid-column :width="6">
+            <div style="font-size: 18px">
+              The owner of this property is associated with
+              <b>{{ uniqueProperties.length }}</b> properties valued at
+              <b>{{ totalValueOfProperties }}</b
+              >.
+            </div>
             <leaflet-map
               :latLngs="properties"
               :highlightedLatLng="propertyResult"
@@ -16,29 +37,23 @@
           </sui-grid-column>
           <sui-grid-column :width="4">
             <sui-container text>
-              <h3>
-                This portfolio is associated with
-                {{ uniqueProperties.length }} properties valued at
-                {{ totalValueOfProperties }}
-              </h3>
-              <h4 is="sui-header">
-                {{ propertyResult.location }} {{ propertyResult.unit }}
-              </h4>
-              <p>{{ buildingDescription }}</p>
-              <h3 v-if="latestTransaction !== null">
-                The owners of this property according to the latest deed
-                transfer are:
-                {{
-                  latestTransaction.grantees +
-                    (latestTransaction.legal_remarks || "")
-                }}
-                who purchased it from {{ latestTransaction.grantors }} on
-                {{ latestTransaction.receipt_date }}.
-              </h3>
-              <h3 v-else>
-                The owners of this property according to the latest property
-                assessment are {{ owners }}.
-              </h3>
+              <p>
+                {{ buildingDescription }}.
+                <span v-if="latestTransaction !== null">
+                  This property was purchased from
+                  <b>{{ latestTransaction.grantors }}</b> on
+                  <b>{{ latestTransaction.receipt_date | luxon }}</b>.
+                  <span v-if="latestRentalLicense !== null">
+                      <br><br>The status of the latest rental license is:
+                      <b>{{ latestRentalLicense.licensestatus }}</b>, it was
+                      initially issued on <b>{{ latestRentalLicense.initialissuedate | luxon }}</b>
+                      and expires on <b>{{latestRentalLicense.expirationdate | luxon }}</b>.
+                  </span>
+                  <span v-else>
+                      There were no rental licenses found for this address.
+                  </span>
+                </span>
+              </p>
               <sui-accordion>
                 <sui-accordion-title>
                   <sui-icon name="dropdown" />
@@ -51,7 +66,10 @@
                   </span>
                 </sui-accordion-content>
               </sui-accordion>
-              <h3>Top 5 most common 311 complaints by owner</h3>
+              <h3>
+                Top {{ numResultsString(this.complaints) }} most common 311
+                complaints by owner
+              </h3>
               <p v-if="complaints !== null">
                 <span v-if="complaints.rows.length === 0">
                   No complaints filed.
@@ -67,7 +85,10 @@
                 </span>
               </p>
               <p v-else>Loading...</p>
-              <h3>Top 5 most common violations by owner</h3>
+              <h3>
+                Top {{ numResultsString(this.violations) }} most common
+                violations by owner
+              </h3>
               <p v-if="violations !== null">
                 <span v-if="violations.rows.length === 0">
                   No violations filed.
@@ -83,6 +104,12 @@
                 </span>
               </p>
               <p v-else>Loading...</p>
+              <router-link to="/info" class="ui button positive" tag="button"
+                >Click to take action!</router-link
+              >
+              <sui-divider horizontal
+                >Crowd-Sourced Owner Information</sui-divider
+              >
               <h4>
                 Crowd-Sourced Information for properties with mailing address:
                 {{ propertyResult.mailing_street }}
@@ -92,21 +119,27 @@
                 :mailingStreet="propertyResult.mailing_street || ''"
                 :mailingAddress1="propertyResult.mailing_address_1 || ''"
               />
-              <h2 is="sui-header">Links</h2>
-              <a :href="propertyResult.link_atlas" target="_blank"
-                >Link to Atlas</a
-              ><br />
-              <a
-                :href="propertyResult.link_cyclomedia_street_view"
-                target="_blank"
-                >Link to Cyclomedia Street View</a
-              ><br />
-              <a :href="propertyResult.link_property_phila_gov" target="_blank"
-                >Link to property.phila.gov</a
-              ><br />
-              <a :href="propertyResult.link_license_inspections" target="_blank"
-                >Link to li.phila.gov</a
-              >
+              <div v-if="$siteMode.mode !== 'basic'">
+                <h2 is="sui-header">Links</h2>
+                <a :href="propertyResult.link_atlas" target="_blank"
+                  >Link to Atlas</a
+                ><br />
+                <a
+                  :href="propertyResult.link_cyclomedia_street_view"
+                  target="_blank"
+                  >Link to Cyclomedia Street View</a
+                ><br />
+                <a
+                  :href="propertyResult.link_property_phila_gov"
+                  target="_blank"
+                  >Link to property.phila.gov</a
+                ><br />
+                <a
+                  :href="propertyResult.link_license_inspections"
+                  target="_blank"
+                  >Link to li.phila.gov</a
+                >
+              </div>
             </sui-container>
           </sui-grid-column>
         </sui-grid-row>
@@ -164,12 +197,24 @@ export default {
       propertyResult: null,
       properties: [],
       latestTransaction: null,
+      propertySourceString: "based on the latest property assessment.",
       complaints: null,
       violations: null,
+      latestRentalLicense: null,
       fullOwnersList: []
     };
   },
   computed: {
+    latestOwnerString() {
+      if (this.latestTransaction !== null) {
+        return (
+          this.latestTransaction.grantees +
+          (this.latestTransaction.legal_remarks || "")
+        );
+      } else {
+        return this.owners;
+      }
+    },
     loadingContent() {
       return (
         "Finding all " +
@@ -197,7 +242,7 @@ export default {
         style: "currency",
         currency: "USD"
       });
-      return formatter.format(totalValue);
+      return formatter.format(totalValue).slice(0, -3);
     },
     mailingStreetOrLocation() {
       if (this.propertyResult !== null) {
@@ -244,6 +289,15 @@ export default {
       return "";
     }
   },
+  methods: {
+    numResultsString(theseResults) {
+      if (theseResults && theseResults.rows.length > 0) {
+        return Math.min(theseResults.rows.length, 5);
+      } else {
+        return "";
+      }
+    }
+  },
   async created() {
     this.loading = true;
     this.loadingStep = "property";
@@ -253,6 +307,24 @@ export default {
       "parcel_number",
       this.parcelNumber
     );
+    const licensesData = await getTableInfo(
+      "licenses",
+      "parcel_number",
+      this.parcelNumber
+    );
+    if ("results" in licensesData) {
+      let sortedData = licensesData.results.rows;
+      sortedData = sortedData.sort((a, b) =>
+        a.initialissuedate > b.initialissuedate ? 1 : -1
+      );
+      sortedData = sortedData.filter(
+        a =>
+          a.licensetype === "Rental"
+      );
+      if(sortedData.length > 0){
+      this.latestRentalLicense = sortedData[0]
+      }
+    }
     const deedData = await getTableInfo(
       "real_estate_transfers",
       "parcel_number",
@@ -285,6 +357,7 @@ export default {
         row.end = new Date(Date.parse(row.receipt_date));
         prevEndDate = row.end;
         this.latestTransaction = row;
+        this.propertySourceString = "based on the latest deed transfer.";
       }
     }
     if ("results" in data && data.results.rows.length == 1) {
@@ -347,3 +420,12 @@ export default {
   }
 };
 </script>
+<style>
+.propertyHeader {
+  text-align: center;
+  font-size: 16px;
+}
+.dashboard {
+  margin: 30px;
+}
+</style>

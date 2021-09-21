@@ -188,7 +188,7 @@ def autocomplete_response(request):
         )
         addresses_df["description"] = addresses_df.apply(
             lambda x: _compile_if_not_none(
-                x, ["owners", "full_mailing_address"], join_str="|"
+                x, ["owners", "full_mailing_address"], join_str=" | "
             ),
             axis=1,
         )

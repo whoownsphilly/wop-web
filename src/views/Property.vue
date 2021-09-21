@@ -42,8 +42,16 @@
                 <span v-if="latestTransaction !== null">
                   This property was purchased from
                   <b>{{ latestTransaction.grantors }}</b> on
-                  <b>{{ latestTransaction.receipt_date | luxon }}</b
-                  >.
+                  <b>{{ latestTransaction.receipt_date | luxon }}</b>.
+                  <span v-if="latestRentalLicense !== null">
+                      <br><br>The status of the latest rental license is:
+                      <b>{{ latestRentalLicense.licensestatus }}</b>, it was
+                      initially issued on <b>{{ latestRentalLicense.initialissuedate | luxon }}</b>
+                      and expires on <b>{{latestRentalLicense.expirationdate | luxon }}</b>.
+                  </span>
+                  <span v-else>
+                      There were no rental licenses found for this address.
+                  </span>
                 </span>
               </p>
               <sui-accordion>
@@ -192,6 +200,7 @@ export default {
       propertySourceString: "based on the latest property assessment.",
       complaints: null,
       violations: null,
+      latestRentalLicense: null,
       fullOwnersList: []
     };
   },
@@ -298,6 +307,24 @@ export default {
       "parcel_number",
       this.parcelNumber
     );
+    const licensesData = await getTableInfo(
+      "licenses",
+      "parcel_number",
+      this.parcelNumber
+    );
+    if ("results" in licensesData) {
+      let sortedData = licensesData.results.rows;
+      sortedData = sortedData.sort((a, b) =>
+        a.initialissuedate > b.initialissuedate ? 1 : -1
+      );
+      sortedData = sortedData.filter(
+        a =>
+          a.licensetype === "Rental"
+      );
+      if(sortedData.length > 0){
+      this.latestRentalLicense = sortedData[0]
+      }
+    }
     const deedData = await getTableInfo(
       "real_estate_transfers",
       "parcel_number",

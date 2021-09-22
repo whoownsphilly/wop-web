@@ -47,7 +47,7 @@
                       <br><br>The status of the latest rental license is:
                       <b>{{ latestRentalLicense.licensestatus }}</b>, it was
                       initially issued on <b>{{ latestRentalLicense.initialissuedate | luxon }}</b>
-                      and expires on <b>{{latestRentalLicense.expirationdate | luxon }}</b>.
+                      with expiration of <b>{{latestRentalLicense.expirationdate | luxon }}</b>.
                   </span>
                   <span v-else>
                       There were no rental licenses found for this address.
@@ -208,8 +208,7 @@ export default {
     latestOwnerString() {
       if (this.latestTransaction !== null) {
         return (
-          this.latestTransaction.grantees +
-          (this.latestTransaction.legal_remarks || "")
+          this.latestTransaction.grantees + " " + (this.latestTransaction.legal_remarks || "")
         );
       } else {
         return this.owners;

@@ -1,6 +1,5 @@
 <template>
   <div id="app">
-
     <div id="nav">
       <div id='advanced-selector'>
         <sui-button-group>
@@ -48,6 +47,7 @@ export default {
       Vue.prototype.$siteMode.mode = thisSiteMode
     },
   },
+  created() { document.title = "Who Owns Philly?"}
 }
 </script>
 <style>

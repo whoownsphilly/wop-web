@@ -11,8 +11,8 @@
       <div v-for="(marker, index) in mapMarkers" :key="index">
         <l-circle-marker :lat-lng="marker.latLng" :color="marker.color" :fillColor="marker.color">
           <l-popup>
-            <div>
-              <a :href="propertyUrl(marker.parcelNumber)"><u>{{ marker.popUp }}</u></a>
+            <div  @click="jumpToProperty(marker.parcelNumber)">
+              <a class="hyperlink"><u>{{ marker.popUp }}</u></a>
             </div>
           </l-popup>
         </l-circle-marker>
@@ -115,7 +115,10 @@ export default {
     }
   },
   methods: {
-    propertyUrl(parcelNumber) { return "#/property/" + parcelNumber },
+    jumpToProperty(parcelNumber) {
+      this.$router.push("/property/" + parcelNumber);
+      this.$router.go();
+    }
   },
   async created() {}
 };
@@ -131,5 +134,9 @@ export default {
   float: left;
   margin: 0 8px 0 0;
   opacity: 0.7;
+}
+.hyperlink {
+    color: #0000FF;
+    text-decoration: underline;
 }
 </style>

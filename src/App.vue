@@ -5,19 +5,19 @@
       <div id='advanced-selector'>
         <sui-button-group>
           <sui-button
-            size="tiny"
+            size="mini"
             data-tooltip="Basic Mode"
             data-position="bottom right"
             :color="$siteMode.mode === 'basic'? 'green': 'grey'"
             @click="setSiteMode('basic')"
           >Tenants</sui-button>
-          <sui-button size="tiny"
+          <sui-button size="mini"
             :color="$siteMode.mode === 'advanced' ? 'green': 'grey'"
             data-tooltip="Advanced search and possibly unfinished features"
             data-position="bottom right"
             @click="setSiteMode('advanced')"
           >Researchers</sui-button>
-          <sui-button size="tiny"
+          <sui-button size="mini"
             :color="$siteMode.mode === 'beta' ? 'green': 'grey'"
             data-tooltip="Advanced search and possibly unfinished features"
             data-position="bottom right"
@@ -27,8 +27,11 @@
       </div>
       <b>Who Owns Philly?</b><br>
       <router-link to="/">Home</router-link> |
-      <router-link to="/info"><b>Click Here to Take Action</b></router-link> <span v-if="$siteMode.mode !== 'basic'">|
-      <router-link  to="/data-explained"><b>Data and Methods Expained</b></router-link></span>
+      <router-link to="/take-action"><b>Click Here to Take Action</b></router-link> | 
+      <router-link to="/about"><b>About</b></router-link> 
+      <span v-if="$siteMode.mode !== 'basic'">|
+        <router-link  to="/data-explained"><b>Data and Methods Expained</b></router-link>
+      </span>
     </div>
     <router-view />
   </div>

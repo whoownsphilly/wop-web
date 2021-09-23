@@ -6,22 +6,10 @@
       </sui-dimmer>
     </div>
     <div v-else class="dashboard">
-      <div class="propertyHeader">
-        <sui-statistic horizontal>
-          <sui-statistic-value>{{
-            propertyResult.location
-          }}</sui-statistic-value>
-          <sui-statistic-label> is likely owned by</sui-statistic-label>
-        </sui-statistic>
-        <sui-statistic horizontal>
-          <sui-statistic-value>
-            <span v-tooltip.bottom="propertySourceString"
-              >{{ latestOwnerString }}<sup>*</sup></span
-            ></sui-statistic-value
-          >
-        </sui-statistic>
-      </div>
-      <sui-grid celled>
+      <property-headline :propertyString="propertyString" :latestOwnerString="latestOwnerString" :propertySourceString="propertySourceString" />
+      <sui-tab>
+        <sui-tab-pane title="Summary">
+      <sui-grid>
         <sui-grid-row>
           <sui-grid-column :width="6">
             <div style="font-size: 18px">
@@ -38,16 +26,18 @@
           <sui-grid-column :width="4">
             <sui-container text>
               <p>
-                {{ buildingDescription }}.
+                {{ buildingDescription }}
                 <span v-if="latestTransaction !== null">
-                  This property was purchased from
+                  The deed for {{ latestTransaction.property_count }} properties, including this one, was purchased from
                   <b>{{ latestTransaction.grantors }}</b> on
-                  <b>{{ latestTransaction.receipt_date | luxon }}</b>.
+                  <b>{{ latestTransaction.recording_date | luxon }}</b>
+                  for <b>
+                  {{ formatCurrencyValue(latestTransaction.total_consideration) }}</b>. 
                   <span v-if="latestRentalLicense !== null">
                       <br><br>The status of the latest rental license is:
                       <b>{{ latestRentalLicense.licensestatus }}</b>, it was
                       initially issued on <b>{{ latestRentalLicense.initialissuedate | luxon }}</b>
-                      with expiration of <b>{{latestRentalLicense.expirationdate | luxon }}</b>.
+                      with an expiration date of <b>{{latestRentalLicense.expirationdate | luxon }}</b>.
                   </span>
                   <span v-else>
                       There were no rental licenses found for this address.
@@ -144,6 +134,12 @@
           </sui-grid-column>
         </sui-grid-row>
       </sui-grid>
+      </sui-tab-pane>
+      <sui-tab-pane v-if="$siteMode.mode !== 'basic'" :title="propertyString">
+      </sui-tab-pane>
+      <sui-tab-pane v-if="$siteMode.mode !== 'basic'" :title="latestOwnerString">
+      </sui-tab-pane>
+      </sui-tab>
       <sui-tab v-if="$siteMode.mode !== 'basic'">
         <sui-tab-pane title="Historical Property Info">
           <historical-property-tab :parcelNumber="this.parcelNumber" />
@@ -175,6 +171,7 @@
 import HistoricalPropertyTab from "@/components/HistoricalPropertyTab";
 import HistoricalOwnerTab from "@/components/HistoricalOwnerTab";
 import HistoricalCrowdSourcedTab from "@/components/HistoricalCrowdSourcedTab";
+import PropertyHeadline from "@/components/PropertyHeadline";
 import LeafletMap from "@/components/LeafletMap";
 import MailingAddressTab from "@/components/MailingAddressTab";
 import { getTableInfo } from "@/api/singleTable";
@@ -183,6 +180,7 @@ import { getOwnersTimelineTableInfo } from "@/api/singleTable";
 export default {
   name: "Property",
   components: {
+    PropertyHeadline,
     LeafletMap,
     HistoricalPropertyTab,
     HistoricalOwnerTab,
@@ -205,6 +203,11 @@ export default {
     };
   },
   computed: {
+    propertyString() {
+        if(this.propertyResult){
+            return this.propertyResult.location + " " + this.propertyResult.unit
+        } else { return "" }
+    },
     latestOwnerString() {
       if (this.latestTransaction !== null) {
         return (
@@ -237,11 +240,7 @@ export default {
       this.uniqueProperties.forEach(function(row) {
         totalValue += row.market_value;
       });
-      var formatter = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD"
-      });
-      return formatter.format(totalValue).slice(0, -3);
+      return this.formatCurrencyValue(totalValue)
     },
     mailingStreetOrLocation() {
       if (this.propertyResult !== null) {
@@ -275,6 +274,7 @@ export default {
         year_built_estimate_str = " (although this is an estimate)";
       }
       if (this.propertyResult !== null) {
+          console.log(this.propertyResult)
         return (
           "This building was constructed in " +
           this.propertyResult.year_built +
@@ -282,13 +282,22 @@ export default {
           ", and is described as a " +
           this.propertyResult.category_code_description +
           ", " +
-          this.propertyResult.building_code_description
+          this.propertyResult.building_code_description +
+          ". It was most recently valued for " + 
+          this.formatCurrencyValue(this.propertyResult.market_value) + "." 
         );
       }
       return "";
     }
   },
   methods: {
+    formatCurrencyValue(totalValue){
+      var formatter = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD"
+      });
+      return formatter.format(totalValue).slice(0, -3);
+    },
     numResultsString(theseResults) {
       if (theseResults && theseResults.rows.length > 0) {
         return Math.min(theseResults.rows.length, 5);
@@ -419,10 +428,6 @@ export default {
 };
 </script>
 <style>
-.propertyHeader {
-  text-align: center;
-  font-size: 16px;
-}
 .dashboard {
   margin: 30px;
 }

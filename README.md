@@ -5,6 +5,15 @@ Local Development
 
 To develop locally, you need to start up the django server. The django server points to the built JS, so if you want a hot-reload on your JS, you also need to separately start up the vue server.
 
+
+### Dev
+We are currently working out the dev environment. For now it appears you need to comment out pyscopg2 and pymemc from the requirements.txt if you are installing it locally on Ubuntu. 
+```
+npm install -g yarn
+pip install -r requirements.txt
+```
+
+
 ```
 ### DJANGO ###
 # either install [poetry](https://python-poetry.org/)

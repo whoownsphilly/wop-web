@@ -340,7 +340,6 @@ export default {
           a.document_type === "DEED" ||
           a.document_type === "DEED SHERIFF" ||
           a.document_type === "DEED OF CONDEMNATION" ||
-          a.document_type === "DEED MISCELLANEOUS" ||
           a.document_type === " DEED LAND BANK"
       );
       for (let i in sortedData) {

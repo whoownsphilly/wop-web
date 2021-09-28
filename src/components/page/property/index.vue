@@ -29,7 +29,7 @@
 </template>
 
 <script>
-import HistoricalTabTable from "@/components/HistoricalTabTable";
+import HistoricalTabTable from "@/components/ui/HistoricalTabTable";
 import { getTableInfo } from "@/api/singleTable";
 import * as d3 from "d3";
 import timeline from "@/vue-timeline-component/graph/timeline";

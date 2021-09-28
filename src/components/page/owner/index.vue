@@ -8,30 +8,6 @@
   </div>
   <div v-else>
     <h2>connected to {{ timelineData.length }} properties</h2>
-    <sui-grid celled>
-      <sui-grid-row>
-        <sui-grid-column :width="5">
-          <leaflet-map
-            :latLngs="latLngs"
-            :highlightedLatLng="highlightedLatLng"
-          />
-        </sui-grid-column>
-        <sui-grid-column :width="13">
-          <docs-wireframe name="centered-paragraph" />
-        </sui-grid-column>
-      </sui-grid-row>
-      <sui-grid-row>
-        <sui-grid-column :width="3">
-          <docs-wireframe name="image" />
-        </sui-grid-column>
-        <sui-grid-column :width="10">
-          <docs-wireframe name="paragraph" />
-        </sui-grid-column>
-        <sui-grid-column :width="3">
-          <docs-wireframe name="image" />
-        </sui-grid-column>
-      </sui-grid-row>
-    </sui-grid>
     <sui-accordion exclusive>
       <sui-accordion-title>
         <h2>
@@ -66,14 +42,13 @@
 </template>
 
 <script>
-import HistoricalTabTable from "@/components/HistoricalTabTable";
-import LeafletMap from "@/components/LeafletMap";
+import HistoricalTabTable from "@/components/ui/HistoricalTabTable";
 import { getOwnersTimelineTableInfo } from "@/api/singleTable";
 import VueTimeline from "@/vue-timeline-component/components/VueTimeline";
 
 export default {
   name: "HistoricalOwnerTab",
-  components: { HistoricalTabTable, VueTimeline, LeafletMap },
+  components: { HistoricalTabTable, VueTimeline },
   props: {
     owner: {
       type: String,

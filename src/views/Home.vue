@@ -17,7 +17,7 @@
       </p>
     </div>
     <sui-divider hidden />
-    <SearchBar />
+    <search-bar />
     <sui-divider hidden />
     <ExampleOwners />
     <cookie-law theme="dark-lime">
@@ -36,8 +36,8 @@
 <script>
 // @ is an alias to /src
 
-import SearchBar from "@/components/SearchBar";
-import ExampleOwners from "@/components/ExampleOwners";
+import SearchBar from "@/components/page/home/SearchBar";
+import ExampleOwners from "@/components/page/home/ExampleOwners";
 import CookieLaw from "vue-cookie-law";
 
 export default {

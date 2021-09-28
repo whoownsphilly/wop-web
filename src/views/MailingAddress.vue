@@ -2,10 +2,6 @@
   <div class="mailing-address">
     <sui-container text>
       <h2>{{ mailingStreet }} {{ mailingAddress1 }}</h2>
-      <mailing-address-tab
-        :mailingStreet="mailingStreet"
-        :mailingAddress1="mailingAddress1"
-      />
     </sui-container>
     <historical-crowd-sourced-tab
       :mailingStreet="mailingStreet"
@@ -15,13 +11,11 @@
 </template>
 
 <script>
-import MailingAddressTab from "@/components/MailingAddressTab";
-import HistoricalCrowdSourcedTab from "@/components/HistoricalCrowdSourcedTab";
+import HistoricalCrowdSourcedTab from "@/components/page/mailing_address";
 
 export default {
   name: "MailingAddress",
   components: {
-    MailingAddressTab,
     HistoricalCrowdSourcedTab
   },
   data() {

@@ -136,31 +136,17 @@
       </sui-grid>
       </sui-tab-pane>
       <sui-tab-pane v-if="$siteMode.mode !== 'basic'" :title="propertyString">
+          <historical-property-tab :parcelNumber="this.parcelNumber" />
       </sui-tab-pane>
       <sui-tab-pane v-if="$siteMode.mode !== 'basic'" :title="latestOwnerString">
+          <historical-owner-tab
+            :owner="latestOwnerString"
+            :highlightedProperty="propertyResult"
+          />
       </sui-tab-pane>
       </sui-tab>
       <sui-tab v-if="$siteMode.mode !== 'basic'">
-        <sui-tab-pane title="Historical Property Info">
-          <historical-property-tab :parcelNumber="this.parcelNumber" />
-        </sui-tab-pane>
-        <sui-tab-pane v-for="owner in owners" :key="owner" :title="owner">
-          <historical-owner-tab
-            :owner="owner"
-            :highlightedProperty="propertyResult"
-          />
-        </sui-tab-pane>
-        <sui-tab-pane title="Mailing Address">
-          <mailing-address-tab
-            :mailingStreet="mailingStreetOrLocation"
-            :mailingAddress1="mailingAddress1"
-          />
-        </sui-tab-pane>
-        <sui-tab-pane title="Crowd-Sourced Info">
-          <historical-crowd-sourced-tab
-            :mailingStreet="mailingStreetOrLocation"
-            :mailingAddress1="mailingAddress1"
-          />
+        <sui-tab-pane title="Owner">
         </sui-tab-pane>
       </sui-tab>
     </div>
@@ -168,12 +154,11 @@
 </template>
 
 <script>
-import HistoricalPropertyTab from "@/components/HistoricalPropertyTab";
-import HistoricalOwnerTab from "@/components/HistoricalOwnerTab";
-import HistoricalCrowdSourcedTab from "@/components/HistoricalCrowdSourcedTab";
-import PropertyHeadline from "@/components/PropertyHeadline";
-import LeafletMap from "@/components/LeafletMap";
-import MailingAddressTab from "@/components/MailingAddressTab";
+import HistoricalPropertyTab from "@/components/page/property";
+import HistoricalOwnerTab from "@/components/page/owner";
+import HistoricalCrowdSourcedTab from "@/components/page/mailing_address";
+import PropertyHeadline from "@/components/page/property/PropertyHeadline";
+import LeafletMap from "@/components/page/property/LeafletMap";
 import { getTableInfo } from "@/api/singleTable";
 import { getOwnersTimelineTableInfo } from "@/api/singleTable";
 
@@ -185,7 +170,6 @@ export default {
     HistoricalPropertyTab,
     HistoricalOwnerTab,
     HistoricalCrowdSourcedTab,
-    MailingAddressTab
   },
   data() {
     return {
@@ -199,7 +183,8 @@ export default {
       complaints: null,
       violations: null,
       latestRentalLicense: null,
-      fullOwnersList: []
+      fullOwnersList: [],
+      ownerTimelineData: [],
     };
   },
   computed: {
@@ -385,10 +370,17 @@ export default {
         row["color"] = "yellow";
         row["relation"] = "owner";
         this.properties.push(row);
+          this.ownerTimelineData.push({
+            name: row.location + " " + (row.unit|| ""),
+            start: new Date(Date.parse(row.start_dt)),
+            end: new Date(Date.parse(row.end_dt))
+          });
       });
+      this.ownerTimelineData.sort((a, b) => (a.start < b.start ? 1 : -1));
       this.fullOwnersList = ownerRelatedPropertyData.owners_list;
       this.loadingStep = "mailing address";
     }
+
     // Mailing Address-Based Data
     const mailingAddressData = await getTableInfo(
       "properties",

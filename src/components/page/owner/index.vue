@@ -53,11 +53,6 @@ export default {
     owner: {
       type: String,
       required: true
-    },
-    highlightedProperty: {
-      type: Object,
-      required: false,
-      default: () => null
     }
   },
   data() {
@@ -91,12 +86,6 @@ export default {
   },
   async created() {
     // First get the lat lng for the selected property
-    if (this.highlightedProperty !== null) {
-      this.highlightedLatLng = {
-        lat: this.highlightedProperty.lat,
-        lng: this.highlightedProperty.lng
-      };
-    }
 
     // Next get the owner timeline which is necessary for getting counts of
     // violations/complaints/etc.

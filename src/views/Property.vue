@@ -145,10 +145,6 @@
           />
       </sui-tab-pane>
       </sui-tab>
-      <sui-tab v-if="$siteMode.mode !== 'basic'">
-        <sui-tab-pane title="Owner">
-        </sui-tab-pane>
-      </sui-tab>
     </div>
   </div>
 </template>

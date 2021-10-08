@@ -32,3 +32,6 @@ poetry.lock
 
 # environment variables
 .envrc
+
+# vendoring libraries
+phillydb

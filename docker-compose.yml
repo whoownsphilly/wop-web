@@ -4,8 +4,8 @@ services:
     build: 
       context: .
       args:
-        YARN_PORT: $PORT
-        DJANGO_PORT: $DJANGO_PORT
+        YARN_PORT: ${YARN_PORT:-8080}
+        DJANGO_PORT: ${DJANGO_PORT:-8000}
     image: phillydb_web_shell
     stdin_open: true
     tty: true
@@ -16,16 +16,19 @@ services:
 
   django:
     image: phillydb_web_shell
-    command: python manage.py runserver 0.0.0.0:$DJANGO_PORT
+    command: python manage.py runserver 0.0.0.0:${DJANGO_PORT:-8000}
     ports:
-      - "$DJANGO_PORT:$DJANGO_PORT"
+      - "${DJANGO_PORT:-8000}:${DJANGO_PORT:-8000}"
   web:
     image: phillydb_web_shell
-    entrypoint: yarn serve --port $PORT
+    entrypoint: yarn serve --port ${YARN_PORT:-8080}
     volumes:
       - .:/app
       - /app/tests/__pycache__/
+    environment:
+      - DJANGO_PORT=${DJANGO_PORT:-8000}
+      - DJANGO_HOSTNAME=django
     ports:
-      - "$PORT:$PORT"
+      - "${YARN_PORT:-8080}:${YARN_PORT:-8080}"
     depends_on:
       - django

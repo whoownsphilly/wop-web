@@ -37,7 +37,6 @@ export const getBioTableInfo = (mailingStreet, mailingAddress1) => {
 };
 
 export const getOwnersTimelineTableInfo = owner => {
-    console.log(process.env)
   const url =
     process.env.VUE_APP_DJANGO_URL +
     "/api/v1/owners_timeline/?owner_name=" +

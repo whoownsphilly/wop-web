@@ -207,7 +207,7 @@ export default {
       properties: [],
       latestTransaction: null,
       propertySourceString: "based on the latest property assessment.",
-      ownerBasedResults: {'violations': [], 'complaints': []},
+      ownerBasedResults: {violations: {rows: []}, complaints: {rows:[]}},
       latestRentalLicense: null,
       fullOwnersList: [],
       ownerTimelineData: []
@@ -314,7 +314,7 @@ export default {
       return formatter.format(totalValue).slice(0, -3);
     },
     numResultsString(theseResults) {
-      if (theseResults && theseResults.rows.length > 0) {
+      if (theseResults && theseResults.rows && theseResults.rows.length > 0) {
         return Math.min(theseResults.rows.length, 5);
       } else {
         return "";

@@ -22,4 +22,4 @@ pytest-xdist==2.3.0
 pytest-benchmark==3.4.1
 pytest-profiling==1.7.0
 pytest-django==4.4.0
-coverage[toml]==5.5
+coverage[toml]==6.0.1

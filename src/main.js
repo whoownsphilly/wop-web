@@ -41,10 +41,8 @@ new Vue({
     // Needed due to how semantic-ui-vue search bar works
     sui: {
       api: {
-        base: process.env.VUE_APP_DJANGO_URL,
         api: {
-            //"search category": "/api/v1/autocomplete?startswith_str={value}"
-            "search category": "/api/v1/autocomplete?startswith_str={value}"
+            "search category": "api/v1/autocomplete?startswith_str={value}"
         },
         onSelect() {return false},
         onResponse(response) {

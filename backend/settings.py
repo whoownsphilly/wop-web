@@ -149,7 +149,9 @@ TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
 
 NOSE_ARGS = ["--with-coverage", "--cover-package=backend"]
 
+YARN_PORT = os.environ.get("YARN_PORT", "8080")
 CORS_ALLOWED_ORIGINS = [
+    f"http://localhost:{YARN_PORT}",
     "http://localhost:8081",
     "http://localhost:8080",
     "http://192.168.1.169:8080",

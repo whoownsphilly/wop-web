@@ -6,8 +6,7 @@ export const getTableInfo = (
 ) => {
   let groupbyColString = groupByCols.join();
   const url =
-    process.env.VUE_APP_DJANGO_URL +
-    "/api/v1/table/" +
+    "api/v1/table/" +
     tableName +
     "/" +
     "?search_to_match=" +
@@ -26,8 +25,7 @@ export const getTableInfo = (
 
 export const getBioTableInfo = (mailingStreet, mailingAddress1) => {
   const url =
-    process.env.VUE_APP_DJANGO_URL +
-    "/api/v1/bios/?mailing_street=" +
+    "api/v1/bios/?mailing_street=" +
     mailingStreet +
     "&mailing_address_1=" +
     mailingAddress1;
@@ -39,6 +37,7 @@ export const getBioTableInfo = (mailingStreet, mailingAddress1) => {
 };
 
 export const getOwnersTimelineTableInfo = owner => {
+    console.log(process.env)
   const url =
     process.env.VUE_APP_DJANGO_URL +
     "/api/v1/owners_timeline/?owner_name=" +

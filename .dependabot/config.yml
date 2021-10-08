@@ -1,6 +1,0 @@
-version: 1
-update_configs: 
-  - package_manager: "python"
-    allowed_updates:
-      - match:
-        update_type: "security"

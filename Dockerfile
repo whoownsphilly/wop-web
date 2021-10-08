@@ -5,4 +5,4 @@ COPY requirements.txt ./
 RUN pip install -r requirements.txt
 COPY . /app
 WORKDIR /app
-RUN pip install -e phillydb
+#RUN pip install -e phillydb

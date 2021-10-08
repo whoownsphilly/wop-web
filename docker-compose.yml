@@ -4,7 +4,7 @@ services:
     build: 
       context: .
       args:
-        YARN_PORT: $YARN_PORT
+        YARN_PORT: $PORT
         DJANGO_PORT: $DJANGO_PORT
     image: phillydb_web_shell
     stdin_open: true
@@ -21,11 +21,11 @@ services:
       - "$DJANGO_PORT:$DJANGO_PORT"
   web:
     image: phillydb_web_shell
-    entrypoint: yarn serve --port $YARN_PORT
+    entrypoint: yarn serve --port $PORT
     volumes:
       - .:/app
       - /app/tests/__pycache__/
     ports:
-      - "$YARN_PORT:$YARN_PORT"
+      - "$PORT:$PORT"
     depends_on:
       - django

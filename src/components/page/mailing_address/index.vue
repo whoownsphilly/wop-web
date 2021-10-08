@@ -38,7 +38,7 @@
         </sui-modal>
       </p>
       <div v-for="(bioResult, i) in bioResults" :key="i">
-        <BioResult :bioResult="bioResult" :index="i" />
+        <bio-result :bioResult="bioResult" :index="i" />
         <sui-divider />
       </div>
     </sui-container>
@@ -68,7 +68,7 @@
 
 <script>
 import { getBioTableInfo } from "@/api/singleTable";
-import BioResult from "@/components/BioResult";
+import BioResult from "@/components/page/mailing_address/BioResult";
 
 export default {
   name: "HistoricalCrowdSourcedTab",

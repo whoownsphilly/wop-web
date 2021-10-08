@@ -8,7 +8,7 @@
 </template>
 
 <script>
-import HistoricalOwnerTab from "@/components/HistoricalOwnerTab";
+import HistoricalOwnerTab from "@/components/page/owner";
 
 export default {
   name: "Property",

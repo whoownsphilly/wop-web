@@ -5,40 +5,25 @@ Local Development
 
 To develop locally, you need to start up the django server. The django server points to the built JS, so if you want a hot-reload on your JS, you also need to separately start up the vue server.
 
-```
-### DJANGO ###
-# either install [poetry](https://python-poetry.org/)
-./django_serve.sh
+### Docker
 
-# or directly install the requirements and run django
+The easiest way is to use docker. Simply run `docker-compose build` to build the docker container the first time. Then whenever you want to run the servers, run `docker-compose up web`. This will create two docker services: `django` and `web`. `django` is the backend and will default go to port 8000. `web` is the yarn server which will default go to port 8080. You can change the ports by updating the DJANGO_PORT or YARN_PORT env vars, I highly recommend .envrc files using [direnv](https://direnv.net).
+
+### Directly
+To run directly, you need to do the following:
+```
+yarn install
 pip install -r requirements.txt
-python manage.py runserver
-
-# Mac Catalina Installation
-- Install Poetry
-- Install `xcode-select --install`
-- Link open SSL stuff
-    - `export LDFLAGS="-L/usr/local/opt/openssl@1.1/lib"`
-    - `export CPPFLAGS="-I/usr/local/opt/openssl@1.1/include"`
-- Install Postgre
-    - `brew install postgresql`
-- `poetry shell` to enter venv
-- `pip install -r requirements.txt`
-- `./django_serve.sh`
-
-yarn start
 ```
+You can still use `yarn serve` and `./django_serve.sh`. These will default to port 8080 and port 8000 respectively, but can also be set by `YARN_PORT` and `DJANGO_PORT` envirionment variables.
 
-Testing
--------
 
-```
-# this will run the django server which will also serve the built vue JS.
-poetry python run manage.py runserver
+Front-End Frameworks
+--------------------
 
-# you can run this as well if you need a hot-reload for the frontend
-yarn start
-```
+- Vue Good Tables
+- Semantic UI Vue
+- ApexCharts
 
 API Docs
 --------
@@ -56,10 +41,6 @@ With the following three query parameters:
 - search_query: The string associated with the above search (i.e. SMITH JOE). REMEMBER OWNERS NEED TO BE LAST NAME FIRST, and in general this should match what is in property.phila.gov (although we will work to make this more flexible).
 - search_method: (optional): contains, starts_with, ends_with (how to handle the search_query).
 
-Python
-------
-This uses poetry for virtual environment creation. To add new dependencies, add them in hte pyproject.toml and then run `poetry lock; poetry install`. The `requirements.txt` is only for heroku and should be generated before deploying to heroku using `poetry run pip freeze > requirements.txt`.
-
 Heroku
 ------
 ```
@@ -71,34 +52,3 @@ heroku addons:create raygun-rum:rum-free
 ```
 
 To deploy to heroku, use the `./heroku.sh` script which both freezes and requirements and pushes the code.
-
-Vue
------
-
-## Project setup
-```
-yarn install
-```
-
-### Compiles and hot-reloads for development
-```
-yarn serve
-```
-
-### Compiles and minifies for production
-```
-yarn build
-```
-
-### Lints and fixes files
-```
-yarn lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
-
-Special Thanks
---------------
-
-- Timeline code based off of [vue-timeline-component](https://github.com/0xdv/vue-timeline-component)

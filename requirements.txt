@@ -1,5 +1,4 @@
 phillydb==0.2.5
-#-e phillydb
 
 Django==3.2.6
 django-heroku==0.3.1

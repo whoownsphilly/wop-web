@@ -1,0 +1,31 @@
+version: '3'
+services:
+  shell:
+    build: 
+      context: .
+      args:
+        YARN_PORT: $YARN_PORT
+        DJANGO_PORT: $DJANGO_PORT
+    image: phillydb_web_shell
+    stdin_open: true
+    tty: true
+    entrypoint: /bin/sh
+    volumes:
+      - .:/app
+      - /app/tests/__pycache__/
+
+  django:
+    image: phillydb_web_shell
+    command: python manage.py runserver 0.0.0.0:$DJANGO_PORT
+    ports:
+      - "$DJANGO_PORT:$DJANGO_PORT"
+  web:
+    image: phillydb_web_shell
+    entrypoint: yarn serve --port $YARN_PORT
+    volumes:
+      - .:/app
+      - /app/tests/__pycache__/
+    ports:
+      - "$YARN_PORT:$YARN_PORT"
+    depends_on:
+      - django

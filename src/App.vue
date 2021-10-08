@@ -28,7 +28,7 @@
       <router-link to="/">Home</router-link> |
       <router-link to="/take-action"><b>Click Here to Take Action</b></router-link> | 
       <router-link to="/about"><b>About</b></router-link> 
-      <span v-if="$siteMode.mode !== 'basic'">|
+      <span v-if="$siteMode.mode !== 'basic'"> | 
         <router-link  to="/data-explained"><b>Data and Methods Expained</b></router-link>
       </span>
     </div>

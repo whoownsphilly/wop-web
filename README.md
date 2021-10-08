@@ -38,6 +38,13 @@ python manage.py runserver
 yarn start
 ```
 
+Front-End Frameworks
+--------------------
+
+- Vue Good Tables
+- Semantic UI Vue
+- ApexCharts
+
 Testing
 -------
 

@@ -6,144 +6,173 @@
       </sui-dimmer>
     </div>
     <div v-else class="dashboard">
-      <property-headline :propertyString="propertyString" :latestOwnerString="latestOwnerString" :propertySourceString="propertySourceString" />
+      <property-headline
+        :propertyString="propertyString"
+        :latestOwnerString="latestOwnerString"
+        :propertySourceString="propertySourceString"
+      />
       <sui-tab>
         <sui-tab-pane title="Summary">
-      <sui-grid>
-        <sui-grid-row>
-          <sui-grid-column :width="6">
-            <div style="font-size: 18px">
-              The owner of this property is associated with
-              <b>{{ uniqueProperties.length }}</b> properties valued at
-              <b>{{ totalValueOfProperties }}</b
-              >.
-            </div>
-            <leaflet-map
-              :latLngs="properties"
-              :highlightedLatLng="propertyResult"
-            />
-          </sui-grid-column>
-          <sui-grid-column :width="4">
-            <sui-container text>
-              <p>
-                {{ buildingDescription }}
-                <span v-if="latestTransaction !== null">
-                  The deed for {{ latestTransaction.property_count }} properties, including this one, was purchased from
-                  <b>{{ latestTransaction.grantors }}</b> on
-                  <b>{{ latestTransaction.recording_date | luxon }}</b>
-                  for <b>
-                  {{ formatCurrencyValue(latestTransaction.total_consideration) }}</b>. 
-                  <span v-if="latestRentalLicense !== null">
-                      <br><br>The status of the latest rental license is:
-                      <b>{{ latestRentalLicense.licensestatus }}</b>, it was
-                      initially issued on <b>{{ latestRentalLicense.initialissuedate | luxon }}</b>
-                      with an expiration date of <b>{{latestRentalLicense.expirationdate | luxon }}</b>.
-                  </span>
-                  <span v-else>
-                      There were no rental licenses found for this address.
-                  </span>
-                </span>
-              </p>
-              <sui-accordion>
-                <sui-accordion-title>
-                  <sui-icon name="dropdown" />
-                  Connected Possible Owners ({{ fullOwnersList.length }})
-                </sui-accordion-title>
-                <sui-accordion-content>
-                  <span v-for="(owner, i) in fullOwnersList" :key="i">
-                    - {{ owner.owner_name }}, Relation Score: {{ owner.score
-                    }}<br />
-                  </span>
-                </sui-accordion-content>
-              </sui-accordion>
-              <h3>
-                Top {{ numResultsString(this.complaints) }} most common 311
-                complaints by owner
-              </h3>
-              <p v-if="complaints !== null">
-                <span v-if="complaints.rows.length === 0">
-                  No complaints filed.
-                </span>
-                <span
-                  v-for="(complaintByName, i) in complaints.value_counts"
-                  :key="i"
-                >
-                  <span v-if="i < 5">
-                    - {{ complaintByName.complaintcodename }}:
-                    {{ complaintByName.count }}<br />
-                  </span>
-                </span>
-              </p>
-              <p v-else>Loading...</p>
-              <h3>
-                Top {{ numResultsString(this.violations) }} most common
-                violations by owner
-              </h3>
-              <p v-if="violations !== null">
-                <span v-if="violations.rows.length === 0">
-                  No violations filed.
-                </span>
-                <span
-                  v-for="(violationByTitle, i) in violations.value_counts"
-                  :key="i"
-                >
-                  <span v-if="i < 5">
-                    - {{ violationByTitle.violationcodetitle }}:
-                    {{ violationByTitle.count }}<br />
-                  </span>
-                </span>
-              </p>
-              <p v-else>Loading...</p>
-              <router-link to="/info" class="ui button positive" tag="button"
-                >Click to take action!</router-link
-              >
-              <sui-divider horizontal
-                >Crowd-Sourced Owner Information</sui-divider
-              >
-              <h4>
-                Crowd-Sourced Information for properties with mailing address:
-                {{ propertyResult.mailing_street }}
-                {{ propertyResult.mailing_address_1 }}
-              </h4>
-              <historical-crowd-sourced-tab
-                :mailingStreet="propertyResult.mailing_street || ''"
-                :mailingAddress1="propertyResult.mailing_address_1 || ''"
-              />
-              <div v-if="$siteMode.mode !== 'basic'">
-                <h2 is="sui-header">Links</h2>
-                <a :href="propertyResult.link_atlas" target="_blank"
-                  >Link to Atlas</a
-                ><br />
-                <a
-                  :href="propertyResult.link_cyclomedia_street_view"
-                  target="_blank"
-                  >Link to Cyclomedia Street View</a
-                ><br />
-                <a
-                  :href="propertyResult.link_property_phila_gov"
-                  target="_blank"
-                  >Link to property.phila.gov</a
-                ><br />
-                <a
-                  :href="propertyResult.link_license_inspections"
-                  target="_blank"
-                  >Link to li.phila.gov</a
-                >
-              </div>
-            </sui-container>
-          </sui-grid-column>
-        </sui-grid-row>
-      </sui-grid>
-      </sui-tab-pane>
-      <sui-tab-pane v-if="$siteMode.mode !== 'basic'" :title="propertyString">
+          <sui-grid>
+            <sui-grid-row>
+              <sui-grid-column :width="6">
+                <div style="font-size: 18px">
+                  The owner of this property is associated with
+                  <b>{{ uniqueProperties.length }}</b> properties valued at
+                  <b>{{ totalValueOfProperties }}</b
+                  >.
+                </div>
+                <leaflet-map
+                  :latLngs="properties"
+                  :highlightedLatLng="propertyResult"
+                />
+              </sui-grid-column>
+              <sui-grid-column :width="4">
+                <sui-container text>
+                  <p>
+                    {{ buildingDescription }}
+                    <span v-if="latestTransaction !== null">
+                      The deed for
+                      {{ latestTransaction.property_count }} properties,
+                      including this one, was purchased from
+                      <b>{{ latestTransaction.grantors }}</b> on
+                      <b>{{ latestTransaction.recording_date | luxon }}</b>
+                      for
+                      <b>
+                        {{
+                          formatCurrencyValue(
+                            latestTransaction.total_consideration
+                          )
+                        }}</b
+                      >.
+                      <span v-if="latestRentalLicense !== null">
+                        <br /><br />The status of the latest rental license is:
+                        <b>{{ latestRentalLicense.licensestatus }}</b
+                        >, it was initially issued on
+                        <b>{{
+                          latestRentalLicense.initialissuedate | luxon
+                        }}</b>
+                        with an expiration date of
+                        <b>{{ latestRentalLicense.expirationdate | luxon }}</b
+                        >.
+                      </span>
+                      <span v-else>
+                        There were no rental licenses found for this address.
+                      </span>
+                    </span>
+                  </p>
+                  <sui-accordion>
+                    <sui-accordion-title>
+                      <sui-icon name="dropdown" />
+                      Connected Possible Owners ({{ fullOwnersList.length }})
+                    </sui-accordion-title>
+                    <sui-accordion-content>
+                      <span v-for="(owner, i) in fullOwnersList" :key="i">
+                        - {{ owner.owner_name }}, Relation Score:
+                        {{ owner.score }}<br />
+                      </span>
+                      <owner-selector 
+                        v-if="$siteMode.mode !== 'basic'" 
+                        :owners-list="fullOwnersList"
+                    />
+                    </sui-accordion-content>
+                  </sui-accordion>
+                  <h3>
+                    Top {{ numResultsString(ownerBasedResults.complaints) }} most common 311
+                    complaints by owner
+                  </h3>
+                  <p v-if="ownerBasedResults.complaints !== null">
+                    <span v-if="ownerBasedResults.complaints.rows.length === 0">
+                      No complaints filed.
+                    </span>
+                    <span
+                      v-for="(complaintByName, i) in ownerBasedResults.complaints.value_counts"
+                      :key="i"
+                    >
+                      <span v-if="i < 5">
+                        - {{ complaintByName.complaintcodename }}:
+                        {{ complaintByName.count }}<br />
+                      </span>
+                    </span>
+                  </p>
+                  <p v-else>Loading...</p>
+                  <h3>
+                    Top {{ numResultsString(ownerBasedResults.violations) }} most common
+                    violations by owner
+                  </h3>
+                  <p v-if="ownerBasedResults.violations !== null">
+                    <span v-if="ownerBasedResults.violations.rows.length === 0">
+                      No violations filed.
+                    </span>
+                    <span
+                      v-for="(violationByTitle, i) in ownerBasedResults.violations.value_counts"
+                      :key="i"
+                    >
+                      <span v-if="i < 5">
+                        - {{ violationByTitle.violationcodetitle }}:
+                        {{ violationByTitle.count }}<br />
+                      </span>
+                    </span>
+                  </p>
+                  <p v-else>Loading...</p>
+                  <router-link
+                    to="/info"
+                    class="ui button positive"
+                    tag="button"
+                    >Click to take action!</router-link
+                  >
+                  <sui-divider horizontal
+                    >Crowd-Sourced Owner Information</sui-divider
+                  >
+                  <h4>
+                    Crowd-Sourced Information for properties with mailing
+                    address:
+                    {{ propertyResult.mailing_street }}
+                    {{ propertyResult.mailing_address_1 }}
+                  </h4>
+                  <historical-crowd-sourced-tab
+                    :mailingStreet="propertyResult.mailing_street || ''"
+                    :mailingAddress1="propertyResult.mailing_address_1 || ''"
+                  />
+                  <div v-if="$siteMode.mode !== 'basic'">
+                    <h2 is="sui-header">Links</h2>
+                    <a :href="propertyResult.link_atlas" target="_blank"
+                      >Link to Atlas</a
+                    ><br />
+                    <a
+                      :href="propertyResult.link_cyclomedia_street_view"
+                      target="_blank"
+                      >Link to Cyclomedia Street View</a
+                    ><br />
+                    <a
+                      :href="propertyResult.link_property_phila_gov"
+                      target="_blank"
+                      >Link to property.phila.gov</a
+                    ><br />
+                    <a
+                      :href="propertyResult.link_license_inspections"
+                      target="_blank"
+                      >Link to li.phila.gov</a
+                    >
+                  </div>
+                </sui-container>
+              </sui-grid-column>
+            </sui-grid-row>
+          </sui-grid>
+        </sui-tab-pane>
+        <sui-tab-pane v-if="$siteMode.mode !== 'basic'" :title="propertyString">
           <historical-property-tab :parcelNumber="this.parcelNumber" />
-      </sui-tab-pane>
-      <sui-tab-pane v-if="$siteMode.mode !== 'basic'" :title="latestOwnerString">
+        </sui-tab-pane>
+        <sui-tab-pane
+          v-if="$siteMode.mode !== 'basic'"
+          :title="latestOwnerString"
+        >
           <historical-owner-tab
             :owner="latestOwnerString"
-            :highlightedProperty="propertyResult"
+            :ownerTimelineData="ownerTimelineData"
+            :ownerBasedResults="ownerBasedResults"
           />
-      </sui-tab-pane>
+        </sui-tab-pane>
       </sui-tab>
     </div>
   </div>
@@ -157,15 +186,17 @@ import PropertyHeadline from "@/components/page/property/PropertyHeadline";
 import LeafletMap from "@/components/page/property/LeafletMap";
 import { getTableInfo } from "@/api/singleTable";
 import { getOwnersTimelineTableInfo } from "@/api/singleTable";
+import OwnerSelector from "@/components/page/owner/OwnerSelector";
 
 export default {
   name: "Property",
   components: {
     PropertyHeadline,
     LeafletMap,
+    OwnerSelector,
     HistoricalPropertyTab,
     HistoricalOwnerTab,
-    HistoricalCrowdSourcedTab,
+    HistoricalCrowdSourcedTab
   },
   data() {
     return {
@@ -176,23 +207,26 @@ export default {
       properties: [],
       latestTransaction: null,
       propertySourceString: "based on the latest property assessment.",
-      complaints: null,
-      violations: null,
+      ownerBasedResults: {'violations': [], 'complaints': []},
       latestRentalLicense: null,
       fullOwnersList: [],
-      ownerTimelineData: [],
+      ownerTimelineData: []
     };
   },
   computed: {
     propertyString() {
-        if(this.propertyResult){
-            return this.propertyResult.location + " " + this.propertyResult.unit
-        } else { return "" }
+      if (this.propertyResult) {
+        return this.propertyResult.location + " " + (this.propertyResult.unit || "");
+      } else {
+        return "";
+      }
     },
     latestOwnerString() {
       if (this.latestTransaction !== null) {
         return (
-          this.latestTransaction.grantees + " " + (this.latestTransaction.legal_remarks || "")
+          this.latestTransaction.grantees +
+          " " +
+          (this.latestTransaction.legal_remarks || "")
         );
       } else {
         return this.owners;
@@ -221,7 +255,7 @@ export default {
       this.uniqueProperties.forEach(function(row) {
         totalValue += row.market_value;
       });
-      return this.formatCurrencyValue(totalValue)
+      return this.formatCurrencyValue(totalValue);
     },
     mailingStreetOrLocation() {
       if (this.propertyResult !== null) {
@@ -255,7 +289,6 @@ export default {
         year_built_estimate_str = " (although this is an estimate)";
       }
       if (this.propertyResult !== null) {
-          console.log(this.propertyResult)
         return (
           "This building was constructed in " +
           this.propertyResult.year_built +
@@ -264,15 +297,16 @@ export default {
           this.propertyResult.category_code_description +
           ", " +
           this.propertyResult.building_code_description +
-          ". It was most recently valued for " + 
-          this.formatCurrencyValue(this.propertyResult.market_value) + "." 
+          ". It was most recently valued for " +
+          this.formatCurrencyValue(this.propertyResult.market_value) +
+          "."
         );
       }
       return "";
     }
   },
   methods: {
-    formatCurrencyValue(totalValue){
+    formatCurrencyValue(totalValue) {
       var formatter = new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD"
@@ -306,12 +340,9 @@ export default {
       sortedData = sortedData.sort((a, b) =>
         a.initialissuedate > b.initialissuedate ? 1 : -1
       );
-      sortedData = sortedData.filter(
-        a =>
-          a.licensetype === "Rental"
-      );
-      if(sortedData.length > 0){
-      this.latestRentalLicense = sortedData[0]
+      sortedData = sortedData.filter(a => a.licensetype === "Rental");
+      if (sortedData.length > 0) {
+        this.latestRentalLicense = sortedData[0];
       }
     }
     const deedData = await getTableInfo(
@@ -366,11 +397,11 @@ export default {
         row["color"] = "yellow";
         row["relation"] = "owner";
         this.properties.push(row);
-          this.ownerTimelineData.push({
-            name: row.location + " " + (row.unit|| ""),
-            start: new Date(Date.parse(row.start_dt)),
-            end: new Date(Date.parse(row.end_dt))
-          });
+        this.ownerTimelineData.push({
+          name: row.location + " " + (row.unit || ""),
+          start: new Date(Date.parse(row.start_dt)),
+          end :new Date(Date.parse(row.end_dt) || Date())
+        });
       });
       this.ownerTimelineData.sort((a, b) => (a.start < b.start ? 1 : -1));
       this.fullOwnersList = ownerRelatedPropertyData.owners_list;
@@ -407,10 +438,10 @@ export default {
       ["violationcodetitle"]
     );
     if (complaintsResult.results.rows) {
-      this.complaints = complaintsResult.results;
+      this.ownerBasedResults.complaints = complaintsResult.results;
     }
     if (violationsResult.results.rows) {
-      this.violations = violationsResult.results;
+      this.ownerBasedResults.violations = violationsResult.results;
     }
   }
 };

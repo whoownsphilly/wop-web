@@ -1,6 +1,6 @@
 import Vue from "vue";
 import App from "./App.vue";
-//import SuiVue from "semantic-ui-vue";
+import SuiVue from "semantic-ui-vue";
 import router from "./router";
 import VueGoodTablePlugin from 'vue-good-table';
 import ToggleSwitch from 'vuejs-toggle-switch'
@@ -26,7 +26,7 @@ L.Icon.Default.mergeOptions({
 Vue.config.productionTip = false;
 
 // add plugins
-//Vue.use(SuiVue);
+Vue.use(SuiVue);
 Vue.use(VueGoodTablePlugin);
 Vue.use(ToggleSwitch);
 Vue.use(VueLuxon);

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
+    "serve": "export VUE_APP_DJANGO_PORT=${DJANGO_PORT:-8000}; export VUE_APP_DJANGO_URL=localhost; vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },

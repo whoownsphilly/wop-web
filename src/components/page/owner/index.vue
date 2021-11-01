@@ -1,84 +1,66 @@
 <template>
 <div>
-    <h2>connected to {{ ownerTimelineData.length }} properties</h2>
-    <sui-accordion exclusive>
-      <div v-if="loadTables">
-        <div v-for="table in tables" :key="table.name">
-          <historical-tab-table
-            searchType="owner"
-            :searchToMatch="owner"
-            :table="table"
-          />
-        </div>
-      </div>
-    </sui-accordion>
-    <div v-if="timelineDataForChart">
-     <vue-apex-charts type="rangeBar" :height="chartHeight" :options="chartOptions" :series="timelineDataForChart"></vue-apex-charts>
+  <div v-if="loading">
+    <sui-dimmer active inverted>
+      <sui-loader content="Finding All Information for this owner..." />
+    </sui-dimmer>
+  </div>
+  <div v-else>
+    <h2>connected to {{ nUniqueProperties }} propert<span v-if="nUniqueProperties > 1">ies</span><span v-else>y</span></h2>
+    <leaflet-map v-if="$siteMode.mode !== 'basic'"
+      :latLngs="ownerPropertyTimelineData"
+    />
+    <vue-apex-timeline :data="ownerPropertyTimelineData" labelCol="location_unit" startCol="start_dt" endCol="end_dt"/>
+    <h2>Property Ownership Timeline</h2>
+    <data-table 
+        :rows="ownerPropertyTimelineData" 
+        :columns="ownerPropertyTimelineDataColumns"
+        title="Owner Timeline"
+    />
+    <h2>Owner's Violation History</h2>
     </div>
   </div>
 </template>
 
 <script>
-import HistoricalTabTable from "@/components/ui/HistoricalTabTable";
-import VueApexCharts from 'vue-apexcharts'
+import { getOwnerPageInfo } from '@/api/pages';
+import VueApexTimeline from '@/components/ui/Timeline';
+import LeafletMap from "@/components/ui/LeafletMap";
+import DataTable from "@/components/ui/DataTable";
 
 export default {
   name: "HistoricalOwnerTab",
-  components: { HistoricalTabTable, VueApexCharts},
+  components: { VueApexTimeline, LeafletMap, DataTable},
   props: {
-    owner: {
+    ownerName: {
       type: String,
       required: true
     },
-    ownerTimelineData: {
-      type: Array,
-      required: true
-    }
   },
   data() {
     return {
-      latLngs: [],
-      highlightedLatLng: null,
-      loadTables: true,
-      ownersList: [],
-      isActive: {},
-      tables: [
-        { title: "Violations", name: "violations" },
-        { title: "Complaints", name: "complaints" },
-        { title: "Appeals", name: "appeals" },
-        { title: "Case Investigations", name: "case_investigations" }
-      ],
-
-          chartOptions: {
-            chart: {
-              type: 'rangeBar'
-            },
-            plotOptions: {
-              bar: {
-                horizontal: true
-              }
-            },
-            tooltip: {
-                x: {format: 'dd MMM, yyyy'}
-            },
-            yaxis: {
-              labels: {maxWidth: 250}
-            },
-            xaxis: {
-              type: 'datetime'
-            }
-          }
+      loading: false,
+      ownerPropertyTimelineData: [],
     };
   },
   computed: {
-    chartHeight(){return this.ownerTimelineData.length * 10},
-    timelineDataForChart() {
-      let dataForChart = []
-      this.ownerTimelineData.forEach(time => {
-          dataForChart.push({x: time.name, y: [time.start.getTime(), time.end.getTime()]})
-      })
-      return  [{data:  dataForChart }]
-    }
+      nUniqueProperties() { return [...new Set(this.ownerPropertyTimelineData.map(item => item.location_unit))].length || null;},
+      ownerPropertyTimelineDataColumns() { 
+          if (this.ownerPropertyTimelineData.length > 0){ 
+              return Object.keys(this.ownerPropertyTimelineData[0]).map(
+                col => {return {label: col, field: col}}
+              )
+        } else{ 
+            return []
+        }
+    },
+  },
+  methods: {
+      },
+  created() {
+    this.loading = true 
+    // get all time-based data for the last year
+    getOwnerPageInfo(this.ownerName).then(ownerResults => {this.ownerPropertyTimelineData = ownerResults['owner_property_timeline']; this.loading = false})
   },
 };
 </script>

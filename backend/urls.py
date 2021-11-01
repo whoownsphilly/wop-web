@@ -44,6 +44,10 @@ from .api import (
     owners_timeline_response,
     autocomplete_response,
     settings_response,
+    property_page_response,
+    owner_page_response,
+    owner_current_properties_map_response,
+    property_latest_owner_details_response,
 )
 
 api_urlpatterns = [
@@ -58,6 +62,26 @@ api_urlpatterns = [
         "api/v1/owners_timeline/",
         owners_timeline_response,
         name="owners_timeline_list",
+    ),
+    path(
+        "api/v1/property/historical_details/",
+        property_page_response,
+        name="property_page_list",
+    ),
+    path(
+        "api/v1/property/latest_owner_details/",
+        property_latest_owner_details_response,
+        name="property_page_latest_owner_details_list",
+    ),
+    path(
+        "api/v1/owner_page/",
+        owner_page_response,
+        name="owner_page_list",
+    ),
+    path(
+        "api/v1/owner_current_properties_map/",
+        owner_current_properties_map_response,
+        name="owner_current_properties_map_list",
     ),
 ]
 

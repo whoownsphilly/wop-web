@@ -3,6 +3,11 @@
 Local Development
 -----------------
 
+## Install
+```
+yarn install
+```
+
 To develop locally, you need to start up the django server. The django server points to the built JS, so if you want a hot-reload on your JS, you also need to separately start up the vue server.
 
 ### Docker

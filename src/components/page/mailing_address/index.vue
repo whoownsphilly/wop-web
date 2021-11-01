@@ -67,35 +67,32 @@
 </template>
 
 <script>
-import { getBioTableInfo } from "@/api/singleTable";
 import BioResult from "@/components/page/mailing_address/BioResult";
 
 export default {
-  name: "HistoricalCrowdSourcedTab",
+  name: "HistoricalMailingAddressTab",
   components: {
     BioResult
   },
   props: {
-    mailingStreet: {
-      type: String,
+    bioResults: {
+      type: Array,
       required: true
     },
-    mailingAddress1: {
-      type: String,
-      required: true
+    mailingStreet: {
+        type: String,
+        required: true
     }
   },
   data() {
     return {
       modalOpen: false,
-      bioResults: [],
       disclaimerOpen: false,
       airTableUrl:
         "https://airtable.com/embed/shrAacunffP2mP3PC?backgroundColor=orange&prefill_mailing_street=" +
         this.mailingStreet
     };
   },
-  computed: {},
   methods: {
     toggle() {
       this.modalOpen = !this.modalOpen;
@@ -103,11 +100,6 @@ export default {
     disclaimerToggle() {
       this.disclaimerOpen = !this.disclaimerOpen;
     }
-  },
-  created() {
-    getBioTableInfo(this.mailingStreet, this.mailingAddress1).then(data => {
-      this.bioResults = data.results || [];
-    });
   }
 };
 </script>

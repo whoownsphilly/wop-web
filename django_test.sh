@@ -1,2 +1,2 @@
 #!/bin/sh
-poetry run py.test "$@"
+docker-compose run --rm test "$@"

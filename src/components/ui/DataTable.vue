@@ -1,13 +1,13 @@
 <template>
+  <div>
   <vue-good-table
     :columns="columns"
     :rows="rows"
-    :isLoading="loading"
     :search-options="{
       enabled: true,
       trigger: 'enter',
       skipDiacritics: true,
-      placeholder: 'Search ' + table.name
+      placeholder: 'Search...'
     }"
     :pagination-options="{
       enabled: true,
@@ -24,31 +24,48 @@
       pageLabel: 'page', // for 'pages' mode
       allLabel: 'All'
     }"
-  />
-</sui-accordion-content>
+  ><div slot="table-actions">
+    <a :href="generateCSVUrl" :download="filename" target="_blank">Download this table</a>
+  </div>
+  </vue-good-table>
+  </div>
 </template>
 
 <script>
-import { getTableInfo } from "@/api/singleTable";
 
 export default {
   name: "DataTable",
   props: {
     columns: {
-      type: Object,
+      type: Array,
       required: true
     },
     rows: {
-      type: Object,
+      type: Array,
       required: true
     },
+    title: {
+        type: String
+    }
   },
   data() {
     return {
-      loading: true,
-      columns: [],
-      rows: []
     };
   },
+  computed: {
+    filename() {
+        return (this.title || "download") + ".csv"
+    },
+    generateCSVUrl() {
+    let colNames = this.columns.map(col => {return col.label})
+    let csv = colNames.join(",") + "\n"
+    this.rows.forEach((row) => {
+        let outputRow = []
+        colNames.forEach((col) => { outputRow.push(row[col])})
+        csv += outputRow.join(",") + "\n";
+    });
+    return "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
+}
+}
 };
 </script>

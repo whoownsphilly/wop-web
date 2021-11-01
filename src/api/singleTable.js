@@ -38,8 +38,7 @@ export const getBioTableInfo = (mailingStreet, mailingAddress1) => {
 
 export const getOwnersTimelineTableInfo = owner => {
   const url =
-    process.env.VUE_APP_DJANGO_URL +
-    "/api/v1/owners_timeline/?owner_name=" +
+    "api/v1/owners_timeline/?owner_name=" +
     owner;
   return fetch(url, {
     method: "GET"

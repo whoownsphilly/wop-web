@@ -3,6 +3,7 @@ from phillydb import PhillyCartoTable
 import os
 import pandas as pd
 import pytest
+from requests import get as request_get # so we don't get recursive issues
 from rest_framework.test import APIRequestFactory
 
 from backend.urls import table_api_urlpatterns, table_schema_api_urlpatterns
@@ -45,7 +46,7 @@ def test_schema_api_responses(client, monkeypatch):
         route = urlpattern.pattern._route
 
         def _fake_results(*args, **kwargs):
-            return [{"ABC": "DEF"}]
+            return [{"rows": [{"mailing_street": "DEF", "mailing_address_1": "IGH"}]}]
 
         monkeypatch.setattr(PhillyCartoTable, "get_schema", _fake_results)
         assert client.get(f"/{route}") is not None
@@ -96,7 +97,7 @@ def test_autocomplete_response(client, monkeypatch_query_by_single_str_column):
     assert response.json()["success"] == True
 
 
-class MockBiosResponse:
+class MockResponse:
     def __init__(self, data=None):
         self.status_code = 200
         self.data = data if data else {}
@@ -106,21 +107,77 @@ class MockBiosResponse:
 
 
 @pytest.fixture
-def monkeypatch_airtable(monkeypatch):
-    def _fake_results(*args, **kwargs):
-        return MockBiosResponse(
-            {
-                "records": [
-                    {"fields": {"mailing_street": "ABC Capital", "Notes": "Blah"}}
-                ]
-            }
-        )
+def monkeypatch_raw_requests(monkeypatch):
+    os.environ["BIOS_URL"] = "https://api.airtable.com"
 
-    os.environ["BIOS_URL"] = "FAKE_URL"
+    def _fake_results(*args, **kwargs):
+        if "airtable" in args[0]:
+            return MockResponse(
+                {
+                    "records": [
+                        {
+                            "fields": {
+                                "mailing_street": "ABC Capital",
+                                "Notes": "Blah",
+                                "name_of_possible_owner": "DEF",
+                                "link_to_owner_website": "http://.com",
+                            }
+                        }
+                    ]
+                }
+            )
+        elif "phl.carto" in args[0]:
+            return MockResponse(
+                {
+                    "rows": [
+                        {
+                            "mailing_street": "ABC Street",
+                            "mailing_address_1": "Address1",
+                        }
+                    ]
+                }
+            )
+
+    monkeypatch.setattr("requests.get", _fake_results)
+
+@pytest.fixture
+def monkeypatch_airtable(monkeypatch):
+    os.environ["BIOS_URL"] = "https://api.airtable.com"
+
+    def _fake_results(*args, **kwargs):
+        if "airtable" in args[0]:
+            return MockResponse(
+                {
+                    "records": [
+                        {
+                            "fields": {
+                                "mailing_street": "ABC Capital",
+                                "Notes": "Blah",
+                                "name_of_possible_owner": "DEF",
+                                "link_to_owner_website": "http://.com",
+                            }
+                        }
+                    ]
+                }
+            )
+        else:
+            return request_get(*args, **kwargs)
+
     monkeypatch.setattr("requests.get", _fake_results)
 
 
-def test_mailing_street_bios_response(client, monkeypatch_airtable):
+def test_mailing_street_bios_response(client, monkeypatch_raw_requests):
     request_params = {"mailing_street": "ABC Capital"}
     response = client.get(reverse("bios_list"), request_params)
+    assert response.status_code == 200
+
+
+def test_property_page_response(client, monkeypatch_airtable):
+    request_params = {"parcel_number": "888058983"}
+    response = client.get(reverse("property_page_list"), request_params)
+    assert response.status_code == 200
+
+def test_owner_page_response(client, monkeypatch_airtable):
+    request_params = {"owner_name": "COMCAST CABLEVISION"}
+    response = client.get(reverse("owner_page_list"), request_params)
     assert response.status_code == 200

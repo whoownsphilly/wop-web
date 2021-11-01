@@ -5,6 +5,7 @@
       :zoom="zoom"
       :center="center"
       :bounds="mapBounds"
+      :sleep="true"
       style="height: 500px; width: 100%"
     >
       <l-tile-layer :url="url" :attribution="attribution" />

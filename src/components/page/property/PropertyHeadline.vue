@@ -13,6 +13,20 @@
             ></sui-statistic-value
           >
         </sui-statistic>
+        <br>
+        <span v-if="ownerByMailingAddress">
+            <sui-statistic horizontal>
+              <sui-statistic-label> and managed by </sui-statistic-label>
+              <sui-statistic-value>
+              <span v-if="ownerByMailingAddress.url">
+                  <a :href='ownerByMailingAddress.url' target="_blank">{{ ownerByMailingAddress.name }}</a>
+              </span>
+              <span v-else>
+              {{ ownerByMailingAddress.name }}
+              </span>
+              </sui-statistic-value>
+              </sui-statistic>
+          </span>
       </div>
 </template>
 
@@ -27,6 +41,9 @@ export default {
     latestOwnerString: {
       type: String,
       required: true
+    },
+    ownerByMailingAddress: {
+        type: Object,
     },
     propertySourceString: {
       type: String,

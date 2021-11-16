@@ -6,7 +6,9 @@ import VueGoodTablePlugin from 'vue-good-table';
 import ToggleSwitch from 'vuejs-toggle-switch'
 import VueLuxon from "vue-luxon";
 import VTooltip from 'v-tooltip'
+import VueIframe from 'vue-iframes'
 
+Vue.use(VueIframe)
 // import the styles
 import "semantic-ui-css/semantic.min.css";
 import 'vue-good-table/dist/vue-good-table.css'
@@ -31,6 +33,7 @@ Vue.use(VueGoodTablePlugin);
 Vue.use(ToggleSwitch);
 Vue.use(VueLuxon);
 Vue.use(VTooltip)
+Vue.use(VueIframe)
 
 Vue.prototype.$siteMode = Vue.observable({mode: 'basic'})
 

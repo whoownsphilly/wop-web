@@ -37,9 +37,7 @@ export const getBioTableInfo = (mailingStreet, mailingAddress1) => {
 };
 
 export const getOwnersTimelineTableInfo = owner => {
-  const url =
-    "api/v1/owners_timeline/?owner_name=" +
-    owner;
+  const url = "api/v1/owners_timeline/?owner_name=" + owner;
   return fetch(url, {
     method: "GET"
   }).then(response => {

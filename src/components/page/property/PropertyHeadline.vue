@@ -8,11 +8,9 @@
         </sui-statistic>
         <sui-statistic horizontal>
           <sui-statistic-value>
-            <span v-tooltip.bottom="propertySourceString"
-              >{{ latestOwnerString }}<sup>*</sup></span
-            ></sui-statistic-value
-          >
-        </sui-statistic>
+            {{ latestOwnerString }}
+          </sui-statistic-value>
+        </sui-statistic><sup><info-modal modalName="propertyHeadline.ownerModalInfo" /></sup>
         <br>
         <span v-if="ownerByMailingAddress">
             <sui-statistic horizontal>
@@ -31,6 +29,7 @@
 </template>
 
 <script>
+import InfoModal from "@/components/ui/InfoModal";
 export default {
   name: "PropertyHeadline",
   props: {
@@ -50,7 +49,14 @@ export default {
       required: true
     },
   },
-  computed: { },
+  components: {
+    InfoModal
+  },
+  computed: { 
+      ownerModalInfo(){
+          return "This is the modal for owners"
+      }
+  },
   methods: { }
 };
 </script>

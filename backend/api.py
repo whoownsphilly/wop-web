@@ -14,6 +14,7 @@ from phillydb import PhillyCartoQuery
 from phillydb.owner_search_queries import OwnerQuery, OwnerQueryResult
 from phillydb.utils import get_normalized_address
 from phillydb import Properties, construct_search_query
+from phillydb.additional_links import get_street_view_link
 
 import requests
 import simplejson
@@ -52,9 +53,16 @@ def settings_response(request):
 
 
 def autocomplete_response(request):
+    """
+    A response that provides a list of properties based on the start of a string
+
+    Attributes
+    ----------
+    startswith_str
+        The string that the owner or property address must start with
+    """
     pretty_print = request.GET.get("pretty", "").upper() == "TRUE"
     startswith_str = request.GET.get("startswith_str", "").upper()
-    column = request.GET.get("column", "location")
     n_results = request.GET.get("n_results", 10)
 
     search_by_owner = False
@@ -224,148 +232,6 @@ def autocomplete_response(request):
         )
 
 
-def _table_response(table_obj, request):
-    """
-    search_to_match: string to use to match
-    search_type: what column to use
-    search_method: [contains, starts with, ends with, eequals]
-    """
-    pretty_print = request.GET.get("pretty", "").upper() == "TRUE"
-    search_to_match = request.GET.get("search_to_match", "")
-    search_type = request.GET.get("search_type", "")
-    search_method = request.GET.get("search_method", "contains")
-    groupby_col_str = request.GET.get("groupby_cols")
-    groupby_cols = groupby_col_str.split(",") if groupby_col_str else []
-
-    data_key = base64.b64encode(
-        f"{table_obj.cartodb_table_name}_"
-        f"{search_to_match}_{search_type}_"
-        f"{search_method}".encode("utf-8")
-    )
-
-    data = cache.get(data_key)
-    if not data:
-        try:
-            if search_type == "owner":
-                owner_query_obj = OwnerQuery(search_to_match)
-                opa_account_numbers_sql = owner_query_obj.parcel_num_sql
-            else:
-                opa_account_numbers_sql = construct_search_query(
-                    search_to_match=search_to_match,
-                    search_type=search_type,
-                    search_method=search_method,
-                )
-        except SearchTypeNotImplementedError as e:
-            return PrettifiableJsonResponse(
-                {"error": e.message}, status=400, pretty_print=pretty_print
-            )
-        except SearchMethodNotImplementedError as e:
-            return PrettifiableJsonResponse(
-                {"error": e.message}, status=400, pretty_print=pretty_print
-            )
-
-        df = table_obj.query_by_opa_account_numbers(
-            opa_account_numbers=opa_account_numbers_sql, columns="all"
-        ).to_dataframe()
-        if search_type == "owner":
-            owner_query_result_obj = OwnerQueryResult(
-                owner_query_obj.parcel_num_sql, owner_query_obj.owners_list
-            )
-            df = owner_query_result_obj.get_filtered_df(df, table_obj.dt_column)
-        value_counts = (
-            df.value_counts(groupby_cols)
-            .reset_index()
-            .rename(columns={0: "count"})
-            .to_dict("records")
-            if groupby_cols and not df.empty
-            else {}
-        )
-
-        def _make_col_dict(col):
-            # for vue-good-tables format
-            column_dict = {"label": col, "field": col, "tooltip": f"Tooltip for {col}"}
-            column_dict["filterOptions"] = {"enabled": True}
-            if col.endswith("date"):
-                column_dict["type"] = "date"
-                column_dict["dateInputFormat"] = "yyyy-MM-dd'T'HH':'mm':'ss'Z'"
-                column_dict["dateOutputFormat"] = "MMM do yyy"
-            return column_dict
-
-        columns = [_make_col_dict(col) for col in df.columns]
-        data = {
-            "metadata": {
-                "title": table_obj.title,
-                "cartodb_table_name": table_obj.cartodb_table_name,
-                "data_links": table_obj.data_links,
-                "search_query": search_to_match,
-                "search_to_match": search_to_match,
-                "search_type": search_type,
-                "search_method": search_method,
-            },
-            "results": {
-                "columns": columns,
-                "value_counts": value_counts,
-                "rows": df.where(pd.notnull(df), None)
-                .replace([np.nan], [None])
-                .to_dict("records"),
-            },
-        }
-        cache.set(data_key, data)
-    return PrettifiableJsonResponse(data, pretty_print=pretty_print)
-
-
-def _table_schema_response(table_obj, request):
-    pretty_print = request.GET.get("pretty", "").upper() == "TRUE"
-    schema = table_obj.get_schema()
-    schema = schema if schema else []
-    data = {"metadata": {"url": table_obj._get_schema_link()}, "results": schema}
-    return PrettifiableJsonResponse(data, pretty_print=pretty_print)
-
-
-def bios_response(request):
-    pretty_print = request.GET.get("pretty", "").upper() == "TRUE"
-    # currently only available for mailing street, but this may be extended some day.
-    mailing_street = request.GET.get("mailing_street", "")
-    mailing_address_1 = request.GET.get("mailing_address_1", "")
-    output_response = {
-        "metadata": {
-            "mailing_street": mailing_street,
-            "mailing_address_1": mailing_address_1,
-        }
-    }
-    if mailing_street:
-        airtable_url = os.environ.get("BIOS_URL")
-        # TODO (ssuffian): This should be synced to the db rather than called each time.
-        if airtable_url:
-            # TODO Change to visible fields to lock it down better
-            invisible_fields = ["last_modified_by", "researcher"]
-            params = {
-                "filterByFormula": 'IF(AND({mailing_street}="'
-                + mailing_street
-                + '",'
-                + '{mailing_address_1}="'
-                + mailing_address_1
-                + '",'
-                + "{show_on_website}=TRUE()),"
-                + "TRUE(), FALSE())",
-                #'fields': [],
-            }
-            response = requests.get(airtable_url, params=params)
-            if "records" in response.json():
-                output_response["results"] = []
-                output_response["n_results"] = len(response.json()["records"])
-                for record in response.json()["records"]:
-                    outputs = {
-                        key: val
-                        for key, val in record["fields"].items()
-                        if key not in invisible_fields
-                    }
-                    output_response["results"].append(outputs)
-                return JsonResponse(output_response)
-    output_response["error"] = "Can't find bio."
-    return PrettifiableJsonResponse(output_response, pretty_print=pretty_print)
-
-
 def mailing_address_response(request):
     """Return all properties associated with this mailing address"""
     mailing_street = request.GET["mailing_street"]
@@ -394,10 +260,12 @@ def owners_timeline_response(request):
     # optionally add all owners that share that mailing address
     mailing_address = request.GET.get("mailing_address")
 
-    data_key = base64.b64encode(f"owners_timeline_{owner_name}_{mailing_address}".encode("utf-8"))
+    data_key = base64.b64encode(
+        f"owners_timeline_{owner_name}_{mailing_address}".encode("utf-8")
+    )
     output = cache.get(data_key, {})
     if output:
-        output['cache'] = True
+        output["cache"] = True
         return JsonResponse(output)
 
     owner_query_obj = OwnerQuery(owner_name)
@@ -412,18 +280,17 @@ def owners_timeline_response(request):
     output_response = {
         "success": True,
         "owners_list": owner_query_obj.owner_df.to_dict("records"),
-        "owner_timeline": owner_query_result_obj.owners_timeline_df.to_dict(
-            "records"
-        ),
+        "owner_timeline": owner_query_result_obj.owners_timeline_df.to_dict("records"),
     }
 
     data = simplejson.loads(simplejson.dumps(output_response, ignore_nan=True))
     cache.set(data_key, data)
-    data['cache'] = False
-    return JsonResponse(data)
+    data["cache"] = False
+    return PrettifiableJsonResponse(data)
 
 
 def property_latest_owner_details_response(request):
+    """This is used to construct the headline on the website"""
     parcel_number = request.GET["parcel_number"]
     data_key = base64.b64encode(f"{parcel_number}".encode("utf-8"))
     output = cache.get(data_key, {})
@@ -433,6 +300,7 @@ def property_latest_owner_details_response(request):
     # Example of record with no rtt_summary: 302055100
     query = f"""
         SELECT  grantees, legal_remarks, owner_1, owner_2, 
+        ST_Y(opa.the_geom) AS lat, ST_X(opa.the_geom) AS lng,
         location, unit,
         latest_owners.recording_date as latest_deed_date, 
         opa.recording_date as latest_deed_date_mailing_address,
@@ -476,15 +344,18 @@ def property_latest_owner_details_response(request):
         location = result["location"]
         unit = result["unit"] if result["unit"] else ""
         address = f"{location} {unit}".strip()
+        latitude = result["lat"]
+        longitude = result["lng"]
         output = {
             "success": True,
             "owner_is_from_deed": grantees is not None,
             "mailing_address_matches_latest_deed": mailing_address_matches_latest_deed,
             "latest_owner": result["latest_owners"].strip(),
-            "address": address,
+            "full_address": address,
             "latest_mailing_street": mailing_street,
             "latest_mailing_address_1": mailing_address_1,
             "latest_mailing_zip": mailing_zip,
+            "street_view_link": f"https://cyclomedia.phila.gov/?address={longitude},{latitude}",
         }
         airtable_url = os.environ.get("BIOS_URL")
         # TODO (ssuffian): This should be synced to the db rather than called each time.
@@ -526,18 +397,21 @@ def property_latest_owner_details_response(request):
     else:
         output = {"success": False}
     cache.set(data_key, output)
-    return JsonResponse(output)
+    output["cache"] = False
+    return PrettifiableJsonResponse(output)
 
 
 def property_page_response(request):
+    """Used to get the information for the Property Basics page"""
     parcel_number = request.GET["parcel_number"]
     five_years_ago = (pd.Timestamp.now() - pd.Timedelta(days=365 * 5)).isoformat()
     date_since = request.GET.get("date_since", five_years_ago)
-    # optionally add all owners that share that mailing address
-    data_key = base64.b64encode(f"property_page_{parcel_number}{date_since}".encode("utf-8"))
+    data_key = base64.b64encode(
+        f"property_page_{parcel_number}{date_since}".encode("utf-8")
+    )
     output = cache.get(data_key, {})
     if output:
-        output['cache'] = True
+        output["cache"] = True
         return JsonResponse(output)
 
     query = f"""
@@ -550,6 +424,8 @@ def property_page_response(request):
             WHEN homestead_exemption > 0 THEN true
             ELSE false END
         as has_homestead_exemption,
+        opp.location,
+        ST_Y(opp.the_geom) AS lat, ST_X(opp.the_geom) AS lng,
         opp.owner_1, opp.owner_2,
         mailing_street, mailing_address_1,
         building_code_description, category_code_description,
@@ -679,7 +555,7 @@ def property_page_response(request):
         [deed for deed in assessment_timeline_data if deed["status"] == "purchased"]
     )
 
-    # we aren't going to try to guess ownership before 2000 since that's as far back as the DEEDS table goes
+    # we aren't going to try to guess ownership before 2000 since that's as far back as the DEEDS table goes (technically it goes back to Dec 6 1999)
     owner_data = []
     earliest_start_time = pd.to_datetime("2000-01-01")
     if len(owner_data_df) > 0:
@@ -713,13 +589,15 @@ def property_page_response(request):
     output["property_ownership_timeline"] = owner_data
     output["property_value_timeline"] = assessment_timeline_data
     cache.set(data_key, output)
-    output['cache'] = False
+    output["cache"] = False
     return JsonResponse(output)
 
 
 def owner_current_properties_map_response(request):
     parcel_number = request.GET["parcel_number"]
-    data_key = base64.b64encode(f"owner_current_properties_map_response_{parcel_number}".encode("utf-8"))
+    data_key = base64.b64encode(
+        f"owner_current_properties_map_response_{parcel_number}".encode("utf-8")
+    )
     output = cache.get(data_key, {})
     if output:
         return JsonResponse(output)
@@ -822,7 +700,7 @@ def owner_current_properties_map_response(request):
         "owners_currently_owned_properties": unique_properties.to_dict("records"),
     }
     cache.set(data_key, output)
-    output['cache'] = False
+    output["cache"] = False
     return JsonResponse(output)
 
 
@@ -838,7 +716,7 @@ def owner_page_response(request):
     data_key = base64.b64encode(f"owner_page_{owner_name}".encode("utf-8"))
     output = cache.get(data_key, {})
     if output:
-        output['cache'] = True
+        output["cache"] = True
         return JsonResponse(output)
     owner_query_obj = OwnerQuery(owner_name)
 
@@ -857,9 +735,189 @@ def owner_page_response(request):
     owner_property_timeline_df["current_owner"] = pd.isnull(
         owner_property_timeline_df["end_dt"]
     )
-    # Get violations history
 
-    output = {"owner_property_timeline": owner_property_timeline_df.to_dict("records")}
+    # OWNER PROPERTY COUNTS BY NAME
+    ##################################################################
+    # Get property counts by name for apex grouped bar chart in format:
+    # x: {'name': 'currently owned', 'data': [1,2]}
+    # y: [ownername1, ownername2, ownername3]
+    owner_property_counts_by_name = (
+        owner_property_timeline_df.groupby(["likely_owner", "current_owner"])
+        .size()
+        .to_frame("n_properties")
+        .reset_index()
+    )
+    currently_owned = owner_property_counts_by_name.query(
+        "current_owner==True"
+    ).set_index("likely_owner")["n_properties"]
+    previously_owned = owner_property_counts_by_name.query(
+        "current_owner==False"
+    ).set_index("likely_owner")["n_properties"]
+    # make sure there is an entry for each owner
+    all_owned = pd.concat([currently_owned, previously_owned], axis=1).replace(
+        {np.nan: None}
+    )
+    all_owned.columns = ["Currently Owned", "Previously Owned"]
+    all_owned.sort_values("Currently Owned", inplace=True, ascending=False)
+    chart_data = [
+        {"name": key, "data": val} for key, val in all_owned.to_dict("list").items()
+    ]
+    chart_categories = all_owned.index.tolist()
+    ##################################################################
+
+    ## violations
+
+    output = {
+        "owner_property_timeline": owner_property_timeline_df.to_dict("records"),
+        "owner_property_counts_by_name": {
+            "categories": chart_categories,
+            "data": chart_data,
+        },
+    }
     cache.set(data_key, output)
-    output['cache'] = False
-    return JsonResponse(output)
+    output["cache"] = False
+    return PrettifiableJsonResponse(output)
+
+
+def bios_response(request):
+    """Airtable"""
+    pretty_print = request.GET.get("pretty", "").upper() == "TRUE"
+    # currently only available for mailing street, but this may be extended some day.
+    mailing_street = request.GET.get("mailing_street", "")
+    mailing_address_1 = request.GET.get("mailing_address_1", "")
+    output_response = {
+        "metadata": {
+            "mailing_street": mailing_street,
+            "mailing_address_1": mailing_address_1,
+        }
+    }
+    if mailing_street:
+        airtable_url = os.environ.get("BIOS_URL")
+        # TODO (ssuffian): This should be synced to the db rather than called each time.
+        if airtable_url:
+            # TODO Change to visible fields to lock it down better
+            invisible_fields = ["last_modified_by", "researcher"]
+            params = {
+                "filterByFormula": 'IF(AND({mailing_street}="'
+                + mailing_street
+                + '",'
+                + '{mailing_address_1}="'
+                + mailing_address_1
+                + '",'
+                + "{show_on_website}=TRUE()),"
+                + "TRUE(), FALSE())",
+                #'fields': [],
+            }
+            response = requests.get(airtable_url, params=params)
+            if "records" in response.json():
+                output_response["results"] = []
+                output_response["n_results"] = len(response.json()["records"])
+                for record in response.json()["records"]:
+                    outputs = {
+                        key: val
+                        for key, val in record["fields"].items()
+                        if key not in invisible_fields
+                    }
+                    output_response["results"].append(outputs)
+                return JsonResponse(output_response)
+    output_response["error"] = "Can't find bio."
+    return PrettifiableJsonResponse(output_response, pretty_print=pretty_print)
+
+
+# Allows for responding with data based on a sub-query of parcel numbers
+def _table_response(table_obj, request):
+    """
+    search_to_match: string to use to match
+    search_type: what column to use
+    search_method: [contains, starts with, ends with, eequals]
+    """
+    pretty_print = request.GET.get("pretty", "").upper() == "TRUE"
+    search_to_match = request.GET.get("search_to_match", "")
+    search_type = request.GET.get("search_type", "")
+    search_method = request.GET.get("search_method", "contains")
+    groupby_col_str = request.GET.get("groupby_cols")
+    groupby_cols = groupby_col_str.split(",") if groupby_col_str else []
+
+    data_key = base64.b64encode(
+        f"{table_obj.cartodb_table_name}_"
+        f"{search_to_match}_{search_type}_"
+        f"{search_method}".encode("utf-8")
+    )
+
+    data = cache.get(data_key)
+    if not data:
+        try:
+            if search_type == "owner":
+                owner_query_obj = OwnerQuery(search_to_match)
+                opa_account_numbers_sql = owner_query_obj.parcel_num_sql
+            else:
+                opa_account_numbers_sql = construct_search_query(
+                    search_to_match=search_to_match,
+                    search_type=search_type,
+                    search_method=search_method,
+                )
+        except SearchTypeNotImplementedError as e:
+            return PrettifiableJsonResponse(
+                {"error": e.message}, status=400, pretty_print=pretty_print
+            )
+        except SearchMethodNotImplementedError as e:
+            return PrettifiableJsonResponse(
+                {"error": e.message}, status=400, pretty_print=pretty_print
+            )
+
+        df = table_obj.query_by_opa_account_numbers(
+            opa_account_numbers=opa_account_numbers_sql, columns="all"
+        ).to_dataframe()
+        if search_type == "owner":
+            owner_query_result_obj = OwnerQueryResult(
+                owner_query_obj.parcel_num_sql, owner_query_obj.owners_list
+            )
+            df = owner_query_result_obj.get_filtered_df(df, table_obj.dt_column)
+        value_counts = (
+            df.value_counts(groupby_cols)
+            .reset_index()
+            .rename(columns={0: "count"})
+            .to_dict("records")
+            if groupby_cols and not df.empty
+            else {}
+        )
+
+        def _make_col_dict(col):
+            # for vue-good-tables format
+            column_dict = {"label": col, "field": col, "tooltip": f"Tooltip for {col}"}
+            column_dict["filterOptions"] = {"enabled": True}
+            if col.endswith("date"):
+                column_dict["type"] = "date"
+                column_dict["dateInputFormat"] = "yyyy-MM-dd'T'HH':'mm':'ss'Z'"
+                column_dict["dateOutputFormat"] = "MMM do yyy"
+            return column_dict
+
+        columns = [_make_col_dict(col) for col in df.columns]
+        data = {
+            "metadata": {
+                "title": table_obj.title,
+                "cartodb_table_name": table_obj.cartodb_table_name,
+                "data_links": table_obj.data_links,
+                "search_query": search_to_match,
+                "search_to_match": search_to_match,
+                "search_type": search_type,
+                "search_method": search_method,
+            },
+            "results": {
+                "columns": columns,
+                "value_counts": value_counts,
+                "rows": df.where(pd.notnull(df), None)
+                .replace([np.nan], [None])
+                .to_dict("records"),
+            },
+        }
+        cache.set(data_key, data)
+    return PrettifiableJsonResponse(data, pretty_print=pretty_print)
+
+
+def _table_schema_response(table_obj, request):
+    pretty_print = request.GET.get("pretty", "").upper() == "TRUE"
+    schema = table_obj.get_schema()
+    schema = schema if schema else []
+    data = {"metadata": {"url": table_obj._get_schema_link()}, "results": schema}
+    return PrettifiableJsonResponse(data, pretty_print=pretty_print)

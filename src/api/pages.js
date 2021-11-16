@@ -1,6 +1,9 @@
 export const getPropertyPageInfo = (parcel_number, date_since) => {
   const url =
-    "api/v1/property/historical_details/?parcel_number=" + parcel_number + "&date_since=" + date_since;
+    "api/v1/property/historical_details/?parcel_number=" +
+    parcel_number +
+    "&date_since=" +
+    date_since;
   return fetch(url, {
     method: "GET"
   }).then(response => {
@@ -19,8 +22,7 @@ export const getPropertyLatestOwnerDetailsInfo = parcel_number => {
 };
 
 export const getOwnerPageInfo = owner_name => {
-  const url =
-    "api/v1/owner_page/?owner_name=" + owner_name;
+  const url = "api/v1/owner_page/?owner_name=" + owner_name;
   return fetch(url, {
     method: "GET"
   }).then(response => {
@@ -37,4 +39,3 @@ export const getOwnersCurrentPropertiesMapInfo = parcelNumber => {
     return response.json();
   });
 };
-

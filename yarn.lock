@@ -8413,6 +8413,11 @@ utils-merge@1.0.1:
   resolved "https://registry.yarnpkg.com/utils-merge/-/utils-merge-1.0.1.tgz#9f95710f50a267947b2ccc124741c1028427e713"
   integrity sha1-n5VxD1CiZ5R7LMwSR0HBAoQn5xM=
 
+uuid@7.0.1:
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-7.0.1.tgz#95ed6ff3d8c881cbf85f0f05cc3915ef994818ef"
+  integrity sha512-yqjRXZzSJm9Dbl84H2VDHpM3zMjzSJQ+hn6C4zqd5ilW+7P4ZmLEEqwho9LjP+tGuZlF4xrHQXT0h9QZUS/pWA==
+
 uuid@^3.3.2, uuid@^3.4.0:
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.4.0.tgz#b23e4358afa8a202fe7a100af1f5f883f02007ee"
@@ -8502,6 +8507,14 @@ vue-hot-reload-api@^2.3.0:
   version "2.3.4"
   resolved "https://registry.yarnpkg.com/vue-hot-reload-api/-/vue-hot-reload-api-2.3.4.tgz#532955cc1eb208a3d990b3a9f9a70574657e08f2"
   integrity sha512-BXq3jwIagosjgNVae6tkHzzIk6a8MHFtzAdwhnV5VlvPTFxDCvIttgSiHWjdGoTJvXtmRu5HacExfdarRcFhog==
+
+vue-iframes@^0.0.16:
+  version "0.0.16"
+  resolved "https://registry.yarnpkg.com/vue-iframes/-/vue-iframes-0.0.16.tgz#96c847cf17e47305e23ab515e58c28555badedc4"
+  integrity sha512-/PndiRSizD8Wh9IQlxNopBbL2F38ZA7cTr+OlvbtLr3wCxpN95v8SuMPSfsHnTyXlr3/+z/4RWyda6uWtQSv1g==
+  dependencies:
+    lodash.debounce "^4.0.8"
+    uuid "7.0.1"
 
 "vue-loader-v16@npm:vue-loader@^16.1.0":
   version "16.2.0"

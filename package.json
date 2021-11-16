@@ -20,6 +20,7 @@
     "vue-apexcharts": "^1.6.2",
     "vue-cookie-law": "^1.13.3",
     "vue-good-table": "^2.21.10",
+    "vue-iframes": "^0.0.16",
     "vue-luxon": "^0.10.0",
     "vue-router": "^3.5.2",
     "vue2-leaflet": "^2.7.1",

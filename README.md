@@ -35,18 +35,10 @@ Front-End Frameworks
 API Docs
 --------
 
-There will be better API docs coming soon, but in general there will be an api for each table:
+api/v1/autocomplete/?startswith={property-address or owner-name}&n_results={number of results to return}
+api/v1/property/latest_owner_details/?parcel_number={parcel_number}
+api/v1/property/historical_details/?
 
-- properties
-- licenses
-- complaints
-...
-
-With the following three query parameters:
-
-- search_type: owner, location_by_owner, location_by_mailing_address, mailing_address
-- search_query: The string associated with the above search (i.e. SMITH JOE). REMEMBER OWNERS NEED TO BE LAST NAME FIRST, and in general this should match what is in property.phila.gov (although we will work to make this more flexible).
-- search_method: (optional): contains, starts_with, ends_with (how to handle the search_query).
 
 Heroku
 ------

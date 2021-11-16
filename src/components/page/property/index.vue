@@ -5,6 +5,7 @@
     </sui-dimmer>
   </div>
   <div v-else>
+
   <sui-statistics-group horizontal >
         <sui-statistic in-group v-if="hasActiveRentalLicense" color="green">
           <sui-statistic-value>Does</sui-statistic-value>
@@ -12,7 +13,7 @@
         </sui-statistic>
         <sui-statistic in-group v-else-if="hasHomesteadExemption">
           <sui-statistic-value>Does not</sui-statistic-value>
-          <sui-statistic-label>have an active rental license but has a homestead exemption (might not be a rental?)</sui-statistic-label>
+          <sui-statistic-label>have an active rental license but has a homestead exemption (this property might not be a rental)</sui-statistic-label>
         </sui-statistic>
         <sui-statistic in-group v-else color="red">
           <sui-statistic-value>Does not</sui-statistic-value>
@@ -44,7 +45,7 @@
         </sui-statistic>
         <sui-statistic in-group>
           <sui-statistic-value>{{ yearBuilt }}</sui-statistic-value>
-          <sui-statistic-label v-if="isEstimateOfYearBuilt">is a rough built year estimate</sui-statistic-label>
+          <sui-statistic-label v-if="isEstimateOfYearBuilt">is a rough estimate of the year this was built</sui-statistic-label>
           <sui-statistic-label v-else>is the year this was built</sui-statistic-label>
         </sui-statistic>
   </sui-statistics-group>
@@ -57,8 +58,8 @@
 <script>
 
 import { getPropertyPageInfo } from '@/api/pages'; 
-import VueApexTimeline from '@/components/ui/Timeline';
-import VueApexLineChart from '@/components/ui/LineChart';
+import VueApexTimeline from '@/components/ui/charts/Timeline';
+import VueApexLineChart from '@/components/ui/charts/LineChart';
 import { formatCurrencyValue } from '@/components/utils/formatting.js';
 
 export default {
@@ -75,6 +76,7 @@ export default {
       propertyOwnershipTimelineData: [],
       propertyValueTimelineData: [],
       propertyResults: null,
+      streetViewLink: null,
       hasActiveRentalLicense: null,
       rentalLicenseExperiation: null,
       latestAssessmentMarketValue: null,
@@ -89,7 +91,8 @@ export default {
       buildingCodeDescription: null,
       categoryCodeDescription: null,
       loading: false,
-      dateSince: (new Date(new Date().setFullYear(new Date().getFullYear() - 1))).toISOString()
+      //dateSince: (new Date(new Date().setFullYear(new Date().getFullYear() - 1))).toISOString()
+      dateSince: '2020-01-01'
     };
   },
   created() { 
@@ -112,6 +115,7 @@ export default {
         this.hasHomesteadExemption = propertyResults['has_homestead_exemption']
         this.categoryCodeDescription = propertyResults['category_code_description']
         this.buildingCodeDescription = propertyResults['building_code_description']
+        this.streetViewLink = propertyResults['street_view_link']
         this.loading = false
   })
       },

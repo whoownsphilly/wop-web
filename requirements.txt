@@ -1,6 +1,6 @@
 phillydb==0.2.5
 
-Django==3.2.6
+Django==3.2.10
 django-heroku==0.3.1
 django-cors-headers==3.8.0
 django-webpack-loader==1.1.0

@@ -1,6 +1,5 @@
-#phillydb==0.2.5
+phillydb==0.2.5
 python-crfsuite==0.9.7
--e phillydb
 
 Django==3.2.6
 django-heroku==0.3.1

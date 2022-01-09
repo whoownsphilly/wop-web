@@ -1,10 +1,11 @@
+import base64
 from django.http import JsonResponse
 from django.core.cache import cache
-import base64
-
+from django.core.serializers.json import DjangoJSONEncoder
 import os
-import pandas as pd
 import numpy as np
+import pandas as pd
+
 from phillydb.exceptions import (
     SearchTypeNotImplementedError,
     SearchMethodNotImplementedError,
@@ -14,7 +15,15 @@ from phillydb import PhillyCartoQuery
 from phillydb.owner_search_queries import OwnerQuery, OwnerQueryResult
 from phillydb.utils import get_normalized_address
 from phillydb import Properties, construct_search_query
-from phillydb.additional_links import get_street_view_link
+
+from backend.queries.queries import (
+    property_page_results,
+    property_latest_owner_detail_results,
+    property_details_page_results,
+    properties_by_owner_name_results,
+    properties_by_mailing_address_results,
+    properties_by_property_autocomplete_results,
+)
 
 import requests
 import simplejson
@@ -40,13 +49,48 @@ def _carto_request(query):
     return data
 
 
+class CustomEncoder(DjangoJSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, pd.DataFrame):
+            return obj.replace({np.nan: None}).to_dict("records")
+        elif isinstance(obj, np.int64):
+            return int(obj)
+        return super().default(obj)
+
+
 class PrettifiableJsonResponse(JsonResponse):
+    """
+    Allows for pretty-printing of the JSON response
+    """
+
     def __init__(self, *args, pretty_print=False, **kwargs):
+
         json_dumps_params = {"indent": 4} if pretty_print else {}
-        super().__init__(*args, json_dumps_params=json_dumps_params, **kwargs)
+        super().__init__(
+            *args,
+            json_dumps_params=json_dumps_params,
+            encoder=CustomEncoder,
+            **kwargs,
+        )
+
+
+def _cache_page_response(func, request):
+    data_key = base64.b64encode(f"{func.__name__}_{request.GET}".encode("utf-8"))
+    output = cache.get(data_key, {})
+    request_params = request.GET.dict()
+    pretty_print = request_params.pop("pretty_print", False)
+    if output:
+        output["cache"] = True
+    else:
+        output.update(func(**request_params))
+        output["cache"] = False
+        cache.set(data_key, output)
+    output["data_key"] = data_key.decode()
+    return PrettifiableJsonResponse(output, pretty_print=pretty_print)
 
 
 def settings_response(request):
+    """Response to give some generic settings, used for testing"""
     return PrettifiableJsonResponse(
         {"latest_api_version": "v1", "phillydb_version": philly_db_version.__version__}
     )
@@ -232,29 +276,6 @@ def autocomplete_response(request):
         )
 
 
-def mailing_address_response(request):
-    """Return all properties associated with this mailing address"""
-    mailing_street = request.GET["mailing_street"]
-    mailing_address_1 = request.GET["mailing_address_1"]
-    ## given a mailing address, it returns all properties associated with that address
-    ## and plots them?
-    where_sql = "mailing_street={mailing_street}"
-    addresses_df = (
-        Properties().list(
-            columns=[
-                "location",
-                "unit",
-                "parcel_number",
-                "owner_1",
-                "owner_2",
-                "mailing_street",
-                "mailing_address_1",
-            ],
-            where_sql=where_sql,
-        )
-    ).to_dataframe()
-
-
 def owners_timeline_response(request):
     owner_name = request.GET["owner_name"]
     # optionally add all owners that share that mailing address
@@ -289,308 +310,29 @@ def owners_timeline_response(request):
     return PrettifiableJsonResponse(data)
 
 
+def owner_page_properties_by_mailing_address_response(request):
+    """Used to get the mailing_address related properties and response for the owner page"""
+    return _cache_page_response(properties_by_mailing_address_results, request)
+
+
+def owner_page_properties_by_owner_name_response(request):
+    """Used to get the owner_name related properties and response for the owner page"""
+    return _cache_page_response(properties_by_owner_name_results, request)
+
+
 def property_latest_owner_details_response(request):
-    """This is used to construct the headline on the website"""
-    parcel_number = request.GET["parcel_number"]
-    data_key = base64.b64encode(f"{parcel_number}".encode("utf-8"))
-    output = cache.get(data_key, {})
-    if output:
-        return JsonResponse(output)
-    # Example of record that doesnt match between opa and rtt_summary: 391085600
-    # Example of record with no rtt_summary: 302055100
-    query = f"""
-        SELECT  grantees, legal_remarks, owner_1, owner_2, 
-        ST_Y(opa.the_geom) AS lat, ST_X(opa.the_geom) AS lng,
-        location, unit,
-        latest_owners.recording_date as latest_deed_date, 
-        opa.recording_date as latest_deed_date_mailing_address,
-        mailing_street, mailing_address_1, mailing_zip,
-        CASE 
-            WHEN owner_2 is null THEN owner_1
-            ELSE CONCAT(owner_1,';',owner_2)
-        END AS latest_owners_opa,
-        CASE 
-            WHEN grantees is null AND owner_2 is null THEN owner_1
-            WHEN grantees is null THEN CONCAT(owner_1,';',owner_2)
-            ELSE CONCAT(grantees,' ',legal_remarks) 
-        END AS latest_owners
-        FROM (
-            SELECT * FROM rtt_summary
-            WHERE (
-              document_type='DEED' OR
-              document_type='DEED SHERIFF' OR
-              document_type='DEED OF CONDEMNATION' OR
-              document_type='DEED LAND BANK') 
-            AND opa_account_num='{parcel_number}' 
-            ORDER by recording_date DESC limit 1
-        ) latest_owners
-        FULL JOIN opa_properties_public opa
-        ON latest_owners.opa_account_num = opa.parcel_number
-        WHERE opa.parcel_number='{parcel_number}'
-    """
-    data = _carto_request(query)
-    if data:
-        result = data[0]
-        mailing_address_matches_latest_deed = (
-            result["latest_deed_date"] == result["latest_deed_date_mailing_address"]
-        )
-        mailing_street = result["mailing_street"]
-        mailing_street = mailing_street if mailing_street else result["location"]
-        mailing_address_1 = (
-            result["mailing_address_1"] if result["mailing_address_1"] else ""
-        )
-        mailing_zip = result["mailing_zip"]
-        grantees = result["grantees"]
-        location = result["location"]
-        unit = result["unit"] if result["unit"] else ""
-        address = f"{location} {unit}".strip()
-        latitude = result["lat"]
-        longitude = result["lng"]
-        output = {
-            "success": True,
-            "owner_is_from_deed": grantees is not None,
-            "mailing_address_matches_latest_deed": mailing_address_matches_latest_deed,
-            "latest_owner": result["latest_owners"].strip(),
-            "full_address": address,
-            "latest_mailing_street": mailing_street,
-            "latest_mailing_address_1": mailing_address_1,
-            "latest_mailing_zip": mailing_zip,
-            "street_view_link": f"https://cyclomedia.phila.gov/?address={longitude},{latitude}",
-        }
-        airtable_url = os.environ.get("BIOS_URL")
-        # TODO (ssuffian): This should be synced to the db rather than called each time.
-        if airtable_url:
-            # TODO Change to visible fields to lock it down better
-            invisible_fields = ["last_modified_by", "researcher"]
-            params = {
-                "filterByFormula": 'IF(AND({mailing_street}="'
-                + mailing_street
-                + '",'
-                + '{mailing_address_1}="'
-                + mailing_address_1
-                + '",'
-                + "{show_on_website}=TRUE()),"
-                + "TRUE(), FALSE())",
-                #'fields': [],
-            }
-            response = requests.get(airtable_url, params=params)
-            if "records" in response.json():
-                output_response = {}
-                output_response["results"] = []
-                records = response.json()["records"]
-                output_response["n_results"] = len(records)
-                # TODO (clean this up so there is only maybe one entry per mailing address?
-                for record in records:
-                    outputs = {
-                        key: val
-                        for key, val in record["fields"].items()
-                        if key not in invisible_fields
-                    }
-                    output_response["results"].append(outputs)
-                if records:
-                    single_record = output_response["results"][0]
-                    output["owner_by_mailing_address"] = {
-                        "name": single_record["name_of_possible_owner"],
-                        "url": single_record["link_to_owner_website"],
-                    }
-                output["crowd_sourced"] = output_response
-    else:
-        output = {"success": False}
-    cache.set(data_key, output)
-    output["cache"] = False
-    return PrettifiableJsonResponse(output)
+    """Used to get the information for the header of the results pages"""
+    return _cache_page_response(property_latest_owner_detail_results, request)
 
 
-def property_page_response(request):
+def property_details_page_response(request):
     """Used to get the information for the Property Basics page"""
-    parcel_number = request.GET["parcel_number"]
-    five_years_ago = (pd.Timestamp.now() - pd.Timedelta(days=365 * 5)).isoformat()
-    date_since = request.GET.get("date_since", five_years_ago)
-    data_key = base64.b64encode(
-        f"property_page_{parcel_number}{date_since}".encode("utf-8")
-    )
-    output = cache.get(data_key, {})
-    if output:
-        output["cache"] = True
-        return JsonResponse(output)
+    return _cache_page_response(property_details_page_results, request)
 
-    query = f"""
-        SELECT opp.parcel_number, year_built, 
-        CASE 
-            WHEN year_built_estimate = 'Y' THEN true 
-            ELSE false END 
-        as year_built_is_estimate,
-        CASE
-            WHEN homestead_exemption > 0 THEN true
-            ELSE false END
-        as has_homestead_exemption,
-        opp.location,
-        ST_Y(opp.the_geom) AS lat, ST_X(opp.the_geom) AS lng,
-        opp.owner_1, opp.owner_2,
-        mailing_street, mailing_address_1,
-        building_code_description, category_code_description,
-        n_violations, n_violations_open, n_violations_serious,
-        has_active_rental_license, expiration_date as rental_license_expiration_date,
-        r1.recording_date, r1.grantees, r1.grantors, r1.cash_consideration, r1.property_count as n_properties_on_deed,
-        a1.market_value as latest_assessment_market_value, a1.latest_assessment_year
-        FROM opa_properties_public opp
-        LEFT JOIN (
-            SELECT '{parcel_number}' as parcel_number, count(*) as n_violations
-            FROM violations
-            WHERE opa_account_num = '{parcel_number}'
-            AND violationdate < '{date_since}'
 
-        ) v1
-        ON v1.parcel_number = opp.parcel_number
-        LEFT JOIN (
-            SELECT '{parcel_number}' as parcel_number, count(*) as n_violations_open
-            FROM violations
-            WHERE opa_account_num = '{parcel_number}'
-            AND violationstatus = 'OPEN'
-
-        ) v2
-        ON v1.parcel_number = v2.parcel_number
-        LEFT JOIN (
-            SELECT '{parcel_number}' as parcel_number, count(*) as n_violations_serious
-            FROM violations
-            WHERE opa_account_num = '{parcel_number}'
-            AND caseprioritydesc in ('HAZARDOUS', 'UNSAFE', 'IMMINENTLY DANGEROUS')
-            AND violationdate < '{date_since}'
-        ) v3
-        ON v1.parcel_number = v3.parcel_number
-        LEFT JOIN (
-            SELECT '{parcel_number}' as parcel_number,
-            CASE WHEN count(*) > 0 THEN TRUE ELSE FALSE END as has_active_rental_license,
-            max(expirationdate) as expiration_date
-            FROM business_licenses
-            WHERE opa_account_num = '{parcel_number}'
-            AND licensetype='Rental'
-            AND licensestatus='Active'
-        ) l1
-        ON v1.parcel_number = l1.parcel_number
-        LEFT JOIN (
-            SELECT opa_account_num as parcel_number,
-            *
-            FROM rtt_summary
-            WHERE opa_account_num = '{parcel_number}'
-            AND (
-                {DEEDS_WHERE_CLAUSE}
-            )
-            ORDER BY recording_date desc LIMIT 1
-        ) r1
-        ON v1.parcel_number = r1.parcel_number
-        LEFT JOIN (
-            SELECT parcel_number,
-            year as latest_assessment_year,
-            market_value
-            FROM assessments a
-            WHERE parcel_number = '{parcel_number}'
-            ORDER BY year DESC LIMIT 1
-        ) a1
-        ON v1.parcel_number = a1.parcel_number
-        WHERE opp.parcel_number = '{parcel_number}'
-        """
-
-    data = _carto_request(query)
-
-    if len(data) > 0:
-        output.update(data[0])
-        mailing_street = output["mailing_street"]
-        mailing_address_1 = output["mailing_address_1"]
-        airtable_url = os.environ.get("BIOS_URL")
-        if airtable_url and mailing_street and mailing_address_1:
-            # TODO Change to visible fields to lock it down better
-            invisible_fields = ["last_modified_by", "researcher"]
-            params = {
-                "filterByFormula": 'IF(AND({mailing_street}="'
-                + mailing_street
-                + '",'
-                + '{mailing_address_1}="'
-                + mailing_address_1
-                + '",'
-                + "{show_on_website}=TRUE()),"
-                + "TRUE(), FALSE())",
-                "fields": ["name_of_possible_owner", "link_to_owner_website"],
-            }
-            response = requests.get(airtable_url, params=params).json()
-            if "records" in response:
-                airtable_result = response["records"][0]["fields"]
-                output.update(
-                    {
-                        "managed_by": airtable_result["name_of_possible_owner"],
-                        "link_to_management_website": airtable_result.get(
-                            "link_to_owner_website"
-                        ),
-                    }
-                )
-
-    # PROPERTY TIMELINE AND VALUE LIST
-    query = f"""
-    SELECT * FROM (
-        SELECT 
-        'purchased' as status, 
-        opa_account_num as parcel_number,
-        grantees as owner, 
-        grantors as seller,
-        cash_consideration as property_value, 
-        recording_date as date
-        FROM rtt_summary
-        WHERE opa_account_num = '{parcel_number}'
-        AND ({DEEDS_WHERE_CLAUSE})
-        UNION ALL
-        SELECT
-        'assessed' as status, 
-        null as owner,
-        null as seller,
-        parcel_number,
-        market_value as property_value,
-        CAST(CONCAT(year,'-01-01') as TIMESTAMP) as date  
-        FROM assessments
-        WHERE parcel_number = '{parcel_number}'
-    ) timeline 
-    ORDER BY DATE ASC
-    """
-    assessment_timeline_data = _carto_request(query)
-    owner_data_df = pd.DataFrame(
-        [deed for deed in assessment_timeline_data if deed["status"] == "purchased"]
-    )
-
-    # we aren't going to try to guess ownership before 2000 since that's as far back as the DEEDS table goes (technically it goes back to Dec 6 1999)
-    owner_data = []
-    earliest_start_time = pd.to_datetime("2000-01-01")
-    if len(owner_data_df) > 0:
-        first_row_owner = pd.DataFrame(
-            [
-                {
-                    "start": earliest_start_time,
-                    "end": owner_data_df.iloc[0]["date"],
-                    "owner": owner_data_df.iloc[0]["seller"],
-                }
-            ]
-        )
-        owner_data_df["start"] = owner_data_df["date"]
-        owner_data_df["end"] = owner_data_df["date"].shift(-1)
-        owner_data_df["end"].iloc[-1] = pd.Timestamp.now().isoformat()
-        owner_data = pd.concat(
-            [first_row_owner, owner_data_df[["start", "end", "owner"]]]
-        ).to_dict("records")
-    else:
-        owners = [output["owner_1"]]
-        if output["owner_2"]:
-            owners.append(output["owner_2"])
-        owner_data = [
-            {
-                "start": earliest_start_time,
-                "owner": ";".join(owners),
-                "end": pd.Timestamp.now().isoformat(),
-            }
-        ]
-
-    output["property_ownership_timeline"] = owner_data
-    output["property_value_timeline"] = assessment_timeline_data
-    cache.set(data_key, output)
-    output["cache"] = False
-    return JsonResponse(output)
+def property_basics_page_response(request):
+    """Used to get the information for the Property Basics page"""
+    return _cache_page_response(property_page_results, request)
 
 
 def owner_current_properties_map_response(request):
@@ -606,6 +348,7 @@ def owner_current_properties_map_response(request):
         --This Property
         SELECT parcel_number, 
         ST_Y(opa.the_geom) AS lat, ST_X(opa.the_geom) AS lng,
+        opa.category_code_description,
         opa.market_value,
         location, unit, '' as owners, 'self' as relation, opa.mailing_street, opa.mailing_address_1 
         FROM opa_properties_public opa
@@ -614,6 +357,7 @@ def owner_current_properties_map_response(request):
         -- Owner-Based
         SELECT parcel_number, 
         ST_Y(opa.the_geom) AS lat, ST_X(opa.the_geom) AS lng,
+        opa.category_code_description,
         opa.market_value,
         location, unit, grantees as owners, 'owner' as relation, opa.mailing_street, opa.mailing_address_1 
         FROM opa_properties_public opa
@@ -630,12 +374,8 @@ def owner_current_properties_map_response(request):
             FROM rtt_summary  
             WHERE ({ DEEDS_WHERE_CLAUSE })
             AND grantees in (
-               SELECT grantees FROM rtt_summary WHERE (
-                  document_type='DEED' OR
-                  document_type='DEED SHERIFF' OR
-                  document_type='DEED OF CONDEMNATION' OR
-                  document_type='DEED LAND BANK'
-                ) AND opa_account_num='{parcel_number}' 
+               SELECT grantees FROM rtt_summary WHERE ({DEEDS_WHERE_CLAUSE})
+                AND opa_account_num='{parcel_number}' 
                 ORDER by recording_date DESC limit 1
             )
             GROUP BY opa_account_num 
@@ -648,8 +388,9 @@ def owner_current_properties_map_response(request):
         -- Mailing Address
         SELECT parcel_number, 
         ST_Y(opa.the_geom) AS lat, ST_X(opa.the_geom) AS lng,
+        opa.category_code_description,
         opa.market_value,
-        location, unit, concat(opa.owner_1,';',opa.owner_2) as owners, 'mailing_address' as relation, opa.mailing_street, opa.mailing_address_1 
+        location, unit, concat_ws(';',opa.owner_1,opa.owner_2) as owners, 'mailing_address' as relation, opa.mailing_street, opa.mailing_address_1 
         FROM opa_properties_public opa INNER JOIN (
             SELECT distinct mailing_street, mailing_address_1, mailing_address_2, mailing_zip
             FROM opa_properties_public opa
@@ -661,12 +402,27 @@ def owner_current_properties_map_response(request):
         AND (opa.mailing_address_2 = opa_mailing_address.mailing_address_2 or opa_mailing_address.mailing_address_2 is null)
         AND (opa.mailing_zip = opa_mailing_address.mailing_zip or opa_mailing_address.mailing_zip is null)
     """
-    owner_property_current_df = pd.DataFrame(_carto_request(query))
+    owner_property_current_df = pd.DataFrame(_carto_request(query)).sort_values(
+        ["parcel_number", "relation"]
+    )
     owner_property_current_df["location_unit"] = (
         owner_property_current_df["location"]
         + " "
         + owner_property_current_df["unit"].fillna("")
     ).str.strip()
+
+    owner_property_current_df = owner_property_current_df[
+        [
+            "relation",
+            "location_unit",
+            "parcel_number",
+            "lat",
+            "lng",
+            "market_value",
+            "category_code_description",
+        ]
+    ].drop_duplicates()
+
     # Do a little bit of reformatting to remove properties that were returned
     # both through an owner and mailing address connection
     current_property = owner_property_current_df[
@@ -702,81 +458,6 @@ def owner_current_properties_map_response(request):
     cache.set(data_key, output)
     output["cache"] = False
     return JsonResponse(output)
-
-
-def owner_page_response(request):
-    """
-    We need:
-    owner timeline (when they owned what)
-    ideally a value of their portfolio over time
-    same violations, complaints in last N years info
-    maybe something about average violations of a property for comparison
-    """
-    owner_name = request.GET["owner_name"]
-    data_key = base64.b64encode(f"owner_page_{owner_name}".encode("utf-8"))
-    output = cache.get(data_key, {})
-    if output:
-        output["cache"] = True
-        return JsonResponse(output)
-    owner_query_obj = OwnerQuery(owner_name)
-
-    owner_query_result_obj = OwnerQueryResult(
-        owner_query_obj.parcel_num_sql, owner_query_obj.owners_list
-    )
-    owner_property_timeline_df = owner_query_result_obj.owners_timeline_df
-    owner_property_timeline_df["location_unit"] = (
-        owner_property_timeline_df["location"]
-        + " "
-        + owner_property_timeline_df["unit"].fillna("")
-    ).str.strip()
-    owner_property_timeline_df["end_dt"] = owner_property_timeline_df["end_dt"].replace(
-        {np.nan: None}
-    )
-    owner_property_timeline_df["current_owner"] = pd.isnull(
-        owner_property_timeline_df["end_dt"]
-    )
-
-    # OWNER PROPERTY COUNTS BY NAME
-    ##################################################################
-    # Get property counts by name for apex grouped bar chart in format:
-    # x: {'name': 'currently owned', 'data': [1,2]}
-    # y: [ownername1, ownername2, ownername3]
-    owner_property_counts_by_name = (
-        owner_property_timeline_df.groupby(["likely_owner", "current_owner"])
-        .size()
-        .to_frame("n_properties")
-        .reset_index()
-    )
-    currently_owned = owner_property_counts_by_name.query(
-        "current_owner==True"
-    ).set_index("likely_owner")["n_properties"]
-    previously_owned = owner_property_counts_by_name.query(
-        "current_owner==False"
-    ).set_index("likely_owner")["n_properties"]
-    # make sure there is an entry for each owner
-    all_owned = pd.concat([currently_owned, previously_owned], axis=1).replace(
-        {np.nan: None}
-    )
-    all_owned.columns = ["Currently Owned", "Previously Owned"]
-    all_owned.sort_values("Currently Owned", inplace=True, ascending=False)
-    chart_data = [
-        {"name": key, "data": val} for key, val in all_owned.to_dict("list").items()
-    ]
-    chart_categories = all_owned.index.tolist()
-    ##################################################################
-
-    ## violations
-
-    output = {
-        "owner_property_timeline": owner_property_timeline_df.to_dict("records"),
-        "owner_property_counts_by_name": {
-            "categories": chart_categories,
-            "data": chart_data,
-        },
-    }
-    cache.set(data_key, output)
-    output["cache"] = False
-    return PrettifiableJsonResponse(output)
 
 
 def bios_response(request):

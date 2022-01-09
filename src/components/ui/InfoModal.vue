@@ -1,34 +1,31 @@
 <template>
-<span>
-        <sui-button
-          class="info-modal"
-          size="mini"
-          circular
-          icon="info"
-          @click.native="disclaimerToggle"
-        />
-        <sui-modal v-model="disclaimerOpen">
-          <sui-modal-header
-            >{{ modalInfo.header }}</sui-modal-header
-          >
-          <sui-modal-content>
-            <p><span v-html="modalInfo.text"/></p>
-          </sui-modal-content>
-          <sui-modal-actions>
-            <sui-button positive @click.native="disclaimerToggle">
-              OK
-            </sui-button>
-          </sui-modal-actions>
-        </sui-modal>
-        </span>
+  <span>
+    <sui-button
+      class="info-modal"
+      size="mini"
+      circular
+      icon="info"
+      @click.native="disclaimerToggle"
+    />
+    <sui-modal v-model="disclaimerOpen">
+      <sui-modal-header>{{ modalInfo.header }}</sui-modal-header>
+      <sui-modal-content>
+        <p><span v-html="modalInfo.text" /></p>
+      </sui-modal-content>
+      <sui-modal-actions>
+        <sui-button positive @click.native="disclaimerToggle">
+          OK
+        </sui-button>
+      </sui-modal-actions>
+    </sui-modal>
+  </span>
 </template>
 <script>
-
-import modalInfoJson from '@/text/modals.json'
+import modalInfoJson from "@/text/modals.json";
 
 export default {
   name: "InfoModal",
-  components: { },
+  components: {},
   props: {
     modalName: {
       type: String,
@@ -39,8 +36,8 @@ export default {
     return {
       modalOpen: false,
       modalInfo: modalInfoJson[this.modalName],
-      disclaimerOpen: false,
-    }
+      disclaimerOpen: false
+    };
   },
   methods: {
     toggle() {
@@ -54,6 +51,6 @@ export default {
 </script>
 <style>
 .info-modal {
-    vertical-align: top !important
+  vertical-align: top !important;
 }
 </style>

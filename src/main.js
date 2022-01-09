@@ -7,6 +7,7 @@ import ToggleSwitch from 'vuejs-toggle-switch'
 import VueLuxon from "vue-luxon";
 import VTooltip from 'v-tooltip'
 import VueIframe from 'vue-iframes'
+import InfoModal from "@/components/ui/InfoModal";
 
 Vue.use(VueIframe)
 // import the styles
@@ -34,6 +35,7 @@ Vue.use(ToggleSwitch);
 Vue.use(VueLuxon);
 Vue.use(VTooltip)
 Vue.use(VueIframe)
+Vue.component("InfoModal", InfoModal)
 
 Vue.prototype.$siteMode = Vue.observable({mode: 'basic'})
 

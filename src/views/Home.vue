@@ -2,10 +2,16 @@
   <div class="home">
     <div>
       <p>
-        Enter a <b>Philly address</b> or <b>landlord's name</b>. Find out who owns what in Philly, what else they might own in the city, and information about their properties.
+        Enter a <b>Philly address</b> or <b>landlord's name</b>. Find out who
+        owns what in Philly, what else they might own in the city, and
+        information about their properties.
       </p>
       <p>
-        <b>Is the address not showing up?</b> Search for the address on  <a href="https://atlas.phila.gov">atlas.phila.gov</a> to see how the City formats addresses and owner names. We try our best to match addresses to the City’s format, but sometimes the City formats addresses in ways we can't detect.
+        <b>Is the address not showing up?</b> Search for the address on
+        <a href="https://atlas.phila.gov">atlas.phila.gov</a> to see how the
+        City formats addresses and owner names. We try our best to match
+        addresses to the City’s format, but sometimes the City formats addresses
+        in ways we can't detect.
       </p>
     </div>
     <sui-divider hidden />

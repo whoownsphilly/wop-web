@@ -9,7 +9,7 @@
         @click="changeActiveOwners"
       />
     </span>
-    </div>
+  </div>
 </template>
 
 <script>
@@ -19,11 +19,11 @@ export default {
     ownersList: {
       type: Array,
       required: true
-    },
+    }
   },
   data() {
     return {
-      isInactive: {},
+      isInactive: {}
     };
   },
   methods: {
@@ -32,6 +32,6 @@ export default {
       this.isInactive[thisButtonName] = !this.isInactive[thisButtonName];
       this.isInactive.__ob__.dep.notify(); //I know this is hacky but I'm learning.
     }
-  },
+  }
 };
 </script>

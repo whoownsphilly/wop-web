@@ -1,9 +1,14 @@
-export const getPropertyPageInfo = (parcel_number, date_since) => {
-  const url =
-    "api/v1/property/historical_details/?parcel_number=" +
-    parcel_number +
-    "&date_since=" +
-    date_since;
+export const getPropertyBasicsPageInfo = (parcel_number, violations_complaints_date_since) => {
+  const url = `api/v1/property/basics/?parcel_number=${parcel_number}&violations_complaints_date_since=${violations_complaints_date_since}`;
+  return fetch(url, {
+    method: "GET"
+  }).then(response => {
+    return response.json();
+  });
+};
+
+export const getPropertyDetailsPageInfo = parcel_number => {
+  const url = "api/v1/property/details/?parcel_number=" + parcel_number;
   return fetch(url, {
     method: "GET"
   }).then(response => {
@@ -21,8 +26,17 @@ export const getPropertyLatestOwnerDetailsInfo = parcel_number => {
   });
 };
 
-export const getOwnerPageInfo = owner_name => {
-  const url = "api/v1/owner_page/?owner_name=" + owner_name;
+export const getOwnerPageInfoByName = parcel_number => {
+  const url = "api/v1/owner/by_name/?parcel_number=" + parcel_number;
+  return fetch(url, {
+    method: "GET"
+  }).then(response => {
+    return response.json();
+  });
+};
+
+export const getOwnerPageInfoByMailingAddress = parcel_number => {
+  const url = "api/v1/owner/by_mailing_address/?parcel_number=" + parcel_number;
   return fetch(url, {
     method: "GET"
   }).then(response => {

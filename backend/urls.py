@@ -44,8 +44,10 @@ from .api import (
     owners_timeline_response,
     autocomplete_response,
     settings_response,
-    property_page_response,
-    owner_page_response,
+    property_basics_page_response,
+    property_details_page_response,
+    owner_page_properties_by_owner_name_response,
+    owner_page_properties_by_mailing_address_response,
     owner_current_properties_map_response,
     property_latest_owner_details_response,
 )
@@ -64,8 +66,13 @@ api_urlpatterns = [
         name="owners_timeline_list",
     ),
     path(
-        "api/v1/property/historical_details/",
-        property_page_response,
+        "api/v1/property/basics/",
+        property_basics_page_response,
+        name="property_page_list",
+    ),
+    path(
+        "api/v1/property/details/",
+        property_details_page_response,
         name="property_page_list",
     ),
     path(
@@ -74,9 +81,14 @@ api_urlpatterns = [
         name="property_page_latest_owner_details_list",
     ),
     path(
-        "api/v1/owner_page/",
-        owner_page_response,
-        name="owner_page_list",
+        "api/v1/owner/by_name/",
+        owner_page_properties_by_owner_name_response,
+        name="owner_page_by_owner_name_list",
+    ),
+    path(
+        "api/v1/owner/by_mailing_address/",
+        owner_page_properties_by_mailing_address_response,
+        name="owner_page_by_mailing_address_list",
     ),
     path(
         "api/v1/owner_current_properties_map/",

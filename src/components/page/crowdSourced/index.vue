@@ -67,7 +67,7 @@
 </template>
 
 <script>
-import BioResult from "@/components/page/mailing_address/BioResult";
+import BioResult from "@/components/page/crowdSourced/BioResult";
 
 export default {
   name: "HistoricalMailingAddressTab",
@@ -80,8 +80,8 @@ export default {
       required: true
     },
     mailingStreet: {
-        type: String,
-        required: true
+      type: String,
+      required: true
     }
   },
   data() {

@@ -71,7 +71,7 @@ export default {
       // Save the selection to vuex so it can be referenced later.
       this.$store.dispatch("updateSelectedResult", selectedResult);
 
-      let selectedParcelNumber = selectedResult["parcel_number"];
+      let selectedParcelNumber = selectedResult["opa_account_num"];
       this.$router.push("/property/" + selectedParcelNumber);
       /*
       if (selection_type === "location_unit") {

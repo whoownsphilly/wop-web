@@ -3,6 +3,11 @@
 Local Development
 -----------------
 
+## Install
+```
+yarn install
+```
+
 To develop locally, you need to start up the django server. The django server points to the built JS, so if you want a hot-reload on your JS, you also need to separately start up the vue server.
 
 ### Docker
@@ -30,18 +35,10 @@ Front-End Frameworks
 API Docs
 --------
 
-There will be better API docs coming soon, but in general there will be an api for each table:
+api/v1/autocomplete/?startswith={property-address or owner-name}&n_results={number of results to return}
+api/v1/property/latest_owner_details/?parcel_number={parcel_number}
+api/v1/property/historical_details/?
 
-- properties
-- licenses
-- complaints
-...
-
-With the following three query parameters:
-
-- search_type: owner, location_by_owner, location_by_mailing_address, mailing_address
-- search_query: The string associated with the above search (i.e. SMITH JOE). REMEMBER OWNERS NEED TO BE LAST NAME FIRST, and in general this should match what is in property.phila.gov (although we will work to make this more flexible).
-- search_method: (optional): contains, starts_with, ends_with (how to handle the search_query).
 
 Heroku
 ------
@@ -54,3 +51,9 @@ heroku addons:create raygun-rum:rum-free
 ```
 
 To deploy to heroku, use the `./heroku.sh` script which both freezes and requirements and pushes the code.
+
+Learnings
+---------
+### RTT Summary
+- `document_date` seems to be the correct, as opposed to recording_date, even though recording_date is whats in the opa_properties_public (032209600)
+- Sometimes the document_dates can be the same because multiple sales happen in the same day: 341182500 (02/22/2010)

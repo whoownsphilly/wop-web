@@ -13,7 +13,7 @@
         v-for="(link, key2) in bioResult.links_to_sources.split(';')"
         :key="key2"
       >
-        <a :href="link">[{{ key2 }}]</a> 
+        <a :href="link">[{{ key2 }}]</a>
       </span>
     </p>
     <div v-if="$siteMode.mode === 'beta'">

@@ -1,43 +1,52 @@
 <template>
   <div>
-    <div></div>
+    Click on a property to see the address. If you click on the address that
+    pops up, it will take you to that property's page.
     <l-map
       :zoom="zoom"
       :center="center"
       :bounds="mapBounds"
+      :sleep="true"
+      :options="leafletOptions"
       style="height: 500px; width: 100%"
     >
       <l-tile-layer :url="url" :attribution="attribution" />
       <div v-for="(marker, index) in mapMarkers" :key="index">
-        <l-circle-marker :lat-lng="marker.latLng" :color="marker.color" :fillColor="marker.color">
+        <l-circle-marker
+          :lat-lng="marker.latLng"
+          :color="marker.color"
+          :fillColor="marker.color"
+        >
           <l-popup>
-            <div  @click="jumpToProperty(marker.parcelNumber)">
-              <a class="hyperlink"><u>{{ marker.popUp }}</u></a>
+            <div @click="jumpToProperty(marker.parcelNumber)">
+              <a class="hyperlink"
+                ><u>{{ marker.popUp }}</u></a
+              >
             </div>
           </l-popup>
         </l-circle-marker>
       </div>
       <div v-if="highlightedMapMarker">
-        <l-circle-marker
-          :lat-lng="highlightedMapMarker.latLng"
-          zIndexOffset="0"
-          :color="highlightedMapMarker.color"
-          :fillColor="highlightedMapMarker.color"
-        >
-          <l-popup>
-            {{ highlightedMapMarker.popUp }}
-          </l-popup>
-        </l-circle-marker>
-        <l-control class="legend" :position="'bottomright'">
-          <i style="background: black"></i><span>This Property</span><br />
-          <i style="background: yellow"></i><span>Same Mailing Address</span
-          ><br />
-          <i style="background: red"></i><span>Same Owner</span><br />
-        </l-control>
+        <v-marker-cluster>
+          <l-circle-marker
+            :lat-lng="highlightedMapMarker.latLng"
+            zIndexOffset="0"
+            :color="highlightedMapMarker.color"
+            :fillColor="highlightedMapMarker.color"
+          >
+            <l-popup>
+              {{ highlightedMapMarker.popUp }}
+            </l-popup>
+          </l-circle-marker>
+        </v-marker-cluster>
       </div>
+      <l-control class="legend" :position="'bottomleft'">
+        <i style="background: black"></i><span>This Property</span><br />
+        <i style="background: yellow"></i><span>Same Mailing Address</span
+        ><br />
+        <i style="background: red"></i><span>Same Owner</span><br />
+      </l-control>
     </l-map>
-    Click on a property to see the address. If you click on the address that
-    pops up, it will take you to that property's page.
   </div>
 </template>
 
@@ -72,6 +81,7 @@ export default {
   data() {
     return {
       loading: false,
+      leafletOptions: { scrollWheelZoom: false },
       highlightedCircleWeight: 100,
       zoom: 6,
       center: [48, -1.219482],
@@ -105,7 +115,7 @@ export default {
         latLng: latLng(latLngTuple.lat, latLngTuple.lng),
         color: latLngTuple.color,
         popUp: latLngTuple.location + " " + (latLngTuple.unit || ""),
-        parcelNumber: latLngTuple.parcel_number
+        parcelNumber: latLngTuple.opa_account_num
       }));
     },
     mapBounds() {
@@ -136,7 +146,7 @@ export default {
   opacity: 0.7;
 }
 .hyperlink {
-    color: #0000FF;
-    text-decoration: underline;
+  color: #0000ff;
+  text-decoration: underline;
 }
 </style>

@@ -1,0 +1,30 @@
+{
+  "propertyHeadline.ownerModalInfo": {
+    "header": "Owner Name",
+    "text": "This owner name came from the grantees column of the rtt_summary table. It is the person/people/entity that received the most recent DEED (DEED, DEED_SHERIFF, DEED OF CONDEMNATION, DEED LAND BANK) for this parcel number."
+  },
+  "owner.portfolio.marketValueInfo": {
+    "header": "Total Assessed Market Value",
+    "text": "The assessed market value is calculated as the sum of the opa_properties_public.market_value entries. These are periodically updated but may be somewhat out of date compared to the assessments table. Furthermore, the market value is based on the city's property assessment, not based on the actual purchase or sale value so it is likely an underestimate."
+  },
+  "owner.portfolio.propertyCount": {
+    "header": "Property Count",
+    "text": "This count is from the unique set of properties taken from two sources. The first source is any property whose most recent grantee (most recent purchaser of a deed, aka the current owner) matches the one from this property. The second source is any property with a matching mailing address (and more specifically, a property with a matching mailing address at properties that haven't had any additional deed transactions since the OPA table (where the mailing_address information is sourced) has last been updated)."
+  },
+  "owner.portfolio.nOpenViolations": {
+    "header": "Open Violations",
+    "text": "Open violations are violations that have not yet been resolved by L&I."
+  },
+  "owner.portfolio.nClosedViolations": {
+    "header": "Closed Violations",
+    "text": "These are violations that have been resolved in some form by L&I. The city has only made violations since 2007-01-01 publically available, so this number represents any violation that has been registered at one of the associated properties since that date."
+  },
+  "owner.portfolio.nComplaints": {
+    "header": "Complaints",
+    "text": "These are 311 complaints that have been made against one of the associated properties. Even though the city has made these publically available since 2000, in order to align them with violations, we are only showing complaints since 2007-01-01."
+  },
+  "home.search.methods": {
+    "header": "Search Methods",
+    "text": "The search bar works by first checking to see if the entered text is an address. It uses a library called scourgify to detect this. If it considers the text a valid address, then it will conduct a query on the rtt_summary table, using the split-address columns (things like address_low, address_high, etc.). This ensures that an address like 123 ABC Lane will be captured if the deed is actually on 121-25 ABC Lane. If units are provided, it will attempt to return results for the address with that unit.<br><br>If it does not consider the text a valid address, it will do a query on the rtt_summmary.grantees column, looking at the latest grantee for a given address,  or the opa_properties_public.mailing_care_of column. A match on the grantees column represents a match on the latest owner of a property. A match on the mailing_care_of column represents a match on the organization associated with the Mailing Address of the property. This usually can mean a property manager. <i>Caveat: The mailing_care_of field is usually blank, so don't expect to get too many results.</i><br><br><b>Your best (and fastest) way to search is by property address."
+  }
+}

@@ -22,6 +22,8 @@ services:
   web:
     image: phillydb_web_shell
     entrypoint: yarn serve --port ${YARN_PORT:-8080}
+    stdin_open: true
+    tty: true
     volumes:
       - .:/app
       - /app/tests/__pycache__/
@@ -32,3 +34,8 @@ services:
       - "${YARN_PORT:-8080}:${YARN_PORT:-8080}"
     depends_on:
       - django
+  test:
+    image: phillydb_web_shell
+    entrypoint: py.test
+    volumes:
+      - .:/app

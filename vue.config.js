@@ -15,7 +15,7 @@ module.exports = {
       proxy: {
         '/api*': {
           // Forward frontend dev server request for /api to django dev server
-            target: 'http://' + process.env.DJANGO_URL + ':' + process.env.DJANGO_PORT + '/',
+            target: 'http://' + process.env.VUE_APP_DJANGO_URL + ':' + process.env.VUE_APP_DJANGO_PORT + '/',
         }
       }
     }

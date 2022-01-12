@@ -48,6 +48,7 @@ heroku buildpacks:add --index 1 heroku/nodejs
 heroku buildpacks:add --index 2 heroku/python
 heroku addons:create memcachier:dev
 heroku addons:create raygun-rum:rum-free
+heroku git:remote -a phillydb-web
 ```
 
 To deploy to heroku, use the `./heroku.sh` script which both freezes and requirements and pushes the code.

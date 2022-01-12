@@ -1,14 +1,14 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import Home from "../views/Home.vue";
+import Search from "../views/SearchPage.vue";
 
 Vue.use(VueRouter);
 
 const routes = [
   {
     path: "/",
-    name: "Home",
-    component: Home
+    name: "Search",
+    component: Search
   },
   {
     path: "/about",
@@ -17,7 +17,7 @@ const routes = [
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/About.vue")
+      import(/* webpackChunkName: "about" */ "../views/AboutPage.vue")
   },
   {
     path: "/take-action",
@@ -26,7 +26,7 @@ const routes = [
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/TakeAction.vue")
+      import(/* webpackChunkName: "about" */ "../views/TakeActionPage.vue")
   },
   {
     path: "/data-explained",
@@ -35,13 +35,13 @@ const routes = [
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/DataExplained.vue")
+      import(/* webpackChunkName: "about" */ "../views/DataExplainedPage.vue")
   },
   {
     path: "/property/:parcelNumber",
     name: "Property",
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/Property.vue")
+      import(/* webpackChunkName: "about" */ "../views/PropertyPage.vue")
   }
 ];
 

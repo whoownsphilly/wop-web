@@ -13,7 +13,7 @@
         </sui-card-description>
       </sui-card-content>
       <sui-card-content extra>
-        <sui-icon name="sitemap" /> ~80 Properties
+        <sui-icon name="sitemap" /> ~470 Properties
       </sui-card-content>
     </sui-card>
     <sui-card>
@@ -28,7 +28,7 @@
         </sui-card-description>
       </sui-card-content>
       <sui-card-content extra>
-        <sui-icon name="sitemap" /> ~800 Properties
+        <sui-icon name="sitemap" /> ~60 Properties
       </sui-card-content>
     </sui-card>
     <sui-card>
@@ -45,7 +45,7 @@
         </sui-card-description>
       </sui-card-content>
       <sui-card-content extra>
-        <sui-icon name="sitemap" /> ~50 Properties
+        <sui-icon name="sitemap" /> ~9 Properties
       </sui-card-content>
     </sui-card>
   </sui-card-group>

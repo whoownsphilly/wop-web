@@ -41,7 +41,7 @@ import ExampleOwners from "@/components/page/home/ExampleOwners";
 import CookieLaw from "vue-cookie-law";
 
 export default {
-  name: "Home",
+  name: "SearchPage",
   components: {
     SearchBar,
     ExampleOwners,

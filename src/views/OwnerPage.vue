@@ -11,7 +11,7 @@
 import HistoricalOwnerTab from "@/components/page/owner";
 
 export default {
-  name: "Property",
+  name: "OwnerPage",
   components: {
     HistoricalOwnerTab
   },

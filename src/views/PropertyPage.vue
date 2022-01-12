@@ -65,7 +65,7 @@ import HistoricalOwnerTab from "@/components/page/owner";
 import { getPropertyLatestOwnerDetailsInfo } from "@/api/pages";
 
 export default {
-  name: "Property",
+  name: "PropertyPage",
   components: {
     CrowdSourcedTab,
     PropertyHeadline,

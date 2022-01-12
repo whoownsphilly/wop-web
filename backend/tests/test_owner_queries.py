@@ -24,6 +24,10 @@ def test_properties_by_mailing_address_results():
       LIMIT 10
     '''
     """
+    parcel_number = "032022200" 
+    result = properties_by_mailing_address_results(parcel_number)
+    assert result
+
     parcel_number = "881074500" # a known property with many connected properties
     result = properties_by_mailing_address_results(parcel_number)
     assert result
@@ -36,6 +40,7 @@ def test_properties_by_mailing_address_results():
 
 def test_autocomplete():
     properties_to_test = [
+        {"address_str": "135 S 23rd Street", "top_result": "881028600"},
         {"address_str": "614 South washington square 912", "top_result": "888050735"},
         {"address_str": "20 S 16TH ST", "top_result": "883422300"},
         {"address_str": "135 S 23rd Street", "top_result": "881028600"},
@@ -62,7 +67,10 @@ def test_autocomplete():
 def test_properties_by_owner_name_results():
     #results = properties_by_owner_name_results('14 WA PARTNERS LP')
     parcel_number = '032022200'
+    #parcel_number = '291284800'
+    parcel_number = '871288650' # domb
+    parcel_number = '032209600' # odin
+    parcel_number = '888060252' # domb with NaT start_date
     results = properties_by_owner_name_results(parcel_number)
-    import pdb;pdb.set_trace()
     # This is pretty good, just needs to get synced into the front-end
     assert results

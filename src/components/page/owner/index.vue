@@ -13,39 +13,43 @@
           <sui-grid-column :width="6">
             <owner-portfolio
               :properties="currentProperties"
-              :mailingAddressBasedOwnerPortfolio="
-                mailingAddressBasedOwnerPortfolioInfo
-              "
-              :ownerBasedOwnerPortfolio="ownerBasedOwnerPortfolioInfo"
             />
           </sui-grid-column>
-        <sui-grid-column :width="10">
-    <sui-statistics-group horizontal>
-      <sui-statistic in-group>
-        <sui-statistic-value>13</sui-statistic-value>
-        <sui-statistic-label>Properties Owned
-          </sui-statistic-label
-        >
-      </sui-statistic>
-      <sui-statistic in-group>
-        <sui-statistic-value>5.5</sui-statistic-value>
-        <sui-statistic-label>years of average property ownership 
-          </sui-statistic-label
-        >
-      </sui-statistic>
-      <sui-statistic in-group>
-        <sui-statistic-value>$139,000,000</sui-statistic-value>
-        <sui-statistic-label>Total Value of Properties
-          </sui-statistic-label
-        >
-      </sui-statistic>
-      <sui-statistic in-group>
-        <sui-statistic-value>10</sui-statistic-value>
-        <sui-statistic-label>Violations Since 2015
-          </sui-statistic-label
-        >
-      </sui-statistic>
-      </sui-statistics-group>
+          <sui-grid-column :width="10">
+            <div>Mailing Address: {{ mailingAddress }}</div>
+            <sui-statistics-group horizontal>
+              <sui-statistic in-group>
+                <sui-statistic-value>{{ currentProperties.length }}</sui-statistic-value>
+                <sui-statistic-label>Properties Currently Associated with owner</sui-statistic-label><sup><info-modal modalName="owner.portfolio.propertyCount"/></sup>
+              </sui-statistic>
+              <sui-statistic in-group>
+                <sui-statistic-value>{{ getFormattedCurrency(totalAssessedValue) }}</sui-statistic-value>
+                <sui-statistic-label
+                  >Total Value of Properties</sui-statistic-label><sup><info-modal modalName="owner.portfolio.marketValueInfo"/></sup>
+
+              </sui-statistic>
+              <sui-statistic in-group>
+                <sui-statistic-value>{{ nViolationsOpen }}</sui-statistic-value>
+                <sui-statistic-label>Open Violations across properties currently associated with owner </sui-statistic-label><sup><info-modal modalName="owner.portfolio.nOpenViolations"/></sup>
+              </sui-statistic>
+              <sui-statistic in-group>
+                <sui-statistic-value>{{
+                  nViolationsClosed
+                }}</sui-statistic-value>
+                <sui-statistic-label
+                  >Violations since {{ violationsComplaintsDateSince | luxon }} across properties currently associated with owner
+                </sui-statistic-label><sup><info-modal modalName="owner.portfolio.nClosedViolations"/></sup>
+              </sui-statistic>
+              <sui-statistic in-group>
+                <sui-statistic-value>{{
+                  nComplaints
+                }}</sui-statistic-value>
+                <sui-statistic-label
+                  >Complaints since {{ violationsComplaintsDateSince | luxon }} across properties currently associated with owner
+                </sui-statistic-label><sup><info-modal modalName="owner.portfolio.nComplaints"/></sup>
+
+              </sui-statistic>
+            </sui-statistics-group>
             <sui-accordion exclusive styled>
               <sui-accordion-title>
                 <sui-icon name="dropdown" />
@@ -105,7 +109,7 @@
                 />
               </sui-accordion-content>
             </sui-accordion>
-            </sui-grid-column>
+          </sui-grid-column>
         </sui-grid-row>
       </sui-grid>
     </div>
@@ -150,17 +154,14 @@ export default {
       mailingAddressLoading: false,
       ownerBasedNames: null,
       ownerBasedOwnerPortfolioInfo: null,
-      ownerBasedNUniqueProperties: null,
       ownerBasedPropertyTimelineData: [],
       ownerBasedOwnerPropertyCountsByName: [],
-      ownerBasedTotalValue: null,
       mailingAddress: null,
       mailingAddressBasedNames: null,
       mailingAddressBasedOwnerPortfolioInfo: null,
-      mailingAddressBasednUniqueProperties: null,
       mailingAddressBasedPropertyTimelineData: [],
       mailingAddressBasedOwnerPropertyCountsByName: [],
-      mailingAddressBasedTotalValue: null
+      violationsComplaintsDateSince: "2007-01-01"
     };
   },
   computed: {
@@ -185,23 +186,66 @@ export default {
       }
     },
     currentProperties() {
-      // Some overly complicated logic to get a list of unique properties
-      var allProperties = this.ownerBasedCurrentProperties.concat(
-        this.mailingAddressBasedCurrentProperties
-      );
-      var allUniqueProperties = [];
-      var allUniquePropertyParcelNumbers = [];
-      for (var i = 0; i < allProperties.length; i++) {
-        if (
-          !allUniquePropertyParcelNumbers.includes(
-            allProperties[i].opa_account_num
-          )
-        ) {
-          allUniquePropertyParcelNumbers.push(allProperties[i].opa_account_num);
-          allUniqueProperties.push(allProperties[i]);
+      return this.loadedCompiledData.currentProperties;
+    },
+    nViolationsOpen() {
+      return this.loadedCompiledData.nViolationsOpen;
+    },
+    nViolationsClosed() {
+      return this.loadedCompiledData.nViolationsClosed;
+    },
+    nComplaints() {
+      return this.loadedCompiledData.nComplaints;
+    },
+    totalAssessedValue() {
+      return this.loadedCompiledData.marketValue;
+    },
+    ownerBasedCurrentProperties() {
+        return this.ownerBasedPropertyTimelineData.filter(function(el) {
+            return el.current_owner
+        })
+    },
+    mailingAddressBasedCurrentProperties() {
+        return this.mailingAddressBasedPropertyTimelineData.filter(function(el) {
+            return el.current_owner
+        })
+    },
+    loadedCompiledData() {
+      if (!this.ownerLoading && !this.mailingAddressLoading) {
+        var allUniqueCurrentProperties = [];
+        var nViolationsOpen = 0;
+        var nViolationsClosed = 0;
+        var nComplaints = 0;
+        var marketValue = 0;
+        let allProperties = this.ownerBasedPropertyTimelineData.concat(
+          this.mailingAddressBasedPropertyTimelineData
+        );
+        var allUniquePropertyParcelNumbers = [];
+        for (var i = 0; i < allProperties.length; i++) {
+          let thisProperty = allProperties[i];
+          if (
+            !allUniquePropertyParcelNumbers.includes(
+              thisProperty.opa_account_num
+            )
+          ) {
+            allUniquePropertyParcelNumbers.push(thisProperty.opa_account_num);
+            nViolationsOpen += thisProperty.n_violations_open;
+            nViolationsClosed += thisProperty.n_violations_closed;
+            nComplaints += thisProperty.n_complaints;
+            marketValue += thisProperty.market_value;
+            if (thisProperty.current_owner === true) {
+              allUniqueCurrentProperties.push(allProperties[i]);
+            }
+          }
         }
       }
-      return allUniqueProperties;
+      return {
+        nViolationsOpen: nViolationsOpen,
+        nViolationsClosed: nViolationsClosed,
+        nComplaints: nComplaints,
+        currentProperties: allUniqueCurrentProperties,
+        marketValue: marketValue
+      };
     },
     isPageStillLoading() {
       return this.ownerLoading || this.mailingAddressLoading;
@@ -209,30 +253,14 @@ export default {
   },
   methods: {
     getFormattedCurrency(value) {
+      // It won't let me directly call the function so I had to make a method
       return formatCurrencyValue(value);
     }
   },
   created() {
     this.ownerLoading = true;
     this.mailingAddressLoading = true;
-    // get all time-based data for the last year
-    getOwnerPageInfoByName(this.parcelNumber, this.ownerName).then(
-      propertyResults => {
-        this.ownerBasedPropertyTimelineData =
-          propertyResults["results"]["timeline"];
-        this.ownerBasedNames = propertyResults["results"]["alias_names"];
-        this.ownerBasedCurrentProperties =
-          propertyResults["results"]["current_properties"];
-        this.ownerBasedNUniqueProperties =
-          propertyResults["results"]["n_unique_properties"];
-        this.ownerBasedOwnerPropertyCountsByName =
-          propertyResults["display_inputs"]["owner_property_counts_by_name"];
-        this.ownerBasedTotalValue = propertyResults["results"]["total_value"];
-        this.ownerBasedOwnerPortfolioInfo =
-          propertyResults["display_inputs"]["owner_portfolio_text"];
-        this.ownerLoading = false;
-      }
-    );
+
     getOwnerPageInfoByMailingAddress(this.parcelNumber).then(
       propertyResults => {
         this.mailingAddress = propertyResults["metadata"]["mailing_address"];
@@ -240,19 +268,25 @@ export default {
           propertyResults["results"]["alias_names"];
         this.mailingAddressBasedPropertyTimelineData =
           propertyResults["results"]["timeline"];
-        this.mailingAddressBasedCurrentProperties =
-          propertyResults["results"]["current_properties"];
-        this.mailingAddressBasedNUniqueProperties =
-          propertyResults["results"]["n_unique_properties"];
         this.mailingAddressBasedOwnerPropertyCountsByName =
           propertyResults["display_inputs"]["owner_property_counts_by_name"];
-        this.mailingAddressBasedOwnerPortfolioInfo =
-          propertyResults["display_inputs"]["owner_portfolio_text"];
-        this.mailingAddressBasedTotalValue =
-          propertyResults["results"]["total_value"];
         this.mailingAddressLoading = false;
+      }
+    );
+    getOwnerPageInfoByName(this.parcelNumber, this.ownerName).then(
+      propertyResults => {
+        this.ownerBasedPropertyTimelineData =
+          propertyResults["results"]["timeline"];
+        this.ownerBasedNames = propertyResults["results"]["alias_names"];
+        this.ownerBasedOwnerPropertyCountsByName =
+          propertyResults["display_inputs"]["owner_property_counts_by_name"];
+        this.ownerLoading = false;
       }
     );
   }
 };
 </script>
+<style>
+.ui.accordion .title:not(.ui) {
+  font-size: 1em;
+}

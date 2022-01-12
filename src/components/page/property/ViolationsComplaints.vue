@@ -1,25 +1,27 @@
 <template>
-<div>
+  <div>
     <sui-accordion>
-    <sui-accordion-title class="large">
+      <sui-accordion-title class="large">
         <sui-icon v-if="nViolationsOpen" name="dropdown" />
         {{ nViolationsOpen || 0 }} currently open violations
-    </sui-accordion-title>
-    <sui-accordion-content>
-    ABC
-    </sui-accordion-content>
-    <sui-accordion-title>
+      </sui-accordion-title>
+      <sui-accordion-content>
+        ABC
+      </sui-accordion-content>
+      <sui-accordion-title>
         <sui-icon v-if="nViolationsOpen" name="dropdown" />
-        {{ nViolationsClosedSince || 0 }} closed violations since {{ dateSince | luxon }}
-    </sui-accordion-title>
-    <sui-accordion-content></sui-accordion-content>
-    <sui-accordion-title>
+        {{ nViolationsClosedSince || 0 }} closed violations since
+        {{ dateSince | luxon }}
+      </sui-accordion-title>
+      <sui-accordion-content></sui-accordion-content>
+      <sui-accordion-title>
         <sui-icon v-if="nComplaints" name="dropdown" />
-        {{ nComplaintsSince || 0 }} complaints through 311 since {{ dateSince | luxon }}
-    </sui-accordion-title>
-    <sui-accordion-content>
-    ABC
-    </sui-accordion-content>
+        {{ nComplaintsSince || 0 }} complaints through 311 since
+        {{ dateSince | luxon }}
+      </sui-accordion-title>
+      <sui-accordion-content>
+        ABC
+      </sui-accordion-content>
     </sui-accordion>
   </div>
 </template>
@@ -44,12 +46,14 @@ export default {
       required: true
     },
     dateSince: {
-    type: String,
-    required: true
+      type: String,
+      required: true
     }
-  },
+  }
 };
 </script>
 <style>
-.ui.accordion .title:not(.ui) { font-size: 2em}
+.ui.accordion .title:not(.ui) {
+  font-size: 2em;
+}
 </style>

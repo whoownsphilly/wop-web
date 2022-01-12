@@ -1,4 +1,7 @@
-export const getPropertyBasicsPageInfo = (parcel_number, violations_complaints_date_since) => {
+export const getPropertyBasicsPageInfo = (
+  parcel_number,
+  violations_complaints_date_since
+) => {
   const url = `api/v1/property/basics/?parcel_number=${parcel_number}&violations_complaints_date_since=${violations_complaints_date_since}`;
   return fetch(url, {
     method: "GET"

@@ -16,13 +16,13 @@ from phillydb.owner_search_queries import OwnerQuery, OwnerQueryResult
 from phillydb.utils import get_normalized_address
 from phillydb import Properties, construct_search_query
 
-from backend.queries.queries import (
+from backend.queries import (
     property_page_results,
     property_latest_owner_detail_results,
     property_details_page_results,
     properties_by_owner_name_results,
     properties_by_mailing_address_results,
-    properties_by_property_autocomplete_results,
+    properties_by_autocomplete_results,
 )
 
 import requests
@@ -97,6 +97,11 @@ def settings_response(request):
 
 
 def autocomplete_response(request):
+    """Used to get the mailing_address related properties and response for the owner page"""
+    return _cache_page_response(properties_by_autocomplete_results, request)
+
+
+def autocomplete_response1(request):
     """
     A response that provides a list of properties based on the start of a string
 

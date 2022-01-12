@@ -54,25 +54,30 @@
         >
       </sui-statistic>
 
-
-    <sui-statistic in-group>
+      <sui-statistic in-group>
         <sui-statistic-value>
-            {{ nViolationsOpen || 0 }}
+          {{ nViolationsOpen || 0 }}
         </sui-statistic-value>
         <sui-statistic-label>currently open violations</sui-statistic-label>
-    </sui-statistic>
-    <sui-statistic in-group>
+      </sui-statistic>
+      <sui-statistic in-group>
         <sui-statistic-value>
-            {{ nViolationsClosedSince || 0 }}
+          {{ nViolationsClosedSince || 0 }}
         </sui-statistic-value>
-        <sui-statistic-label>closed violations since {{ violationsComplaintsDateSince | luxon }}</sui-statistic-label>
-    </sui-statistic>
-    <sui-statistic in-group>
+        <sui-statistic-label
+          >closed violations since
+          {{ violationsComplaintsDateSince | luxon }}</sui-statistic-label
+        >
+      </sui-statistic>
+      <sui-statistic in-group>
         <sui-statistic-value>
-            {{ nComplaintsSince || 0 }}
+          {{ nComplaintsSince || 0 }}
         </sui-statistic-value>
-        <sui-statistic-label>complaints to 311 since {{ violationsComplaintsDateSince | luxon }}</sui-statistic-label>
-    </sui-statistic>
+        <sui-statistic-label
+          >complaints to 311 since
+          {{ violationsComplaintsDateSince | luxon }}</sui-statistic-label
+        >
+      </sui-statistic>
     </sui-statistics-group>
   </div>
 </template>
@@ -83,8 +88,7 @@ import { formatCurrencyValue } from "@/components/utils/formatting.js";
 
 export default {
   name: "PropertyInfo",
-  components: {
-    },
+  components: {},
   props: {
     parcelNumber: {
       type: String,
@@ -114,34 +118,34 @@ export default {
   },
   created() {
     this.loading = true;
-    getPropertyBasicsPageInfo(this.parcelNumber, this.violationsComplaintsDateSince).then(
-      propertyResults => {
-        this.hasActiveRentalLicense =
-          propertyResults["has_active_rental_license"];
-        this.rentalLicenseExpiration =
-          propertyResults["rental_license_expiration_date"];
-        this.latestAssessmentYear = propertyResults["latest_assessment_year"];
-        this.latestAssessmentMarketValue = formatCurrencyValue(
-          propertyResults["latest_assessment_market_value"]
-        );
-        this.nViolations = propertyResults["n_violations"];
-        this.nViolationsOpen = propertyResults["n_violations_open"];
-        this.nViolationsClosedSince =
-          propertyResults["n_violations_closed_since"];
-        this.nComplaintsSince = propertyResults["n_complaints_since"];
-        this.nPropertiesOnDeed = propertyResults["n_properties_on_deed"];
-        this.isEstimateOfYearBuilt =
-          propertyResults["is_estimate_of_year_built"];
-        this.yearBuilt = propertyResults["year_built"];
-        this.hasHomesteadExemption = propertyResults["has_homestead_exemption"];
-        this.categoryCodeDescription =
-          propertyResults["category_code_description"];
-        this.buildingCodeDescription =
-          propertyResults["building_code_description"];
-        this.streetViewLink = propertyResults["street_view_link"];
-        this.loading = false;
-      }
-    );
+    getPropertyBasicsPageInfo(
+      this.parcelNumber,
+      this.violationsComplaintsDateSince
+    ).then(propertyResults => {
+      this.hasActiveRentalLicense =
+        propertyResults["has_active_rental_license"];
+      this.rentalLicenseExpiration =
+        propertyResults["rental_license_expiration_date"];
+      this.latestAssessmentYear = propertyResults["latest_assessment_year"];
+      this.latestAssessmentMarketValue = formatCurrencyValue(
+        propertyResults["latest_assessment_market_value"]
+      );
+      this.nViolations = propertyResults["n_violations"];
+      this.nViolationsOpen = propertyResults["n_violations_open"];
+      this.nViolationsClosedSince =
+        propertyResults["n_violations_closed_since"];
+      this.nComplaintsSince = propertyResults["n_complaints_since"];
+      this.nPropertiesOnDeed = propertyResults["n_properties_on_deed"];
+      this.isEstimateOfYearBuilt = propertyResults["is_estimate_of_year_built"];
+      this.yearBuilt = propertyResults["year_built"];
+      this.hasHomesteadExemption = propertyResults["has_homestead_exemption"];
+      this.categoryCodeDescription =
+        propertyResults["category_code_description"];
+      this.buildingCodeDescription =
+        propertyResults["building_code_description"];
+      this.streetViewLink = propertyResults["street_view_link"];
+      this.loading = false;
+    });
   },
   methods: {
     formatCurrencyValue(totalValue) {
@@ -155,5 +159,7 @@ export default {
 };
 </script>
 <style>
-.ui.accordion .title:not(.ui) { font-size: 2em}
+.ui.accordion .title:not(.ui) {
+  font-size: 2em;
+}
 </style>

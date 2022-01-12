@@ -51,3 +51,9 @@ heroku addons:create raygun-rum:rum-free
 ```
 
 To deploy to heroku, use the `./heroku.sh` script which both freezes and requirements and pushes the code.
+
+Learnings
+---------
+### RTT Summary
+- `document_date` seems to be the correct, as opposed to recording_date, even though recording_date is whats in the opa_properties_public (032209600)
+- Sometimes the document_dates can be the same because multiple sales happen in the same day: 341182500 (02/22/2010)

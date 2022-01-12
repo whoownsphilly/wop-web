@@ -1,6 +1,7 @@
 <template>
   <div>
-    <div></div>
+    Click on a property to see the address. If you click on the address that
+    pops up, it will take you to that property's page.
     <l-map
       :zoom="zoom"
       :center="center"
@@ -46,8 +47,6 @@
         <i style="background: red"></i><span>Same Owner</span><br />
       </l-control>
     </l-map>
-    Click on a property to see the address. If you click on the address that
-    pops up, it will take you to that property's page.
   </div>
 </template>
 
@@ -116,7 +115,7 @@ export default {
         latLng: latLng(latLngTuple.lat, latLngTuple.lng),
         color: latLngTuple.color,
         popUp: latLngTuple.location + " " + (latLngTuple.unit || ""),
-        parcelNumber: latLngTuple.parcel_number
+        parcelNumber: latLngTuple.opa_account_num
       }));
     },
     mapBounds() {

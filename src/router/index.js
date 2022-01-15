@@ -42,7 +42,16 @@ const routes = [
     name: "Property",
     component: () =>
       import(/* webpackChunkName: "about" */ "../views/PropertyPage.vue")
-  }
+  },
+  {
+    path: "/explore",
+    name: "Explore",
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () =>
+      import(/* webpackChunkName: "about" */ "../views/ExplorePage.vue")
+  },
 ];
 
 const router = new VueRouter({

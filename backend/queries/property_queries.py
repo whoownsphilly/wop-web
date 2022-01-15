@@ -408,8 +408,7 @@ def properties_by_property_autocomplete_results(property_substr, n_results):
     2 as grantees_source_priority
     FROM opa_properties_public WHERE location like '{search_to_match}%' 
     """
-    results = carto_request(query)
-    df = pd.DataFrame(results)
+    df = carto_request(query)
     # Sort by similarity of computed location to the search you are looking for
     df["similarity"] = df["computed_location"].apply(
         lambda x: fuzz.ratio(x, search_to_match)
@@ -424,10 +423,10 @@ def properties_by_property_autocomplete_results(property_substr, n_results):
             return x.computed_location + f" (a.k.a. {x.location})"
         else:
             return x.computed_location
-
-    df["location_unit"] = df.apply(aka_location, axis=1)
-    df["description"] = df["grantees"]
-    df["parcel_number"] = df["opa_account_num"]
+    if not df.empty:
+        df["location_unit"] = df.apply(aka_location, axis=1)
+        df["description"] = df["grantees"]
+        df["parcel_number"] = df["opa_account_num"]
     return {
         "success": True,
         "results": df[:n_results].to_dict("records"),

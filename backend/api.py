@@ -39,9 +39,7 @@ DEEDS_WHERE_CLAUSE = """
 
 def _carto_request(query):
     df_json = requests.get(
-        f"""
-        https://phl.carto.com/api/v2/sql?q={query}
-        """
+        "https://phl.carto.com/api/v2/sql", params={"q": query}
     ).json()
     if "rows" not in df_json:
         raise ValueError(f"{query}\n\n{df_json}")

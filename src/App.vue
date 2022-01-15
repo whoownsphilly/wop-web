@@ -31,6 +31,9 @@
       <span v-if="$siteMode.mode !== 'basic'"> | 
         <router-link  to="/data-explained"><b>Data and Methods Expained</b></router-link>
       </span>
+      <span v-if="$siteMode.mode !== 'basic'"> | 
+        <router-link  to="/explore"><b>Explore</b></router-link>
+      </span>
     </div>
     <router-view />
   </div>

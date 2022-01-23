@@ -31,15 +31,15 @@ export default {
   props: {
     parcelNumber: {
       type: String,
-      required: true,
+      required: true
     },
     streetViewLink: {
       type: String,
-      required: true,
-    },
+      required: true
+    }
   },
   methods: {},
-  created() {},
+  created() {}
 };
 </script>
 <style>

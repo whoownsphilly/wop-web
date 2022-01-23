@@ -15,14 +15,14 @@ export default {
     properties: {
       type: Array,
       required: true
-    },
+    }
   },
   data() {
     return {
       nProperties: null,
-      thisProperty: null,
+      thisProperty: null
     };
-  },
+  }
 };
 </script>
 <style>

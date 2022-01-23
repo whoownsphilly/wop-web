@@ -22,7 +22,7 @@ def carto_request(query, as_df=True):
         raise ValueError(f"{query}\n\n{df_json}")
     data = df_json["rows"]
     if as_df:
-        return pd.DataFrame(df_json['rows'], columns=list(df_json['fields'].keys()))
+        return pd.DataFrame(df_json["rows"], columns=list(df_json["fields"].keys()))
     return data
 
 

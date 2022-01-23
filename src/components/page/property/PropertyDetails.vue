@@ -22,26 +22,26 @@ export default {
   props: {
     parcelNumber: {
       type: String,
-      required: true,
-    },
+      required: true
+    }
   },
   data() {
     return {
       propertyOwnershipTimelineData: [],
       propertyValueTimelineData: [],
-      loading: false,
+      loading: false
     };
   },
   created() {
     this.loading = true;
     // get all time-based data for the last year
-    getPropertyDetailsPageInfo(this.parcelNumber).then((propertyResults) => {
+    getPropertyDetailsPageInfo(this.parcelNumber).then(propertyResults => {
       this.propertyOwnershipTimelineData =
         propertyResults["property_ownership_timeline"];
       this.propertyValueTimelineData =
         propertyResults["property_value_timeline"];
       this.loading = false;
     });
-  },
+  }
 };
 </script>

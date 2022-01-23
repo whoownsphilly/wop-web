@@ -11,7 +11,10 @@
       <sui-grid>
         <sui-grid-row>
           <sui-grid-column :width="6">
-            <owner-portfolio :properties="currentProperties" />
+            <owner-portfolio
+              :properties="currentProperties"
+              :thisProperty="thisProperty"
+            />
           </sui-grid-column>
           <sui-grid-column :width="10">
             <div>Mailing Address: {{ mailingAddress }}</div>
@@ -125,7 +128,7 @@
 <script>
 import {
   getOwnerPageInfoByName,
-  getOwnerPageInfoByMailingAddress
+  getOwnerPageInfoByMailingAddress,
 } from "@/api/pages";
 import OwnerPortfolio from "@/components/page/owner/Portfolio";
 import VueApexBarChart from "@/components/ui/charts/BarChart";
@@ -139,13 +142,13 @@ export default {
     VueApexBarChart,
     DataTable,
     SingleColumnDataTable,
-    OwnerPortfolio
+    OwnerPortfolio,
   },
   props: {
     parcelNumber: {
       type: String,
-      required: true
-    }
+      required: true,
+    },
   },
   data() {
     return {
@@ -161,15 +164,17 @@ export default {
       mailingAddressBasedOwnerPortfolioInfo: null,
       mailingAddressBasedPropertyTimelineData: [],
       mailingAddressBasedOwnerPropertyCountsByName: [],
-      violationsComplaintsDateSince: "2007-01-01"
+      violationsComplaintsDateSince: "2007-01-01",
     };
   },
   computed: {
     ownerBasedPropertyTimelineDataColumns() {
       if (this.ownerBasedPropertyTimelineData.length > 0) {
-        return Object.keys(this.ownerBasedPropertyTimelineData[0]).map(col => {
-          return { label: col, field: col };
-        });
+        return Object.keys(this.ownerBasedPropertyTimelineData[0]).map(
+          (col) => {
+            return { label: col, field: col };
+          }
+        );
       } else {
         return [];
       }
@@ -177,13 +182,19 @@ export default {
     mailingAddressBasedPropertyTimelineDataColumns() {
       if (this.mailingAddressBasedPropertyTimelineData.length > 0) {
         return Object.keys(this.mailingAddressBasedPropertyTimelineData[0]).map(
-          col => {
+          (col) => {
             return { label: col, field: col };
           }
         );
       } else {
         return [];
       }
+    },
+    thisProperty() {
+      let parcelNumber = this.parcelNumber;
+      return this.currentProperties.filter(
+        (x) => x.opa_account_num == parcelNumber
+      )[0];
     },
     currentProperties() {
       return this.loadedCompiledData.currentProperties;
@@ -244,25 +255,25 @@ export default {
         nViolationsClosed: nViolationsClosed,
         nComplaints: nComplaints,
         currentProperties: allUniqueCurrentProperties,
-        marketValue: marketValue
+        marketValue: marketValue,
       };
     },
     isPageStillLoading() {
       return this.ownerLoading || this.mailingAddressLoading;
-    }
+    },
   },
   methods: {
     getFormattedCurrency(value) {
       // It won't let me directly call the function so I had to make a method
       return formatCurrencyValue(value);
-    }
+    },
   },
   created() {
     this.ownerLoading = true;
     this.mailingAddressLoading = true;
 
     getOwnerPageInfoByMailingAddress(this.parcelNumber).then(
-      propertyResults => {
+      (propertyResults) => {
         this.mailingAddress = propertyResults["metadata"]["mailing_address"];
         this.mailingAddressBasedNames =
           propertyResults["results"]["alias_names"];
@@ -273,7 +284,7 @@ export default {
         this.mailingAddressLoading = false;
       }
     );
-    getOwnerPageInfoByName(this.parcelNumber).then(propertyResults => {
+    getOwnerPageInfoByName(this.parcelNumber).then((propertyResults) => {
       this.ownerBasedPropertyTimelineData =
         propertyResults["results"]["timeline"];
       this.ownerBasedNames = propertyResults["results"]["alias_names"];
@@ -281,7 +292,7 @@ export default {
         propertyResults["display_inputs"]["owner_property_counts_by_name"];
       this.ownerLoading = false;
     });
-  }
+  },
 };
 </script>
 <style>

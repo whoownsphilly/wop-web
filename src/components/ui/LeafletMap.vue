@@ -21,7 +21,7 @@
         >
           <l-popup>
             <div @click="jumpToProperty(marker.parcelNumber)">
-              <a class="hyperlink"
+              <a class="hyperlink" :href="propertyUrl(marker.parcelNumber)"
                 ><u>{{ marker.popUp }}</u></a
               >
             </div>
@@ -128,6 +128,9 @@ export default {
     },
   },
   methods: {
+    propertyUrl(parcelNumber) {
+      return `#/property/${parcelNumber}`;
+    },
     jumpToProperty(parcelNumber) {
       this.$router.push("/property/" + parcelNumber);
       this.$router.go();

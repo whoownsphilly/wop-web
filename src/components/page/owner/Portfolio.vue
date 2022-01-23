@@ -1,6 +1,6 @@
 <template>
   <div style="font-size: 18px">
-    <leaflet-map :latLngs="properties" :highlightedLatLngs="thisProperty" />
+    <leaflet-map :latLngs="properties" :highlightedLatLng="thisProperty" />
   </div>
 </template>
 <script>
@@ -9,20 +9,23 @@ import LeafletMap from "@/components/ui/LeafletMap";
 export default {
   name: "PropertyPortfolio",
   components: {
-    LeafletMap
+    LeafletMap,
   },
   props: {
     properties: {
       type: Array,
-      required: true
-    }
+      required: true,
+    },
+    thisProperty: {
+      type: Object,
+      required: true,
+    },
   },
   data() {
     return {
       nProperties: null,
-      thisProperty: null
     };
-  }
+  },
 };
 </script>
 <style>

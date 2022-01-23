@@ -73,7 +73,7 @@ def test_properties_by_owner_name_results():
     parcel_number = "888060252"  # domb with NaT start_date
     parcel_number = "881074500"  # property timeline misses latest entry
     parcel_number = "871288650"  # domb
-    # parcel_number = "881028600"  # multiple properties
+    parcel_number = "881137200"  # broken
     results = properties_by_owner_name_results(parcel_number)
     # This is pretty good, just needs to get synced into the front-end
     assert results

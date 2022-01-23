@@ -3,7 +3,7 @@ from phillydb import PhillyCartoTable
 import os
 import pandas as pd
 import pytest
-from requests import get as request_get # so we don't get recursive issues
+from requests import get as request_get  # so we don't get recursive issues
 from rest_framework.test import APIRequestFactory
 
 from backend.urls import table_api_urlpatterns, table_schema_api_urlpatterns
@@ -91,7 +91,7 @@ def test_autocomplete_response(client, monkeypatch_query_by_single_str_column):
     assert response.status_code == 200
     assert response.json()["success"] == True
 
-    request_params = {"startswith_str": "DOMB ALLAN", "column": "owner_1"}
+    request_params = {"startswith_str": "DOMB ALLAN"}
     response = client.get(reverse("autocomplete_list"), request_params)
     assert response.status_code == 200
     assert response.json()["success"] == True
@@ -140,6 +140,7 @@ def monkeypatch_raw_requests(monkeypatch):
 
     monkeypatch.setattr("requests.get", _fake_results)
 
+
 @pytest.fixture
 def monkeypatch_airtable(monkeypatch):
     os.environ["BIOS_URL"] = "https://api.airtable.com"
@@ -175,9 +176,4 @@ def test_mailing_street_bios_response(client, monkeypatch_raw_requests):
 def test_property_page_response(client, monkeypatch_airtable):
     request_params = {"parcel_number": "888058983"}
     response = client.get(reverse("property_page_list"), request_params)
-    assert response.status_code == 200
-
-def test_owner_page_response(client, monkeypatch_airtable):
-    request_params = {"owner_name": "COMCAST CABLEVISION"}
-    response = client.get(reverse("owner_page_list"), request_params)
     assert response.status_code == 200

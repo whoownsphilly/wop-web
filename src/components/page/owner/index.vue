@@ -11,43 +11,62 @@
       <sui-grid>
         <sui-grid-row>
           <sui-grid-column :width="6">
-            <owner-portfolio
-              :properties="currentProperties"
-            />
+            <owner-portfolio :properties="currentProperties" />
           </sui-grid-column>
           <sui-grid-column :width="10">
             <div>Mailing Address: {{ mailingAddress }}</div>
             <sui-statistics-group horizontal>
               <sui-statistic in-group>
-                <sui-statistic-value>{{ currentProperties.length }}</sui-statistic-value>
-                <sui-statistic-label>Properties Currently Associated with owner</sui-statistic-label><sup><info-modal modalName="owner.portfolio.propertyCount"/></sup>
+                <sui-statistic-value>{{
+                  currentProperties.length
+                }}</sui-statistic-value>
+                <sui-statistic-label
+                  >Properties Currently Associated with
+                  owner</sui-statistic-label
+                ><sup
+                  ><info-modal modalName="owner.portfolio.propertyCount"
+                /></sup>
               </sui-statistic>
               <sui-statistic in-group>
-                <sui-statistic-value>{{ getFormattedCurrency(totalAssessedValue) }}</sui-statistic-value>
+                <sui-statistic-value>{{
+                  getFormattedCurrency(totalAssessedValue)
+                }}</sui-statistic-value>
                 <sui-statistic-label
-                  >Total Value of Properties</sui-statistic-label><sup><info-modal modalName="owner.portfolio.marketValueInfo"/></sup>
-
+                  >Total Value of Properties</sui-statistic-label
+                ><sup
+                  ><info-modal modalName="owner.portfolio.marketValueInfo"
+                /></sup>
               </sui-statistic>
               <sui-statistic in-group>
                 <sui-statistic-value>{{ nViolationsOpen }}</sui-statistic-value>
-                <sui-statistic-label>Open Violations across properties currently associated with owner </sui-statistic-label><sup><info-modal modalName="owner.portfolio.nOpenViolations"/></sup>
+                <sui-statistic-label
+                  >Open Violations across properties currently associated with
+                  owner </sui-statistic-label
+                ><sup
+                  ><info-modal modalName="owner.portfolio.nOpenViolations"
+                /></sup>
               </sui-statistic>
               <sui-statistic in-group>
                 <sui-statistic-value>{{
                   nViolationsClosed
                 }}</sui-statistic-value>
                 <sui-statistic-label
-                  >Violations since {{ violationsComplaintsDateSince | luxon }} across properties currently associated with owner
-                </sui-statistic-label><sup><info-modal modalName="owner.portfolio.nClosedViolations"/></sup>
+                  >Violations since
+                  {{ violationsComplaintsDateSince | luxon }} across properties
+                  currently associated with owner </sui-statistic-label
+                ><sup
+                  ><info-modal modalName="owner.portfolio.nClosedViolations"
+                /></sup>
               </sui-statistic>
               <sui-statistic in-group>
-                <sui-statistic-value>{{
-                  nComplaints
-                }}</sui-statistic-value>
+                <sui-statistic-value>{{ nComplaints }}</sui-statistic-value>
                 <sui-statistic-label
-                  >Complaints since {{ violationsComplaintsDateSince | luxon }} across properties currently associated with owner
-                </sui-statistic-label><sup><info-modal modalName="owner.portfolio.nComplaints"/></sup>
-
+                  >Complaints since
+                  {{ violationsComplaintsDateSince | luxon }} across properties
+                  currently associated with owner </sui-statistic-label
+                ><sup
+                  ><info-modal modalName="owner.portfolio.nComplaints"
+                /></sup>
               </sui-statistic>
             </sui-statistics-group>
             <sui-accordion exclusive styled>
@@ -95,19 +114,6 @@
                   :data="mailingAddressBasedOwnerPropertyCountsByName"
                 />
               </sui-accordion-content>
-              <sui-accordion-title>
-                <sui-icon name="dropdown" />
-                Property Ownership Timeline
-              </sui-accordion-title>
-              <sui-accordion-content>
-                <h2>Property Timeline</h2>
-                <vue-apex-timeline
-                  :data="ownerBasedPropertyTimelineData"
-                  labelCol="location_unit"
-                  startCol="start_dt"
-                  endCol="end_dt"
-                />
-              </sui-accordion-content>
             </sui-accordion>
           </sui-grid-column>
         </sui-grid-row>
@@ -119,10 +125,9 @@
 <script>
 import {
   getOwnerPageInfoByName,
-  getOwnerPageInfoByMailingAddress
+  getOwnerPageInfoByMailingAddress,
 } from "@/api/pages";
 import OwnerPortfolio from "@/components/page/owner/Portfolio";
-import VueApexTimeline from "@/components/ui/charts/Timeline";
 import VueApexBarChart from "@/components/ui/charts/BarChart";
 import DataTable from "@/components/ui/DataTable";
 import SingleColumnDataTable from "@/components/ui/SingleColumnDataTable";
@@ -131,21 +136,16 @@ import { formatCurrencyValue } from "@/components/utils/formatting.js";
 export default {
   name: "HistoricalOwnerTab",
   components: {
-    VueApexTimeline,
     VueApexBarChart,
     DataTable,
     SingleColumnDataTable,
-    OwnerPortfolio
+    OwnerPortfolio,
   },
   props: {
-    ownerName: {
-      type: String,
-      required: true
-    },
     parcelNumber: {
       type: String,
-      required: true
-    }
+      required: true,
+    },
   },
   data() {
     return {
@@ -161,15 +161,17 @@ export default {
       mailingAddressBasedOwnerPortfolioInfo: null,
       mailingAddressBasedPropertyTimelineData: [],
       mailingAddressBasedOwnerPropertyCountsByName: [],
-      violationsComplaintsDateSince: "2007-01-01"
+      violationsComplaintsDateSince: "2007-01-01",
     };
   },
   computed: {
     ownerBasedPropertyTimelineDataColumns() {
       if (this.ownerBasedPropertyTimelineData.length > 0) {
-        return Object.keys(this.ownerBasedPropertyTimelineData[0]).map(col => {
-          return { label: col, field: col };
-        });
+        return Object.keys(this.ownerBasedPropertyTimelineData[0]).map(
+          (col) => {
+            return { label: col, field: col };
+          }
+        );
       } else {
         return [];
       }
@@ -177,7 +179,7 @@ export default {
     mailingAddressBasedPropertyTimelineDataColumns() {
       if (this.mailingAddressBasedPropertyTimelineData.length > 0) {
         return Object.keys(this.mailingAddressBasedPropertyTimelineData[0]).map(
-          col => {
+          (col) => {
             return { label: col, field: col };
           }
         );
@@ -201,14 +203,14 @@ export default {
       return this.loadedCompiledData.marketValue;
     },
     ownerBasedCurrentProperties() {
-        return this.ownerBasedPropertyTimelineData.filter(function(el) {
-            return el.current_owner
-        })
+      return this.ownerBasedPropertyTimelineData.filter(function(el) {
+        return el.current_owner;
+      });
     },
     mailingAddressBasedCurrentProperties() {
-        return this.mailingAddressBasedPropertyTimelineData.filter(function(el) {
-            return el.current_owner
-        })
+      return this.mailingAddressBasedPropertyTimelineData.filter(function(el) {
+        return el.current_owner;
+      });
     },
     loadedCompiledData() {
       if (!this.ownerLoading && !this.mailingAddressLoading) {
@@ -244,25 +246,25 @@ export default {
         nViolationsClosed: nViolationsClosed,
         nComplaints: nComplaints,
         currentProperties: allUniqueCurrentProperties,
-        marketValue: marketValue
+        marketValue: marketValue,
       };
     },
     isPageStillLoading() {
       return this.ownerLoading || this.mailingAddressLoading;
-    }
+    },
   },
   methods: {
     getFormattedCurrency(value) {
       // It won't let me directly call the function so I had to make a method
       return formatCurrencyValue(value);
-    }
+    },
   },
   created() {
     this.ownerLoading = true;
     this.mailingAddressLoading = true;
 
     getOwnerPageInfoByMailingAddress(this.parcelNumber).then(
-      propertyResults => {
+      (propertyResults) => {
         this.mailingAddress = propertyResults["metadata"]["mailing_address"];
         this.mailingAddressBasedNames =
           propertyResults["results"]["alias_names"];
@@ -273,20 +275,19 @@ export default {
         this.mailingAddressLoading = false;
       }
     );
-    getOwnerPageInfoByName(this.parcelNumber, this.ownerName).then(
-      propertyResults => {
-        this.ownerBasedPropertyTimelineData =
-          propertyResults["results"]["timeline"];
-        this.ownerBasedNames = propertyResults["results"]["alias_names"];
-        this.ownerBasedOwnerPropertyCountsByName =
-          propertyResults["display_inputs"]["owner_property_counts_by_name"];
-        this.ownerLoading = false;
-      }
-    );
-  }
+    getOwnerPageInfoByName(this.parcelNumber).then((propertyResults) => {
+      this.ownerBasedPropertyTimelineData =
+        propertyResults["results"]["timeline"];
+      this.ownerBasedNames = propertyResults["results"]["alias_names"];
+      this.ownerBasedOwnerPropertyCountsByName =
+        propertyResults["display_inputs"]["owner_property_counts_by_name"];
+      this.ownerLoading = false;
+    });
+  },
 };
 </script>
 <style>
 .ui.accordion .title:not(.ui) {
   font-size: 1em;
 }
+</style>

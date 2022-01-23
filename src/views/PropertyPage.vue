@@ -12,66 +12,38 @@
         :ownerByMailingAddress="ownerByMailingAddress"
         :propertySourceString="propertySourceString"
       />
-      <sui-tab>
-        <sui-tab-pane title="Summary">
-          <sui-grid>
-            <sui-grid-row>
-              <sui-grid-column :width="6">
-                <div style="height:600px">
-                  <vue-iframe :src="streetViewLink" />
-                </div>
-              </sui-grid-column>
-              <sui-grid-column :width="10">
-                <property-basics :parcelNumber="parcelNumber" />
-                <router-link
-                  to="/take-action"
-                  class="ui button positive"
-                  tag="button"
-                  >Click here to take action!</router-link
-                >
-              </sui-grid-column>
-            </sui-grid-row>
-          </sui-grid>
-        </sui-tab-pane>
-        <sui-tab-pane title="Property Details">
-          <property-details :parcelNumber="parcelNumber" />
-        </sui-tab-pane>
-        <sui-tab-pane title="Owner Details">
-          <historical-owner-tab
-            :ownerName="latestOwnerString"
-            :parcelNumber="parcelNumber"
-          />
-        </sui-tab-pane>
-        <sui-tab-pane
-          v-if="propertyResult.crowd_sourced"
-          title="Crowd-Sourced Details"
-        >
-          <crowd-sourced-tab
-            :bioResults="propertyResult.crowd_sourced.results"
-            :mailingStreet="propertyResult.latest_mailing_street"
-          />
-        </sui-tab-pane>
-      </sui-tab>
+      <div class="ui top attached tabular menu">
+        <router-link :to="summaryLink">
+          <div class="item" :class="{ active: isActive('property-summary') }">
+            Summary
+          </div>
+        </router-link>
+        <router-link :to="propertyDetailsLink">
+          <div class="item" :class="{ active: isActive('property-details') }">
+            Property Details
+          </div>
+        </router-link>
+        <router-link :to="ownerDetailsLink">
+          <div class="item" :class="{ active: isActive('owner') }">
+            Owner Details
+          </div>
+        </router-link>
+      </div>
+      <div class="ui bottom attached active tab segment">
+        <router-view :streetViewLink="streetViewLink" />
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import CrowdSourcedTab from "@/components/page/crowdSourced";
 import PropertyHeadline from "@/components/page/PropertyHeadline";
-import PropertyBasics from "@/components/page/property";
-import PropertyDetails from "@/components/page/property/PropertyDetails";
-import HistoricalOwnerTab from "@/components/page/owner";
 import { getPropertyLatestOwnerDetailsInfo } from "@/api/pages";
 
 export default {
   name: "PropertyPage",
   components: {
-    CrowdSourcedTab,
     PropertyHeadline,
-    PropertyBasics,
-    PropertyDetails,
-    HistoricalOwnerTab
   },
   data() {
     return {
@@ -83,25 +55,51 @@ export default {
       propertySourceString: "based on the latest property assessment.",
       properties: [],
       latestTransaction: null,
-      ownerBasedResults: { violations: { rows: [] }, complaints: { rows: [] } },
+      ownerBasedResults: {
+        violations: { rows: [] },
+        complaints: { rows: [] },
+      },
       latestRentalLicense: null,
       fullOwnersList: [],
-      ownerTimelineData: []
+      ownerTimelineData: [],
     };
   },
+  methods: {
+    isActive(name) {
+      return this.$route.name === name;
+    },
+  },
   computed: {
+    summaryLink() {
+      return {
+        name: "property-summary",
+        params: { parcelNumber: this.parcelNumber },
+      };
+    },
+    propertyDetailsLink() {
+      return {
+        name: "property-details",
+        params: { parcelNumber: this.parcelNumber },
+      };
+    },
+    ownerDetailsLink() {
+      return {
+        name: "owner",
+        params: { parcelNumber: this.parcelNumber },
+      };
+    },
     loadingContent() {
       return (
         "Finding all " +
         this.loadingStep +
         " related information (may take some time)..."
       );
-    }
+    },
   },
   created() {
     this.loading = true;
     // get all time-based data for the last year
-    getPropertyLatestOwnerDetailsInfo(this.parcelNumber).then(result => {
+    getPropertyLatestOwnerDetailsInfo(this.parcelNumber).then((result) => {
       this.propertyResult = result;
       this.propertyString = result["full_address"];
       this.latestOwnerString = result["latest_owner"];
@@ -112,7 +110,7 @@ export default {
       this.streetViewLink = result["street_view_link"];
       this.loading = false;
     });
-  }
+  },
 };
 </script>
 <style>

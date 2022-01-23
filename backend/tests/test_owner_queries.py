@@ -24,18 +24,19 @@ def test_properties_by_mailing_address_results():
       LIMIT 10
     '''
     """
-    parcel_number = "032022200" 
+    parcel_number = "032022200"
     result = properties_by_mailing_address_results(parcel_number)
     assert result
 
-    parcel_number = "881074500" # a known property with many connected properties
+    parcel_number = "881074500"  # a known property with many connected properties
     result = properties_by_mailing_address_results(parcel_number)
     assert result
 
-    parcel_number = "871540050" # opa_properties_public.recording_date='2019-07-26T00:00:00Z'
+    parcel_number = (
+        "871540050"  # opa_properties_public.recording_date='2019-07-26T00:00:00Z'
+    )
     result = properties_by_mailing_address_results(parcel_number)
     assert result
-
 
 
 def test_autocomplete():
@@ -49,28 +50,30 @@ def test_autocomplete():
     ]
     for test_property in properties_to_test:
         results = properties_by_property_autocomplete_results(
-            test_property["address_str"]
+            test_property["address_str"], n_results=1
         )
-        assert results['results'][0]['opa_account_num'] == test_property['top_result']
+        assert results["results"][0]["opa_account_num"] == test_property["top_result"]
 
     # test that this property returns a null mailing address since owner shouldnt match
     test_property_str = "2542 W OXFORD ST"
-    '''
+    """
     This needs to be implemented on the actual website.
     Right now this does not figure out who the most recent owner is for a given address
     So results of this query would only have the address and the mailing address
     but that is a TODO. IT would involve a bit of a more complex query to get the
     most recent DEED info but I believe that query is already elsewhere.
-    '''
+    """
 
 
 def test_properties_by_owner_name_results():
-    #results = properties_by_owner_name_results('14 WA PARTNERS LP')
-    parcel_number = '032022200'
-    #parcel_number = '291284800'
-    parcel_number = '871288650' # domb
-    parcel_number = '032209600' # odin
-    parcel_number = '888060252' # domb with NaT start_date
+    # results = properties_by_owner_name_results('14 WA PARTNERS LP')
+    parcel_number = "032022200"
+    # parcel_number = '291284800'
+    parcel_number = "032209600"  # odin
+    parcel_number = "888060252"  # domb with NaT start_date
+    parcel_number = "881074500"  # property timeline misses latest entry
+    parcel_number = "871288650"  # domb
+    # parcel_number = "881028600"  # multiple properties
     results = properties_by_owner_name_results(parcel_number)
     # This is pretty good, just needs to get synced into the front-end
     assert results

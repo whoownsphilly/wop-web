@@ -766,9 +766,10 @@ def _add_violation_counts(inner_query, timeline_df, analysis_since_date):
     ).fillna({"n_violations_closed": 0})
 
     # pass violation_text as json object
+    # TODO, return the violations list and the link to the violations
+    # so it can easily be clicked on when they appear.
+    """
     def _generate_json(violations_per_property):
-        # TODO, return the violations list and the link to the violations
-        # so it can easily be clicked on when they appear.
         return [
             f"{x.violationdate} ({x.opa_account_num}), Priority: {x.caseprioritydesc}, Violation: {x.violationcodetitle} Status: {x.violationstatus}"
             for index, x in violations_per_property.iterrows()
@@ -780,6 +781,7 @@ def _add_violation_counts(inner_query, timeline_df, analysis_since_date):
         .rename("violation_json")
     )
     timeline_df = timeline_df.join(violation_json, how="left")
+    """
     return timeline_df
 
 

@@ -1,10 +1,5 @@
 <template>
-  <div v-if="loading">
-    <sui-dimmer active inverted>
-      <sui-loader content="Finding All Information for this property..." />
-    </sui-dimmer>
-  </div>
-  <div v-else>
+  <div>
     <sui-grid>
       <sui-grid-row>
         <sui-grid-column :width="6">
@@ -31,15 +26,15 @@ export default {
   props: {
     parcelNumber: {
       type: String,
-      required: true
+      required: true,
     },
     streetViewLink: {
       type: String,
-      required: true
-    }
+      required: true,
+    },
   },
   methods: {},
-  created() {}
+  created() {},
 };
 </script>
 <style>

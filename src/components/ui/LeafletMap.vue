@@ -11,9 +11,11 @@
       style="height: 500px; width: 100%"
     >
       <l-tile-layer :url="url" :attribution="attribution" />
-      <div v-for="(marker, index) in mapMarkers" :key="index">
+      <vue2-leaflet-marker-cluster>
         <l-circle-marker
           :lat-lng="marker.latLng"
+          v-for="(marker, index) in mapMarkers"
+          :key="index"
           :color="marker.color"
           :fillColor="marker.color"
         >
@@ -25,20 +27,18 @@
             </div>
           </l-popup>
         </l-circle-marker>
-      </div>
+      </vue2-leaflet-marker-cluster>
       <div v-if="highlightedMapMarker">
-        <v-marker-cluster>
-          <l-circle-marker
-            :lat-lng="highlightedMapMarker.latLng"
-            zIndexOffset="0"
-            :color="highlightedMapMarker.color"
-            :fillColor="highlightedMapMarker.color"
-          >
-            <l-popup>
-              {{ highlightedMapMarker.popUp }}
-            </l-popup>
-          </l-circle-marker>
-        </v-marker-cluster>
+        <l-circle-marker
+          :lat-lng="highlightedMapMarker.latLng"
+          zIndexOffset="0"
+          color="black"
+          fillColor="black"
+        >
+          <l-popup>
+            {{ highlightedMapMarker.popUp }}
+          </l-popup>
+        </l-circle-marker>
       </div>
       <l-control class="legend" :position="'bottomleft'">
         <i style="background: black"></i><span>This Property</span><br />
@@ -52,12 +52,13 @@
 
 <script>
 import { latLngBounds, latLng } from "leaflet";
+import Vue2LeafletMarkerCluster from "vue2-leaflet-markercluster";
 import {
   LMap,
   LTileLayer,
   LCircleMarker,
   LControl,
-  LPopup
+  LPopup,
 } from "vue2-leaflet";
 
 export default {
@@ -67,16 +68,17 @@ export default {
     LTileLayer,
     LPopup,
     LControl,
-    LCircleMarker
+    LCircleMarker,
+    Vue2LeafletMarkerCluster,
   },
   props: {
     latLngs: {
       type: Array,
-      required: true
+      required: true,
     },
     highlightedLatLng: {
-      type: Object
-    }
+      type: Object,
+    },
   },
   data() {
     return {
@@ -87,8 +89,9 @@ export default {
       center: [48, -1.219482],
       fillColor: "#e4ce7f",
       url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      //url: "https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png",
       attribution:
-        '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+        '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
     };
   },
   computed: {
@@ -104,36 +107,38 @@ export default {
           popUp:
             this.highlightedLatLng.location +
             " " +
-            (this.highlightedLatLng.unit || "")
+            (this.highlightedLatLng.unit || ""),
         };
       } else {
         return null;
       }
     },
     mapMarkers() {
-      return this.latLngs.map(latLngTuple => ({
+      return this.latLngs.map((latLngTuple) => ({
         latLng: latLng(latLngTuple.lat, latLngTuple.lng),
         color: latLngTuple.color,
         popUp: latLngTuple.location + " " + (latLngTuple.unit || ""),
-        parcelNumber: latLngTuple.opa_account_num
+        parcelNumber: latLngTuple.opa_account_num,
       }));
     },
     mapBounds() {
       return latLngBounds(
-        this.latLngs.map(latLngTuple => [latLngTuple.lat, latLngTuple.lng])
+        this.latLngs.map((latLngTuple) => [latLngTuple.lat, latLngTuple.lng])
       );
-    }
+    },
   },
   methods: {
     jumpToProperty(parcelNumber) {
       this.$router.push("/property/" + parcelNumber);
       this.$router.go();
-    }
+    },
   },
-  async created() {}
+  async created() {},
 };
 </script>
 <style>
+@import "~leaflet.markercluster/dist/MarkerCluster.css";
+@import "~leaflet.markercluster/dist/MarkerCluster.Default.css";
 .legend {
   background: white;
   opacity: 0.9;

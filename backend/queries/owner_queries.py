@@ -333,19 +333,39 @@ def properties_by_owner_name_results(parcel_number):
         WHERE opa.category_code_description not in ('Commercial', 'Industrial','Vacant Land')
        """
 
-    owner_property_timeline_df = carto_request(_deeds_query(joined_inner_query))
+    property_timeline_df = carto_request(_deeds_query(joined_inner_query))
+    # TODO (We should only be returning a single row now since it should be
+    # the most recent owner only
+    # so we can possibly simplify the logic below
+
+    # If the last row doesn't have a null entry in end_dt (like with 881074500) we can manually add one. I'm not exactly sure why this happened.
+    property_timeline_df.sort_values("end_dt", inplace=True)
+    if not property_timeline_df.empty and not pd.isnull(
+        property_timeline_df.iloc[-1]["end_dt"]
+    ):
+        last_row = property_timeline_df.iloc[-1]
+        new_row = last_row.copy()
+        new_row["likely_owner"] = last_row["sold_to"]
+        new_row["start_dt"] = last_row["end_dt"]
+        new_row["end_dt"] = None
+        property_timeline_df = property_timeline_df.append(new_row)
+
     # Limit to only owners that had matched the owner list
     # This would be unnecessary if we could join the opa data to a grantee, but the owner_1-owner_2 <-> grantee mapping is unreliable
     distinct_owner_names = carto_request(
         f"SELECT DISTINCT names from ({inner_query}) owner_names"
     )
-    owner_property_timeline_df = owner_property_timeline_df[
-        owner_property_timeline_df.likely_owner.isin(
-            distinct_owner_names["names"].values
-        )
+    owner_property_timeline_df = property_timeline_df[
+        property_timeline_df.likely_owner.isin(distinct_owner_names["names"].values)
     ]
 
     # Manipulations on the owner df
+
+    # TODO Better handling of properties with multiple addresses
+    # For example, corner properties return multiple rows.
+    # For now, we are just dropping those duplicate properties
+    # But in the future we will want to display these "alternate addresses"
+    owner_property_timeline_df.drop_duplicates("opa_account_num", inplace=True)
 
     # The query used to return properties that the owner didnt currently own
     # but we have since changed that. So this should always be True.
@@ -701,7 +721,7 @@ def _add_complaint_counts(inner_query, timeline_df, analysis_since_date):
 
 def _add_violation_counts(inner_query, timeline_df, analysis_since_date):
     violations_query = f"""
-     SELECT distinct vio.opa_account_num, violationnumber, vio.cartodb_id, violationdate, caseprioritydesc, violationstatus
+     SELECT distinct vio.opa_account_num, violationnumber, vio.cartodb_id, violationdate, caseprioritydesc, violationstatus, violationcodetitle, violationresolutioncode
      FROM opa_properties_public opa
      {inner_query}
      JOIN violations vio
@@ -744,6 +764,22 @@ def _add_violation_counts(inner_query, timeline_df, analysis_since_date):
         .rename("n_violations_closed"),
         how="left",
     ).fillna({"n_violations_closed": 0})
+
+    # pass violation_text as json object
+    def _generate_json(violations_per_property):
+        # TODO, return the violations list and the link to the violations
+        # so it can easily be clicked on when they appear.
+        return [
+            f"{x.violationdate} ({x.opa_account_num}), Priority: {x.caseprioritydesc}, Violation: {x.violationcodetitle} Status: {x.violationstatus}"
+            for index, x in violations_per_property.iterrows()
+        ]
+
+    violation_json = (
+        vio_timeline_df_filtered.groupby(vio_timeline_df_filtered.opa_account_num)
+        .apply(_generate_json)
+        .rename("violation_json")
+    )
+    timeline_df = timeline_df.join(violation_json, how="left")
     return timeline_df
 
 

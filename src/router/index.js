@@ -41,7 +41,42 @@ const routes = [
     path: "/property/:parcelNumber",
     name: "Property",
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/PropertyPage.vue")
+      import(
+        /* webpackChunkName: "property-page" */ "../views/PropertyPage.vue"
+      ),
+    children: [
+      {
+        path: "",
+        redirect: "property-summary"
+      },
+      {
+        path: "property-summary",
+        props: route => ({ parcelNumber: route.params.parcelNumber }),
+        name: "property-summary",
+        component: () =>
+          import(
+            /* webpackChunkName: "property-summary" */ "../components/page/property/index.vue"
+          )
+      },
+      {
+        path: "owner",
+        name: "owner",
+        props: route => ({ parcelNumber: route.params.parcelNumber }),
+        component: () =>
+          import(
+            /* webpackChunkName: "owner" */ "../components/page/owner/index.vue"
+          )
+      },
+      {
+        path: "property-details",
+        name: "property-details",
+        props: route => ({ parcelNumber: route.params.parcelNumber }),
+        component: () =>
+          import(
+            /* webpackChunkName: "property-details" */ "../components/page/property/PropertyDetails.vue"
+          )
+      }
+    ]
   },
   {
     path: "/explore",
@@ -51,7 +86,7 @@ const routes = [
     // which is lazy-loaded when the route is visited.
     component: () =>
       import(/* webpackChunkName: "about" */ "../views/ExplorePage.vue")
-  },
+  }
 ];
 
 const router = new VueRouter({

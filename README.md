@@ -22,7 +22,7 @@ To run directly, you need to do the following:
 yarn install
 pip install -r requirements.txt
 ```
-You should then use `./frontend.sh` and `./backend.sh`. These will default to port 8080 and port 8000 respectively, but can also be set by `YARN_PORT` and `DJANGO_PORT` envirionment variables.
+You should then use `npm run serve` and `./django_serve.sh`. These will default to port 8080 and port 8000 respectively, but can also be set by `YARN_PORT` and `DJANGO_PORT` envirionment variables.
 
 
 Front-End Frameworks

@@ -92,7 +92,7 @@ def property_page_results(parcel_number, violations_complaints_date_since="2007-
         n_complaints_since,
         has_active_rental_license, 
         expiration_date as rental_license_expiration_date, 
-        --numberofunits as number_of_licensed_rental_units,
+        numberofunits as number_of_licensed_rental_units,
         r1.recording_date, r1.grantees, r1.grantors, r1.cash_consideration, r1.property_count as n_properties_on_deed,
         a1.market_value as latest_assessment_market_value, a1.latest_assessment_year
         FROM opa_properties_public opp
@@ -122,7 +122,7 @@ def property_page_results(parcel_number, violations_complaints_date_since="2007-
         LEFT JOIN (
             SELECT '{parcel_number}' as parcel_number,
             CASE WHEN count(*) > 0 THEN TRUE ELSE FALSE END as has_active_rental_license,
-            sum(numberofunits),
+            sum(numberofunits) as numberofunits,
             max(expirationdate) as expiration_date
             FROM business_licenses
             WHERE opa_account_num = '{parcel_number}'
@@ -296,12 +296,10 @@ def properties_by_owner_name_autocomplete_results(owner_substr, n_results):
     df = carto_request(query)
     df = df.groupby("opa_account_num").first().reset_index()
 
-    df["location_unit"] = (
-        df["location"] + " " + df["unit"].fillna("")
-    ).str.strip()
+    df["location_unit"] = (df["location"] + " " + df["unit"].fillna("")).str.strip()
 
-    df['parcel_number' ] = df['opa_account_num']
-    df["description"] = df['grantees']
+    df["parcel_number"] = df["opa_account_num"]
+    df["description"] = df["grantees"]
     return {
         "success": True,
         "results": df.to_dict("records"),
@@ -414,7 +412,9 @@ def properties_by_property_autocomplete_results(property_substr, n_results):
         lambda x: fuzz.ratio(x, search_to_match)
     )
     # if same property shows up in both, take first entry because it has more accurate grantee data
-    df.sort_values(["similarity","grantees_source_priority"], inplace=True, ascending=False)
+    df.sort_values(
+        ["similarity", "grantees_source_priority"], inplace=True, ascending=False
+    )
     df = df.groupby("opa_account_num").first().reset_index()
 
     # temporary
@@ -423,6 +423,7 @@ def properties_by_property_autocomplete_results(property_substr, n_results):
             return x.computed_location + f" (a.k.a. {x.location})"
         else:
             return x.computed_location
+
     if not df.empty:
         df["location_unit"] = df.apply(aka_location, axis=1)
         df["description"] = df["grantees"]

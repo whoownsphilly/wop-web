@@ -2,10 +2,11 @@
   <div class="home">
     <div>
       <p>
-        Enter a <b>Philly address</b>, <b>landlord's name</b>, or <b>property manager</b>. Find out who
-        owns what in Philly, what else they might own in the city, and
-        information about their properties.
-      <sup><info-modal modalName="home.search.methods"/></sup></p>
+        Enter a <b>Philly address</b>, <b>landlord's name</b>, or
+        <b>property manager</b>. Find out who owns what in Philly, what else
+        they might own in the city, and information about their properties.
+        <sup><info-modal modalName="home.search.methods"/></sup>
+      </p>
 
       <p>
         <b>Is the address not showing up?</b> Search for the address on

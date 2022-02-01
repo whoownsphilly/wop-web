@@ -17,7 +17,13 @@
             />
           </sui-grid-column>
           <sui-grid-column :width="10">
-            <div>Mailing Address: {{ mailingAddress }}</div>
+            <div v-if="mailingAddress">
+              Mailing Address: {{ mailingAddress }}
+            </div>
+            <div v-if="mailingAddressBasedMailingCareOfNames">
+              Mailing Care Of:
+              {{ mailingAddressBasedMailingCareOfNames.join(", ") }}
+            </div>
             <sui-statistics-group horizontal>
               <sui-statistic in-group>
                 <sui-statistic-value>{{
@@ -81,18 +87,20 @@
                 }}
               </sui-accordion-title>
               <sui-accordion-content>
-                <single-column-data-table
-                  :rows="ownerBasedNames"
-                  title="Aliases"
-                />
                 <h2>Property Ownership Timeline Table</h2>
                 <data-table
                   :rows="ownerBasedPropertyTimelineData"
-                  :columns="ownerBasedPropertyTimelineDataColumns"
                   title="Owner Timeline"
                 />
-                <vue-apex-bar-chart
-                  :data="ownerBasedOwnerPropertyCountsByName"
+                <h2>Violations</h2>
+                <data-table
+                  :rows="ownerBasedViolations"
+                  title="Owner-Based Violations"
+                />
+                <h2>311 Complaints</h2>
+                <data-table
+                  :rows="ownerBasedComplaints"
+                  title="Owner-Based 311 Complaints"
                 />
               </sui-accordion-content>
               <sui-accordion-title>
@@ -103,18 +111,29 @@
                 }}
               </sui-accordion-title>
               <sui-accordion-content>
+                <!--
+                <vue-apex-bar-chart
+                  :data="mailingAddressBasedOwnerPropertyCountsByName"
+                />
+              -->
                 <single-column-data-table
                   :rows="mailingAddressBasedNames"
                   title="Aliases"
                 />
-                <h2>Mailing-Address Ownership Timeline Table</h2>
+                <h2>Property List</h2>
                 <data-table
                   :rows="mailingAddressBasedPropertyTimelineData"
-                  :columns="mailingAddressBasedPropertyTimelineDataColumns"
                   title="Mailing Address Timeline"
                 />
-                <vue-apex-bar-chart
-                  :data="mailingAddressBasedOwnerPropertyCountsByName"
+                <h2>Violations</h2>
+                <data-table
+                  :rows="mailingAddressBasedViolations"
+                  title="Mailing Address-Based Violations"
+                />
+                <h2>311 Complaints</h2>
+                <data-table
+                  :rows="mailingAddressBasedComplaints"
+                  title="Mailing Address-Based 311 Complaints"
                 />
               </sui-accordion-content>
             </sui-accordion>
@@ -131,7 +150,7 @@ import {
   getOwnerPageInfoByMailingAddress,
 } from "@/api/pages";
 import OwnerPortfolio from "@/components/page/owner/Portfolio";
-import VueApexBarChart from "@/components/ui/charts/BarChart";
+//import VueApexBarChart from "@/components/ui/charts/BarChart";
 import DataTable from "@/components/ui/DataTable";
 import SingleColumnDataTable from "@/components/ui/SingleColumnDataTable";
 import { formatCurrencyValue } from "@/components/utils/formatting.js";
@@ -139,7 +158,7 @@ import { formatCurrencyValue } from "@/components/utils/formatting.js";
 export default {
   name: "HistoricalOwnerTab",
   components: {
-    VueApexBarChart,
+    //VueApexBarChart,
     DataTable,
     SingleColumnDataTable,
     OwnerPortfolio,
@@ -159,37 +178,20 @@ export default {
       ownerBasedOwnerPortfolioInfo: null,
       ownerBasedPropertyTimelineData: [],
       ownerBasedOwnerPropertyCountsByName: [],
+      ownerBasedViolations: [],
+      ownerBasedComplaints: [],
       mailingAddress: null,
       mailingAddressBasedNames: null,
+      mailingAddressBasedMailingCareOfNames: null,
       mailingAddressBasedOwnerPortfolioInfo: null,
       mailingAddressBasedPropertyTimelineData: [],
       mailingAddressBasedOwnerPropertyCountsByName: [],
+      mailingAddressBasedViolations: [],
+      mailingAddressBasedComplaints: [],
       violationsComplaintsDateSince: "2007-01-01",
     };
   },
   computed: {
-    ownerBasedPropertyTimelineDataColumns() {
-      if (this.ownerBasedPropertyTimelineData.length > 0) {
-        return Object.keys(this.ownerBasedPropertyTimelineData[0]).map(
-          (col) => {
-            return { label: col, field: col };
-          }
-        );
-      } else {
-        return [];
-      }
-    },
-    mailingAddressBasedPropertyTimelineDataColumns() {
-      if (this.mailingAddressBasedPropertyTimelineData.length > 0) {
-        return Object.keys(this.mailingAddressBasedPropertyTimelineData[0]).map(
-          (col) => {
-            return { label: col, field: col };
-          }
-        );
-      } else {
-        return [];
-      }
-    },
     thisProperty() {
       let parcelNumber = this.parcelNumber;
       return this.currentProperties.filter(
@@ -277,8 +279,14 @@ export default {
         this.mailingAddress = propertyResults["metadata"]["mailing_address"];
         this.mailingAddressBasedNames =
           propertyResults["results"]["alias_names"];
+        this.mailingAddressBasedMailingCareOfNames =
+          propertyResults["results"]["mailing_care_of_names"];
         this.mailingAddressBasedPropertyTimelineData =
           propertyResults["results"]["timeline"];
+        this.mailingAddressBasedViolations =
+          propertyResults["results"]["violations"];
+        this.mailingAddressBasedComplaints =
+          propertyResults["results"]["complaints"];
         this.mailingAddressBasedOwnerPropertyCountsByName =
           propertyResults["display_inputs"]["owner_property_counts_by_name"];
         this.mailingAddressLoading = false;
@@ -287,6 +295,8 @@ export default {
     getOwnerPageInfoByName(this.parcelNumber).then((propertyResults) => {
       this.ownerBasedPropertyTimelineData =
         propertyResults["results"]["timeline"];
+      this.ownerBasedViolations = propertyResults["results"]["violations"];
+      this.ownerBasedComplaints = propertyResults["results"]["complaints"];
       this.ownerBasedNames = propertyResults["results"]["alias_names"];
       this.ownerBasedOwnerPropertyCountsByName =
         propertyResults["display_inputs"]["owner_property_counts_by_name"];

@@ -9,7 +9,7 @@
       <property-headline
         :propertyString="propertyString"
         :latestOwnerString="latestOwnerString"
-        :ownerByMailingAddress="ownerByMailingAddress"
+        :mailingAddress="mailingAddress"
         :propertySourceString="propertySourceString"
       />
       <div class="ui top attached tabular menu">
@@ -28,6 +28,11 @@
             Owner Details
           </div>
         </router-link>
+        <router-link :to="crowdSourcedLink">
+          <div class="item" :class="{ active: isActive('crowd-sourced') }">
+            Crowd-Sourced
+          </div>
+        </router-link>
       </div>
       <div class="ui bottom attached active tab segment">
         <router-view :streetViewLink="streetViewLink" />
@@ -43,7 +48,7 @@ import { getPropertyLatestOwnerDetailsInfo } from "@/api/pages";
 export default {
   name: "PropertyPage",
   components: {
-    PropertyHeadline
+    PropertyHeadline,
   },
   data() {
     return {
@@ -57,35 +62,41 @@ export default {
       latestTransaction: null,
       ownerBasedResults: {
         violations: { rows: [] },
-        complaints: { rows: [] }
+        complaints: { rows: [] },
       },
       latestRentalLicense: null,
       fullOwnersList: [],
-      ownerTimelineData: []
+      ownerTimelineData: [],
     };
   },
   methods: {
     isActive(name) {
       return this.$route.name === name;
-    }
+    },
   },
   computed: {
     summaryLink() {
       return {
         name: "property-summary",
-        params: { parcelNumber: this.parcelNumber }
+        params: { parcelNumber: this.parcelNumber },
       };
     },
     propertyDetailsLink() {
       return {
         name: "property-details",
-        params: { parcelNumber: this.parcelNumber }
+        params: { parcelNumber: this.parcelNumber },
       };
     },
     ownerDetailsLink() {
       return {
         name: "owner",
-        params: { parcelNumber: this.parcelNumber }
+        params: { parcelNumber: this.parcelNumber },
+      };
+    },
+    crowdSourcedLink() {
+      return {
+        name: "crowd-sourced",
+        params: { parcelNumber: this.parcelNumber },
       };
     },
     loadingContent() {
@@ -94,15 +105,16 @@ export default {
         this.loadingStep +
         " related information (may take some time)..."
       );
-    }
+    },
   },
   created() {
     this.loading = true;
     // get all time-based data for the last year
-    getPropertyLatestOwnerDetailsInfo(this.parcelNumber).then(result => {
+    getPropertyLatestOwnerDetailsInfo(this.parcelNumber).then((result) => {
       this.propertyResult = result;
       this.propertyString = result["full_address"];
       this.latestOwnerString = result["latest_owner"];
+      this.mailingAddress = result["latest_mailing_street"];
       this.ownerByMailingAddress = result["owner_by_mailing_address"] || null;
       this.propertySourceString = result["owner_is_from_deed"]
         ? "based on the latest deed transfer."
@@ -110,7 +122,7 @@ export default {
       this.streetViewLink = result["street_view_link"];
       this.loading = false;
     });
-  }
+  },
 };
 </script>
 <style>

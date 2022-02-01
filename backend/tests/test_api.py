@@ -6,8 +6,6 @@ import pytest
 from requests import get as request_get  # so we don't get recursive issues
 from rest_framework.test import APIRequestFactory
 
-from backend.urls import table_api_urlpatterns, table_schema_api_urlpatterns
-
 
 @pytest.fixture
 def request_params():
@@ -16,12 +14,6 @@ def request_params():
         "search_type": "mailing_address",
         "search_method": "contains",
     }
-
-
-def test_api_responses(client):
-    for urlpattern in table_api_urlpatterns:
-        route = urlpattern.pattern._route
-        assert client.get(f"/{route}") is not None
 
 
 class MockPhillyQueryResult:
@@ -39,17 +31,6 @@ class MockPhillyQueryResult:
                 }
             ]
         )
-
-
-def test_schema_api_responses(client, monkeypatch):
-    for urlpattern in table_schema_api_urlpatterns:
-        route = urlpattern.pattern._route
-
-        def _fake_results(*args, **kwargs):
-            return [{"rows": [{"mailing_street": "DEF", "mailing_address_1": "IGH"}]}]
-
-        monkeypatch.setattr(PhillyCartoTable, "get_schema", _fake_results)
-        assert client.get(f"/{route}") is not None
 
 
 @pytest.fixture

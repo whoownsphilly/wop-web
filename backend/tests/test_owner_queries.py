@@ -5,7 +5,7 @@ from backend.queries import (
 )
 
 
-def test_properties_by_mailing_address_results():
+async def test_properties_by_mailing_address_results():
     """
     Test number found through:
     '''
@@ -25,21 +25,21 @@ def test_properties_by_mailing_address_results():
     '''
     """
     parcel_number = "032022200"
-    result = properties_by_mailing_address_results(parcel_number)
+    result = await properties_by_mailing_address_results(parcel_number)
     assert result
 
     parcel_number = "881074500"  # a known property with many connected properties
-    result = properties_by_mailing_address_results(parcel_number)
+    result = await properties_by_mailing_address_results(parcel_number)
     assert result
 
     parcel_number = (
         "871540050"  # opa_properties_public.recording_date='2019-07-26T00:00:00Z'
     )
-    result = properties_by_mailing_address_results(parcel_number)
+    result = await properties_by_mailing_address_results(parcel_number)
     assert result
 
 
-def test_autocomplete():
+async def test_autocomplete():
     properties_to_test = [
         {"address_str": "135 S 23rd Street", "top_result": "881028600"},
         {"address_str": "614 South washington square 912", "top_result": "888050735"},
@@ -49,7 +49,7 @@ def test_autocomplete():
         {"address_str": "4604R Whitaker Ave", "top_result": "421554300"},
     ]
     for test_property in properties_to_test:
-        results = properties_by_property_autocomplete_results(
+        results = await properties_by_property_autocomplete_results(
             test_property["address_str"], n_results=1
         )
         assert results["results"][0]["opa_account_num"] == test_property["top_result"]
@@ -65,7 +65,7 @@ def test_autocomplete():
     """
 
 
-def test_properties_by_owner_name_results():
+async def test_properties_by_owner_name_results():
     # results = properties_by_owner_name_results('14 WA PARTNERS LP')
     parcel_number = "032022200"
     # parcel_number = '291284800'
@@ -73,7 +73,8 @@ def test_properties_by_owner_name_results():
     parcel_number = "888060252"  # domb with NaT start_date
     parcel_number = "881074500"  # property timeline misses latest entry
     parcel_number = "871288650"  # domb
-    parcel_number = "881137200"  # broken
-    results = properties_by_owner_name_results(parcel_number)
+    # parcel_number = "881137200"  # broken
+    parcel_number = "011156500"  # doesnt return any properties
+    results = await properties_by_owner_name_results(parcel_number)
     # This is pretty good, just needs to get synced into the front-end
     assert results

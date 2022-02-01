@@ -10,21 +10,16 @@
       </sui-statistic-value> </sui-statistic
     ><sup><info-modal modalName="propertyHeadline.ownerModalInfo"/></sup>
     <br />
-    <span v-if="ownerByMailingAddress && $siteMode.mode !== 'basic'">
+    <!--
+    <span v-if="mailingAddress">
       <sui-statistic horizontal>
-        <sui-statistic-label> and managed by </sui-statistic-label>
+        <sui-statistic-label> with mailing address </sui-statistic-label>
         <sui-statistic-value>
-          <span v-if="ownerByMailingAddress.url">
-            <a :href="ownerByMailingAddress.url" target="_blank">{{
-              ownerByMailingAddress.name
-            }}</a>
-          </span>
-          <span v-else>
-            {{ ownerByMailingAddress.name }}
-          </span>
+          {{ mailingAddress }}
         </sui-statistic-value>
       </sui-statistic>
     </span>
+    -->
   </div>
 </template>
 
@@ -34,23 +29,23 @@ export default {
   props: {
     propertyString: {
       type: String,
-      required: true
+      required: true,
     },
     latestOwnerString: {
       type: String,
-      required: true
+      required: true,
     },
-    ownerByMailingAddress: {
-      type: Object
+    mailingAddress: {
+      type: String,
     },
     propertySourceString: {
       type: String,
-      required: true
-    }
+      required: true,
+    },
   },
   components: {},
   computed: {},
-  methods: {}
+  methods: {},
 };
 </script>
 <style>

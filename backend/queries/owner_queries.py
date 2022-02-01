@@ -1,18 +1,21 @@
 from datetime import datetime
 import numpy as np
 import pandas as pd
+import os
 
 from backend.queries.manual_queries import MANUAL_MAILING_ADDRESS_QUERIES
-from backend.queries.queries import carto_request, DEEDS_WHERE_CLAUSE
+from backend.queries.queries import (
+    carto_request,
+    make_async_get_request,
+    DEEDS_WHERE_CLAUSE,
+)
 
 
 def _run_sql_on_df(df, query, table_name, file_name="test.sql"):
     import sqlite3
     import os
-    import tempfile
 
-    tmp_path = tempfile.mkdtemp()
-    con = sqlite3.connect(os.path.join(tmp_path, file_name))
+    con = sqlite3.connect(":memory:")
     df.to_sql(table_name, con=con, index=False)
     return pd.read_sql(query, con=con)
 
@@ -194,7 +197,79 @@ def _get_property_counts_by_name_chart_input(owner_property_counts_by_name):
     }
 
 
-def properties_by_owner_name_results(parcel_number):
+async def airtable_entries_by_mailing_address_results(parcel_number):
+    airtable_url = os.environ.get("BIOS_URL")
+    mailing_address_results = (
+        await carto_request(
+            f"""
+        SELECT mailing_street, mailing_address_1, mailing_address_2,
+        mailing_city_state, mailing_zip
+        from opa_properties_public
+        WHERE parcel_number = '{parcel_number}' limit 1
+        """,
+            as_df=False,
+        )
+    )[0]
+
+    if not mailing_address_results:
+        return
+    mailing_street = mailing_address_results["mailing_street"]
+    mailing_address_1 = mailing_address_results["mailing_address_1"]
+    mailing_address_2 = mailing_address_results["mailing_address_2"]
+    mailing_city_state = mailing_address_results["mailing_city_state"]
+    mailing_zip = mailing_address_results["mailing_zip"]
+
+    def _empty_str_if_none(x):
+        return x if x else ""
+
+    if not mailing_street:
+        return
+    full_mailing_address = " ".join(
+        [
+            mailing_street,
+            _empty_str_if_none(mailing_address_1),
+            _empty_str_if_none(mailing_address_2),
+            _empty_str_if_none(mailing_city_state),
+            _empty_str_if_none(mailing_zip),
+        ]
+    )
+    invisible_fields = ["last_modified_by", "researcher"]
+    params = {
+        "filterByFormula": 'IF(AND({mailing_street}="'
+        + mailing_street
+        + '",'
+        + '{mailing_address_1}="'
+        + _empty_str_if_none(mailing_address_1)
+        + '",'
+        + "{show_on_website}=TRUE()),"
+        + "TRUE(), FALSE())",
+        #'fields': [],
+    }
+    response = await make_async_get_request(airtable_url, params=params)
+    if "records" in response.json():
+        output = {}
+        output_response = {}
+        output_response["results"] = []
+        records = response.json()["records"]
+        output_response["query"] = {
+            "mailing_street": mailing_street,
+            "mailing_address_1": mailing_address_1,
+            "parcel_number": parcel_number,
+        }
+        output_response["full_mailing_address"] = full_mailing_address
+        output_response["n_results"] = len(records)
+        # TODO (clean this up so there is only maybe one entry per mailing address?
+        for record in records:
+            outputs = {
+                key: val
+                for key, val in record["fields"].items()
+                if key not in invisible_fields
+            }
+            output_response["results"].append(outputs)
+        return output_response
+
+
+async def properties_by_owner_name_results(parcel_number):
     # 2021-12-01
     # This is repetitive, but get owner name from parcel_number
     # This doesn't handle the case where deeds changed but
@@ -329,11 +404,13 @@ def properties_by_owner_name_results(parcel_number):
         ON rtt_summary.grantees = rtt_summary2.grantors
         AND rtt_summary2.opa_account_num = opa.parcel_number
         AND rtt_summary.recording_date < rtt_summary2.recording_date
+        --inner-query
         {inner_query}
+        --end-inner-query
         WHERE opa.category_code_description not in ('Commercial', 'Industrial','Vacant Land')
        """
 
-    property_timeline_df = carto_request(_deeds_query(joined_inner_query))
+    property_timeline_df = await carto_request(_deeds_query(joined_inner_query))
     # TODO (We should only be returning a single row now since it should be
     # the most recent owner only
     # so we can possibly simplify the logic below
@@ -352,7 +429,7 @@ def properties_by_owner_name_results(parcel_number):
 
     # Limit to only owners that had matched the owner list
     # This would be unnecessary if we could join the opa data to a grantee, but the owner_1-owner_2 <-> grantee mapping is unreliable
-    distinct_owner_names = carto_request(
+    distinct_owner_names = await carto_request(
         f"SELECT DISTINCT names from ({inner_query}) owner_names"
     )
     owner_property_timeline_df = property_timeline_df[
@@ -391,10 +468,10 @@ def properties_by_owner_name_results(parcel_number):
         owner_property_timeline_df, since_date=analysis_since_date
     )
 
-    owner_property_timeline_df = _add_violation_counts(
+    owner_property_timeline_df, violation_df = await _add_violation_counts(
         joined_inner_query, owner_property_timeline_df, analysis_since_date
     )
-    owner_property_timeline_df = _add_complaint_counts(
+    owner_property_timeline_df, complaint_df = await _add_complaint_counts(
         joined_inner_query, owner_property_timeline_df, analysis_since_date
     )
     owner_property_timeline_df["color"] = "red"
@@ -405,20 +482,20 @@ def properties_by_owner_name_results(parcel_number):
         .to_frame("n_properties")
         .reset_index()
     )
-    alias_names = list(
-        set(
-            (
-                owner_property_timeline_df["mailing_care_of"]
-                .drop_duplicates()
-                .dropna()
-                .values.tolist()
-                + owner_property_timeline_df["likely_owner"]
-                .drop_duplicates()
-                .dropna()
-                .values.tolist()
-            )
-        )
+    mailing_care_of_names = (
+        owner_property_timeline_df["mailing_care_of"]
+        .drop_duplicates()
+        .dropna()
+        .values.tolist()
     )
+    owner_names = (
+        owner_property_timeline_df["likely_owner"]
+        .drop_duplicates()
+        .dropna()
+        .values.tolist()
+    )
+
+    alias_names = list(set((mailing_care_of_names + owner_names)))
 
     # The timeline and the "currently owned" list could be done separately
     # but we'll keep them grouped for now
@@ -430,11 +507,14 @@ def properties_by_owner_name_results(parcel_number):
     return {
         "results": {
             "alias_names": alias_names,
+            "mailing_care_of_names": mailing_care_of_names,
             "timeline": owner_property_timeline_df.rename_axis("opa_account_num")
             .reset_index()
             .to_dict("records"),
             "property_counts": owner_property_counts_by_name,
             "current_properties": current_properties,
+            "complaints": complaint_df.to_dict("records"),
+            "violations": violation_df.to_dict("records"),
         },
         "display_inputs": {
             "owner_property_counts_by_name": _get_property_counts_by_name_chart_input(
@@ -458,12 +538,12 @@ def _inner_mailing_address_join_query(mailing_address_query):
         """
 
 
-def properties_by_mailing_address_results(parcel_number):
+async def properties_by_mailing_address_results(parcel_number):
 
     ## This might add unnecessary length to the query, but will give it a try:
     ## We're going to do a quick request to check the mailing address for this parcel number
-    def _get_inner_query(parcel_number, manual_queries):
-        mailing_address = carto_request(
+    async def _get_inner_query(parcel_number, manual_queries):
+        mailing_address = await carto_request(
             f"""SELECT mailing_street, mailing_address_1, mailing_address_2, mailing_care_of, owner_1, owner_2,location from 
             opa_properties_public where parcel_number = '{parcel_number}'
             """
@@ -484,7 +564,7 @@ def properties_by_mailing_address_results(parcel_number):
                 """
         return None, _inner_mailing_address_join_query(query)
 
-    query_name, joined_inner_query = _get_inner_query(
+    query_name, joined_inner_query = await _get_inner_query(
         parcel_number, MANUAL_MAILING_ADDRESS_QUERIES
     )
 
@@ -559,7 +639,7 @@ def properties_by_mailing_address_results(parcel_number):
        """
 
     query = _mailing_address_deeds_query(joined_inner_query)
-    ma_property_timeline_df = carto_request(query)
+    ma_property_timeline_df = await carto_request(query)
     if ma_property_timeline_df.empty:
         # Temporary hack to get back its own address
         # This is usually needed if mailing address fields
@@ -573,7 +653,7 @@ def properties_by_mailing_address_results(parcel_number):
             ) opa2 on opa.parcel_number = opa2.parcel_number
         """
         query = _mailing_address_deeds_query(joined_inner_query)
-        ma_property_timeline_df = carto_request(query)
+        ma_property_timeline_df = await carto_request(query)
 
     # Also lets get rid of the constructed address field for now otherwise we end up with duplicates
     ma_property_timeline_df.drop("address", axis=1, inplace=True)
@@ -584,9 +664,11 @@ def properties_by_mailing_address_results(parcel_number):
         for c in ma_property_timeline_df.columns
         if c not in ["document_id", "likely_owner"]
     ]
-    ma_property_timeline_df = ma_property_timeline_df.sort_values(
-        "document_id"
-    ).drop_duplicates(subset=cols, keep="last")
+    ma_property_timeline_df = (
+        ma_property_timeline_df.sort_values("document_id")
+        .drop_duplicates(subset=cols, keep="last")
+        .copy()
+    )
     ma_property_timeline_df = ma_property_timeline_df.sort_values(
         ["opa_account_num", "start_dt"]
     ).set_index("opa_account_num")
@@ -611,10 +693,10 @@ def properties_by_mailing_address_results(parcel_number):
     )
     # Add n_days column (lesser of since they bought or the since_date)
     analysis_since_date = "2007-01-01"
-    ma_property_timeline_df = _add_violation_counts(
+    ma_property_timeline_df, violation_df = await _add_violation_counts(
         joined_inner_query, ma_property_timeline_df, analysis_since_date
     )
-    ma_property_timeline_df = _add_complaint_counts(
+    ma_property_timeline_df, complaint_df = await _add_complaint_counts(
         joined_inner_query, ma_property_timeline_df, analysis_since_date
     )
 
@@ -642,31 +724,37 @@ def properties_by_mailing_address_results(parcel_number):
         .reset_index()
     )
     current_properties = _get_current_properties_from_timeline(ma_property_timeline_df)
-    alias_names = list(
+    mailing_care_of_names = list(
         set(
-            (
-                ma_property_timeline_df["mailing_care_of"]
-                .drop_duplicates()
-                .dropna()
-                .values.tolist()
-                + ma_property_timeline_df["likely_owner"]
-                .drop_duplicates()
-                .dropna()
-                .values.tolist()
-            )
+            ma_property_timeline_df["mailing_care_of"]
+            .drop_duplicates()
+            .dropna()
+            .values.tolist()
         )
     )
+    owner_names = list(
+        set(
+            ma_property_timeline_df["likely_owner"]
+            .drop_duplicates()
+            .dropna()
+            .values.tolist()
+        )
+    )
+    alias_names = list(set((mailing_care_of_names + owner_names)))
     current_properties["color"] = "yellow"
     current_properties["source"] = "mailing_address"
 
     output = {
         "results": {
             "alias_names": alias_names,
+            "mailing_care_of_names": mailing_care_of_names,
             "timeline": ma_property_timeline_df.rename_axis(
                 "opa_account_num"
             ).reset_index(),
             "property_counts": owner_property_counts_by_name,
             "current_properties": current_properties,
+            "complaints": complaint_df.to_dict("records"),
+            "violations": violation_df.to_dict("records"),
         },
         "display_inputs": {
             "owner_property_counts_by_name": _get_property_counts_by_name_chart_input(
@@ -683,8 +771,8 @@ def properties_by_mailing_address_results(parcel_number):
     return output
 
 
-def _add_complaint_counts(inner_query, timeline_df, analysis_since_date):
-    violations_query = f"""
+async def _add_complaint_counts(inner_query, timeline_df, analysis_since_date):
+    complaints_query = f"""
      SELECT distinct comp.opa_account_num, complaintdate, complaintnumber
      FROM opa_properties_public opa
      {inner_query}
@@ -692,7 +780,7 @@ def _add_complaint_counts(inner_query, timeline_df, analysis_since_date):
      ON opa.parcel_number = comp.opa_account_num
      WHERE comp.complaintdate > '{analysis_since_date}'
     """
-    complaints = carto_request(violations_query)
+    complaints = await carto_request(complaints_query)
     timeline_df["start_dt"] = pd.to_datetime(timeline_df["start_dt"]).dt.date
     complaints["complaintdate"] = pd.to_datetime(complaints["complaintdate"]).dt.date
     comp_timeline_df = timeline_df.join(
@@ -716,10 +804,10 @@ def _add_complaint_counts(inner_query, timeline_df, analysis_since_date):
         .rename("n_complaints"),
         how="left",
     ).fillna({"n_complaints": 0})
-    return timeline_df
+    return timeline_df, comp_timeline_df_filtered
 
 
-def _add_violation_counts(inner_query, timeline_df, analysis_since_date):
+async def _add_violation_counts(inner_query, timeline_df, analysis_since_date):
     violations_query = f"""
      SELECT distinct vio.opa_account_num, violationnumber, vio.cartodb_id, violationdate, caseprioritydesc, violationstatus, violationcodetitle, violationresolutioncode
      FROM opa_properties_public opa
@@ -728,7 +816,7 @@ def _add_violation_counts(inner_query, timeline_df, analysis_since_date):
      ON opa.parcel_number = vio.opa_account_num
      WHERE vio.violationdate > '{analysis_since_date}'
     """
-    violations = carto_request(violations_query)
+    violations = await carto_request(violations_query)
     timeline_df["start_dt"] = pd.to_datetime(timeline_df["start_dt"]).dt.date
     violations["violationdate"] = pd.to_datetime(violations["violationdate"]).dt.date
     vio_timeline_df = timeline_df.join(
@@ -764,25 +852,7 @@ def _add_violation_counts(inner_query, timeline_df, analysis_since_date):
         .rename("n_violations_closed"),
         how="left",
     ).fillna({"n_violations_closed": 0})
-
-    # pass violation_text as json object
-    # TODO, return the violations list and the link to the violations
-    # so it can easily be clicked on when they appear.
-    """
-    def _generate_json(violations_per_property):
-        return [
-            f"{x.violationdate} ({x.opa_account_num}), Priority: {x.caseprioritydesc}, Violation: {x.violationcodetitle} Status: {x.violationstatus}"
-            for index, x in violations_per_property.iterrows()
-        ]
-
-    violation_json = (
-        vio_timeline_df_filtered.groupby(vio_timeline_df_filtered.opa_account_num)
-        .apply(_generate_json)
-        .rename("violation_json")
-    )
-    timeline_df = timeline_df.join(violation_json, how="left")
-    """
-    return timeline_df
+    return timeline_df, vio_timeline_df_filtered
 
 
 def calculate_n_days_property_ownership(df, since_date):

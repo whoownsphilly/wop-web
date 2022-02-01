@@ -1,6 +1,21 @@
 <template>
   <div>
     <sui-container>
+      This page contains crowd-sourced information based on the mailing address
+      of the property, as a way to group together any information about the
+      entity that handles the taxes and other business mail for this property.
+      This is typically a property manager. Fill out the form below to
+      contribute any information you have about your property. Any entries will
+      be manually checked to make sure they don't contain any revealing
+      information, but remember that this information will be shared on this
+      website with others so make sure there is nothing particularly
+      identifying. If you have specific concerns and would like help with a
+      landlord, it is best to instead contact one of the organizations on
+      <router-link to="/take-action">page</router-link>.
+      <h2>
+        Information for properties with mailing address:
+        {{ fullMailingAddress }}
+      </h2>
       <p v-if="bioResults.length > 0">
         This currently contains <b>{{ bioResults.length }}</b> existing results.
         <sui-button
@@ -37,12 +52,17 @@
           </sui-modal-actions>
         </sui-modal>
       </p>
+      <p v-else>
+        There is not yet any crowd-sourced information for this mailing address.
+      </p>
       <div v-for="(bioResult, i) in bioResults" :key="i">
         <bio-result :bioResult="bioResult" :index="i" />
         <sui-divider />
       </div>
+      <sui-button @click.native="toggle"
+        >Submit your own information</sui-button
+      >
     </sui-container>
-    <sui-button @click.native="toggle">Submit your own information</sui-button>
 
     <sui-modal v-model="modalOpen">
       <sui-modal-header>Submit form</sui-modal-header>
@@ -68,30 +88,35 @@
 
 <script>
 import BioResult from "@/components/page/crowdSourced/BioResult";
+import { getCrowdSourcedPageInfo } from "@/api/pages";
 
 export default {
-  name: "HistoricalMailingAddressTab",
+  name: "CrowdSourcedTab",
   components: {
-    BioResult
+    BioResult,
   },
   props: {
-    bioResults: {
-      type: Array,
-      required: true
-    },
-    mailingStreet: {
+    parcelNumber: {
       type: String,
-      required: true
-    }
+      required: true,
+    },
   },
   data() {
     return {
+      bioResults: [],
+      fullMailingAddress: null,
+      mailingStreet: null,
       modalOpen: false,
       disclaimerOpen: false,
-      airTableUrl:
+    };
+  },
+  computed: {
+    airTableUrl() {
+      return (
         "https://airtable.com/embed/shrAacunffP2mP3PC?backgroundColor=orange&prefill_mailing_street=" +
         this.mailingStreet
-    };
+      );
+    },
   },
   methods: {
     toggle() {
@@ -99,7 +124,14 @@ export default {
     },
     disclaimerToggle() {
       this.disclaimerOpen = !this.disclaimerOpen;
-    }
-  }
+    },
+  },
+  created() {
+    getCrowdSourcedPageInfo(this.parcelNumber).then((results) => {
+      this.bioResults = results["results"];
+      this.fullMailingAddress = results["full_mailing_address"];
+      this.mailingStreet = results["query"]["mailing_street"];
+    });
+  },
 };
 </script>

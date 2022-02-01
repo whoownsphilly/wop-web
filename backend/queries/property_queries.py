@@ -1,11 +1,11 @@
-from backend.queries.queries import carto_request, DEEDS_WHERE_CLAUSE, airtable_request
+from backend.queries.queries import carto_request, DEEDS_WHERE_CLAUSE
 from fuzzywuzzy import fuzz
 import pandas as pd
 from phillydb.utils import get_normalized_address
 from scourgify.exceptions import UnParseableAddressError
 
 
-def property_latest_owner_detail_results(parcel_number):
+async def property_latest_owner_detail_results(parcel_number):
     # Example of record that doesnt match between opa and rtt_summary: 391085600
     # Example of record with no rtt_summary: 302055100
     query = f"""
@@ -34,7 +34,7 @@ def property_latest_owner_detail_results(parcel_number):
         ON latest_owners.opa_account_num = opa.parcel_number
         WHERE opa.parcel_number='{parcel_number}'
     """
-    data = carto_request(query, as_df=False)
+    data = await carto_request(query, as_df=False)
     if data:
         result = data[0]
         mailing_address_matches_latest_deed = (
@@ -64,14 +64,15 @@ def property_latest_owner_detail_results(parcel_number):
             "street_view_link": f"https://cyclomedia.phila.gov/?address={longitude},{latitude}",
         }
 
-        # output["crowd_sourced"] = airtable_request(mailing_street, mailing_address_1)
         output["query"] = query
     else:
         output = {"success": False}
     return output
 
 
-def property_page_results(parcel_number, violations_complaints_date_since="2007-01-01"):
+async def property_page_results(
+    parcel_number, violations_complaints_date_since="2007-01-01"
+):
     output = {}
     query = f"""
         SELECT opp.parcel_number, year_built, 
@@ -153,14 +154,14 @@ def property_page_results(parcel_number, violations_complaints_date_since="2007-
         WHERE opp.parcel_number = '{parcel_number}'
         """
 
-    data = carto_request(query, as_df=False)
+    data = await carto_request(query, as_df=False)
 
     if len(data) > 0:
         output.update(data[0])
     return output
 
 
-def property_details_page_results(parcel_number):
+async def property_details_page_results(parcel_number):
     output = {}
     # PROPERTY TIMELINE AND VALUE LIST
     query = f"""
@@ -188,7 +189,7 @@ def property_details_page_results(parcel_number):
     ) timeline 
     ORDER BY DATE ASC
     """
-    assessment_timeline_data = carto_request(query, as_df=False)
+    assessment_timeline_data = await carto_request(query, as_df=False)
     owner_data_df = pd.DataFrame(
         [deed for deed in assessment_timeline_data if deed["status"] == "purchased"]
     )
@@ -232,7 +233,7 @@ def property_details_page_results(parcel_number):
     return output
 
 
-def properties_by_autocomplete_results(
+async def properties_by_autocomplete_results(
     startswith_str, n_results=10, min_search_length=4
 ):
     if len(startswith_str) < min_search_length:
@@ -243,14 +244,18 @@ def properties_by_autocomplete_results(
             "metadata": {"search_to_match": search_to_match},
         }
     else:
-        results = properties_by_property_autocomplete_results(startswith_str, n_results)
+        results = await properties_by_property_autocomplete_results(
+            startswith_str, n_results
+        )
     if results:
         return results
     else:
-        return properties_by_owner_name_autocomplete_results(startswith_str, n_results)
+        return await properties_by_owner_name_autocomplete_results(
+            startswith_str, n_results
+        )
 
 
-def properties_by_owner_name_autocomplete_results(owner_substr, n_results):
+async def properties_by_owner_name_autocomplete_results(owner_substr, n_results):
     search_to_match_like_str = "%".join(owner_substr.split(" ")).upper()
     search_to_match_like_str_rev = "%".join(owner_substr.split(" ")[::-1]).upper()
     query = f"""
@@ -293,7 +298,7 @@ def properties_by_owner_name_autocomplete_results(owner_substr, n_results):
         parcel_number is not null
         LIMIT {n_results} 
     """
-    df = carto_request(query)
+    df = await carto_request(query)
     df = df.groupby("opa_account_num").first().reset_index()
 
     df["location_unit"] = (df["location"] + " " + df["unit"].fillna("")).str.strip()
@@ -308,7 +313,7 @@ def properties_by_owner_name_autocomplete_results(owner_substr, n_results):
     }
 
 
-def properties_by_property_autocomplete_results(property_substr, n_results):
+async def properties_by_property_autocomplete_results(property_substr, n_results):
 
     try:
         search_to_match = get_normalized_address(property_substr)
@@ -406,7 +411,7 @@ def properties_by_property_autocomplete_results(property_substr, n_results):
     2 as grantees_source_priority
     FROM opa_properties_public WHERE location like '{search_to_match}%' 
     """
-    df = carto_request(query)
+    df = await carto_request(query)
     # Sort by similarity of computed location to the search you are looking for
     df["similarity"] = df["computed_location"].apply(
         lambda x: fuzz.ratio(x, search_to_match)

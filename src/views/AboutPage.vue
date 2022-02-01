@@ -65,87 +65,129 @@
         of a landlord’s housing portfolio.</sui-list-item
       >
     </sui-list>
-    <h2>Similar Websites</h2>
-    <p>Luckily, lots of people are working on addressing these issues!</p>
-
     <p>
-      Here is a running list of websites that use open data to make it easier to
-      find landlords:
+      This website contains up-to-date open data from the City of Philadelphia.
+      The data comes from the following sources. Each of these sources can be
+      accessed through Postgres-style SQL-queries as parameters of RESTful
+      calls. In order to make it easier to access these tables, this
+      <router-link to="/explore">page</router-link> was created so that you can
+      simply type SQL and get results.
     </p>
     <ul>
       <li>
-        <a href="http://www.philly-landlord-spotter.com" target="_blank"
-          >Philly-landlord-spotter.com (Philadelphia)</a
+        <a
+          target="_blank"
+          href="https://www.opendataphilly.org/dataset/opa-property-assessments"
+          >opa-property-assessments</a
         >
-      </li>
-      <li>
-        <a href="http://phillypropertylookup.herokuapp.com/" target="_blank"
-          >phillypropertylookup.herokuapp.com (Philadelphia)</a
-        >
-      </li>
-      <li>
-        <a href="https://propertyowners.phl.party/" target="_blank"
-          >https://propertyowners.phl.party/ (Philadelphia)</a
-        >
-      </li>
-      <li>
-        <a href="https://whoownswhat.justfix.nyc" target="_blank"
-          >WhoOwnsWhat (NYC)</a
-        >
-      </li>
-      <li>
-        <a href="https://portal.displacementalert.org" target="_blank"
-          >Displacement Alert Portal (NYC)</a
-        >
+        (<a
+          target="_blank"
+          href="https://cityofphiladelphia.github.io/carto-api-explorer/#opa_properties_public"
+          >CartoDB</a
+        >)
       </li>
       <li>
         <a
-          href="https://data.cityofchicago.org/Buildings/Problem-Landlord-List-Map/dip3-ud6z"
           target="_blank"
-          >City of chicago problem landlord list (Chicago)</a
+          href="https://www.opendataphilly.org/dataset/licenses-and-inspections-violations"
+          >licenses-and-inspections-violations</a
         >
-      </li>
-      <li>
-        <a href="https://findmylandlord.chicagodsa.org/" target="_blank"
-          >Find My Landlord (Chicago)</a
-        >
-      </li>
-      <li>
-        <a href="https://antievictionmap.com/" target="_blank"
-          >Anti-Eviction Mapping Project (Bay Area)</a
-        >
+        (<a
+          target="_blank"
+          href="https://cityofphiladelphia.github.io/carto-api-explorer/#violations"
+          >CartoDB</a
+        >)
       </li>
       <li>
         <a
-          href="https://www.ownit.la/own-it-public#14/34.03835/-118.23905"
           target="_blank"
-          >Own It (LA)</a
+          href="https://www.opendataphilly.org/dataset/licenses-and-inspections-business-licenses"
+          >licenses-and-inspections-business-licenses</a
         >
+        (<a
+          target="_blank"
+          href="https://cityofphiladelphia.github.io/carto-api-explorer/#business_licenses"
+          >CartoDB</a
+        >)
       </li>
       <li>
-        <a href="https://rentsmart.boston.gov/index.html" target="_blank"
-          >RentSmart (Boston)</a
+        <a
+          target="_blank"
+          href="https://www.opendataphilly.org/dataset/licenses-and-inspections-building-permits"
+          >licenses-and-inspections-building-permits</a
         >
+        (<a
+          target="_blank"
+          href="https://cityofphiladelphia.github.io/carto-api-explorer/#permits"
+          >CartoDB</a
+        >)
       </li>
       <li>
-        <a href="https://www.tenantpower.org/" target="_blank"
-          >Tenant Power (Boston area)</a
+        <a
+          target="_blank"
+          href="https://www.opendataphilly.org/dataset/license-and-inspections-appeals"
+          >license-and-inspections-appeals</a
         >
+        (<a
+          target="_blank"
+          href="https://cityofphiladelphia.github.io/carto-api-explorer/#appeals"
+          >CartoDB</a
+        >)
       </li>
       <li>
-        <a href="https://app.pittsburghhousing.org/" target="_blank"
-          >https://app.pittsburghhousing.org/ (Pittsburgh)</a
+        <a
+          target="_blank"
+          href="https://www.opendataphilly.org/dataset/licenses-and-inspections-service-requests"
+          >licenses-and-inspections-service-requests</a
         >
+        (<a
+          target="_blank"
+          href="https://cityofphiladelphia.github.io/carto-api-explorer/#complaints"
+          >CartoDB</a
+        >)
       </li>
       <li>
-        <a href="https://ownersearch.pittsburghhousing.org/" target="_blank"
-          >https://ownersearch.pittsburghhousing.org/ (Pittsburgh)</a
+        <a
+          target="_blank"
+          href="https://www.opendataphilly.org/dataset/real-estate-transfers"
+          >real-estate-transfers</a
         >
+        (<a
+          target="_blank"
+          href="https://cityofphiladelphia.github.io/carto-api-explorer/#RTT_SUMMARY"
+          >CartoDB</a
+        >)
       </li>
       <li>
-        <a href="http://tools.wprdc.org/property-dashboard/" target="_blank"
-          >http://tools.wprdc.org/property-dashboard/ (Pittsburgh)</a
+        <a
+          target="_blank"
+          href="https://www.opendataphilly.org/dataset/property-tax-delinquencies"
+          >property-tax-delinquencies</a
         >
+        (<a
+          target="_blank"
+          href="https://cityofphiladelphia.github.io/carto-api-explorer/#real_estate_tax_delinquencies"
+          >CartoDB</a
+        >)
+      </li>
+      <li>
+        <a
+          target="_blank"
+          href="https://www.opendataphilly.org/dataset/licenses-and-inspections-inspections"
+          >licenses-and-inspections-inspections</a
+        >
+        (<a
+          target="_blank"
+          href="https://cityofphiladelphia.github.io/carto-api-explorer/#case_investigations"
+          >CartoDB</a
+        >)
+      </li>
+      <li>
+        Condominiums (<a
+          target="_blank"
+          href="https://cityofphiladelphia.github.io/carto-api-explorer/#condominium"
+          >CartoDB</a
+        >)
       </li>
     </ul>
   </div>

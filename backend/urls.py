@@ -26,6 +26,7 @@ from .api import (
     owner_page_properties_by_owner_name_response,
     owner_page_properties_by_mailing_address_response,
     property_latest_owner_details_response,
+    neighborhoods_page_response,
 )
 
 api_urlpatterns = [
@@ -60,6 +61,11 @@ api_urlpatterns = [
         "api/v1/owner/by_mailing_address/",
         owner_page_properties_by_mailing_address_response,
         name="owner_page_by_mailing_address_list",
+    ),
+    path(
+        "api/v1/neighborhoods",
+        neighborhoods_page_response,
+        name="neighborhoods_page_list",
     ),
 ]
 

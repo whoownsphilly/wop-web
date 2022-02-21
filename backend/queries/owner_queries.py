@@ -415,26 +415,59 @@ async def properties_by_owner_name_results(parcel_number):
     # the most recent owner only
     # so we can possibly simplify the logic below
 
-    # If the last row doesn't have a null entry in end_dt (like with 881074500) we can manually add one. I'm not exactly sure why this happened.
-    property_timeline_df.sort_values("end_dt", inplace=True)
-    if not property_timeline_df.empty and not pd.isnull(
-        property_timeline_df.iloc[-1]["end_dt"]
-    ):
-        last_row = property_timeline_df.iloc[-1]
-        new_row = last_row.copy()
-        new_row["likely_owner"] = last_row["sold_to"]
-        new_row["start_dt"] = last_row["end_dt"]
-        new_row["end_dt"] = None
-        property_timeline_df = property_timeline_df.append(new_row)
+    ## The above query isn't working if there are no deed records, so if it is empty try again with just the current property info:
+    no_deeds_available = property_timeline_df.empty
+    if no_deeds_available:
+        single_property_query = f"""
+               SELECT
+        1 as property_count,
+        owner_1 as likely_owner,
+        null as sold_to,
+        '2000-01-01T00:00:00' as start_dt,
+        null as end_dt,
+        opa.parcel_number as opa_account_num,
+        opa.location as opa_address,
+        unit as opa_address_unit,
+        opa.location as address,
+        opa.location,
+        ST_Y(opa.the_geom) AS lat, ST_X(opa.the_geom) AS lng,
+        opa.unit,
+        opa.mailing_street,
+        opa.mailing_address_1,
+        opa.mailing_address_2,
+        opa.mailing_city_state,
+        opa.mailing_zip,
+        opa.mailing_care_of,
+        opa.market_value,
+        opa.recording_date as opa_recording_date,
+         'opa_properties_public'  as source
+        FROM
+        opa_properties_public opa
+        WHERE opa.category_code_description not in ('Commercial', 'Industrial','Vacant Land') 
+        and opa.parcel_number = '{parcel_number}'
+        """
+        owner_property_timeline_df = await carto_request(single_property_query)
+    else:
+        # If the last row doesn't have a null entry in end_dt (like with 881074500) we can manually add one. I'm not exactly sure why this happened.
+        property_timeline_df.sort_values("end_dt", inplace=True)
+        if not property_timeline_df.empty and not pd.isnull(
+            property_timeline_df.iloc[-1]["end_dt"]
+        ):
+            last_row = property_timeline_df.iloc[-1]
+            new_row = last_row.copy()
+            new_row["likely_owner"] = last_row["sold_to"]
+            new_row["start_dt"] = last_row["end_dt"]
+            new_row["end_dt"] = None
+            property_timeline_df = property_timeline_df.append(new_row)
 
-    # Limit to only owners that had matched the owner list
-    # This would be unnecessary if we could join the opa data to a grantee, but the owner_1-owner_2 <-> grantee mapping is unreliable
-    distinct_owner_names = await carto_request(
-        f"SELECT DISTINCT names from ({inner_query}) owner_names"
-    )
-    owner_property_timeline_df = property_timeline_df[
-        property_timeline_df.likely_owner.isin(distinct_owner_names["names"].values)
-    ]
+        # Limit to only owners that had matched the owner list
+        # This would be unnecessary if we could join the opa data to a grantee, but the owner_1-owner_2 <-> grantee mapping is unreliable
+        distinct_owner_names = await carto_request(
+            f"SELECT DISTINCT names from ({inner_query}) owner_names"
+        )
+        owner_property_timeline_df = property_timeline_df[
+            property_timeline_df.likely_owner.isin(distinct_owner_names["names"].values)
+        ]
 
     # Manipulations on the owner df
 

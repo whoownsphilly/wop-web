@@ -1,14 +1,13 @@
 <template>
   <div>
-    Click on a property to see the address. If you click on the address that
-    pops up, it will take you to that property's page.
     <l-map
       :zoom="zoom"
       :center="center"
       :bounds="mapBounds"
+      @update:bounds="updateBounds"
       :sleep="true"
       :options="leafletOptions"
-      style="height: 500px; width: 100%"
+      :style="mapStyle"
     >
       <l-tile-layer :url="url" :attribution="attribution" />
       <vue2-leaflet-marker-cluster>
@@ -20,11 +19,12 @@
           :fillColor="marker.color"
         >
           <l-popup>
-            <div @click="jumpToProperty(marker.parcelNumber)">
-              <a class="hyperlink" :href="propertyUrl(marker.parcelNumber)"
-                ><u>{{ marker.popUp }}</u></a
-              >
-            </div>
+            <a
+              class="hyperlink"
+              target="_blank"
+              :href="propertyUrl(marker.parcelNumber)"
+              ><u>{{ marker.popUp }}</u></a
+            >
           </l-popup>
         </l-circle-marker>
       </vue2-leaflet-marker-cluster>
@@ -40,7 +40,7 @@
           </l-popup>
         </l-circle-marker>
       </div>
-      <l-control class="legend" :position="'bottomleft'">
+      <l-control v-if="includeLegend" class="legend" :position="'bottomleft'">
         <i style="background: black"></i><span>This Property</span><br />
         <i style="background: yellow"></i><span>Same Mailing Address</span
         ><br />
@@ -75,6 +75,14 @@ export default {
     latLngs: {
       type: Array,
       required: true,
+    },
+    includeLegend: {
+      type: Boolean,
+      default: true,
+    },
+    mapStyle: {
+      type: String,
+      default: "height: 500px; width: 100%",
     },
     highlightedLatLng: {
       type: Object,
@@ -128,6 +136,9 @@ export default {
     },
   },
   methods: {
+    updateBounds(bounds) {
+      this.$emit("updateBounds", bounds);
+    },
     propertyUrl(parcelNumber) {
       return `#/property/${parcelNumber}`;
     },

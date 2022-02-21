@@ -35,3 +35,6 @@ poetry.lock
 
 # vendoring libraries
 phillydb
+
+#pyenv
+.python-version

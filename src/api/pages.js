@@ -55,3 +55,21 @@ export const getCrowdSourcedPageInfo = (parcelNumber) => {
     return response.json();
   });
 };
+
+export const getNeighborhoodsPageInfo = (bounds) => {
+  const url =
+    "api/v1/neighborhoods/" +
+    "?northeastLat=" +
+    bounds._northEast.lat +
+    "&northeastLng=" +
+    bounds._northEast.lng +
+    "&southwestLat=" +
+    bounds._southWest.lat +
+    "&southwestLng=" +
+    bounds._southWest.lng;
+  return fetch(url, {
+    method: "GET",
+  }).then((response) => {
+    return response.json();
+  });
+};

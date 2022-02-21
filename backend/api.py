@@ -5,6 +5,8 @@ from django.core.serializers.json import DjangoJSONEncoder
 import os
 import numpy as np
 import pandas as pd
+import requests
+import simplejson
 
 from phillydb.exceptions import (
     SearchTypeNotImplementedError,
@@ -24,18 +26,8 @@ from backend.queries import (
     properties_by_mailing_address_results,
     properties_by_autocomplete_results,
     airtable_entries_by_mailing_address_results,
+    properties_by_organizability_results,
 )
-
-import requests
-import simplejson
-
-
-DEEDS_WHERE_CLAUSE = """
-    document_type='DEED' OR
-    document_type='DEED SHERIFF' OR
-    document_type='DEED OF CONDEMNATION' OR
-    document_type='DEED LAND BANK'
-"""
 
 
 class CustomEncoder(DjangoJSONEncoder):
@@ -121,3 +113,8 @@ async def crowd_sourced_response(request):
     pretty_print = request_params.pop("pretty_print", False)
     output = await airtable_entries_by_mailing_address_results(**request_params)
     return PrettifiableJsonResponse(output, pretty_print=pretty_print)
+
+
+async def neighborhoods_page_response(request):
+    """Used to get the information for the Property Basics page"""
+    return await _cache_page_response(properties_by_organizability_results, request)

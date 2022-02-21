@@ -1,7 +1,7 @@
 phillydb==0.2.6
 #git+https://github.com/garfieldnate/python-crfsuite.git@fix-python-3.10#egg=python-crfsuite
 
-Django==3.2.11
+Django==3.2.12
 django-heroku==0.3.1
 django-cors-headers==3.10.1
 django-webpack-loader==1.1.0

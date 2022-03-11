@@ -59,13 +59,13 @@ export const getCrowdSourcedPageInfo = (parcelNumber) => {
 export const getNeighborhoodsPageInfo = (bounds) => {
   const url =
     "api/v1/neighborhoods/" +
-    "?northeastLat=" +
+    "?northeast_lat=" +
     bounds._northEast.lat +
-    "&northeastLng=" +
+    "&northeast_lng=" +
     bounds._northEast.lng +
-    "&southwestLat=" +
+    "&southwest_lat=" +
     bounds._southWest.lat +
-    "&southwestLng=" +
+    "&southwest_lng=" +
     bounds._southWest.lng;
   return fetch(url, {
     method: "GET",

@@ -63,7 +63,7 @@ api_urlpatterns = [
         name="owner_page_by_mailing_address_list",
     ),
     path(
-        "api/v1/neighborhoods",
+        "api/v1/neighborhoods/",
         neighborhoods_page_response,
         name="neighborhoods_page_list",
     ),

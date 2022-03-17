@@ -28,7 +28,11 @@
           </sui-form>
         </sui-grid-column>
         <sui-grid-column :width="4">
-          <sui-input v-if="searchBy != 'mapBoundary'" placeholder="..." />
+          <sui-input
+            v-model="zipCode"
+            v-if="searchBy != 'mapBoundary'"
+            placeholder="..."
+          />
         </sui-grid-column>
       </sui-grid-row>
     </sui-grid>
@@ -74,6 +78,7 @@ export default {
       properties: [],
       selectedProperties: [],
       mapBounds: {},
+      zipCode: null,
       loading: false,
     };
   },
@@ -81,24 +86,41 @@ export default {
     LeafletMapNeighborhood,
     DataTable,
   },
+  computed: {
+    propertyDict() {
+      let obj = {};
+      this.properties.map(function(x) {
+        let parcel_number = x.parcel_number;
+        obj[parcel_number] = x;
+      });
+      return obj;
+    },
+  },
   methods: {
     updateBounds(bounds) {
       this.mapBounds = bounds;
     },
     updatePropertyList() {
       this.loading = true;
-      getNeighborhoodsPageInfo(this.mapBounds).then(
+      getNeighborhoodsPageInfo(
+        this.mapBounds,
+        this.zipCode,
+        this.searchBy
+      ).then(
         (results) => (
           (this.properties = results.properties), (this.loading = false)
         )
       );
     },
-    addToSelectedPropertyList(parcelNumber) {
-      this.selectedProperties.push(parcelNumber);
+    addToSelectedPropertyList(property) {
+      this.selectedProperties.push(this.propertyDict[property.parcelNumber]);
     },
   },
   created() {
-    this.mapBounds = { _northEast: 123, _southWest: 456 };
+    this.mapBounds = {
+      _northEast: { lat: null, lng: null },
+      _southWest: { lat: null, lng: null },
+    };
     this.updatePropertyList();
   },
 };

@@ -56,7 +56,7 @@ export const getCrowdSourcedPageInfo = (parcelNumber) => {
   });
 };
 
-export const getNeighborhoodsPageInfo = (bounds) => {
+export const getNeighborhoodsPageInfo = (bounds, zipCode, searchBy) => {
   const url =
     "api/v1/neighborhoods/" +
     "?northeast_lat=" +
@@ -66,7 +66,11 @@ export const getNeighborhoodsPageInfo = (bounds) => {
     "&southwest_lat=" +
     bounds._southWest.lat +
     "&southwest_lng=" +
-    bounds._southWest.lng;
+    bounds._southWest.lng +
+    "&search_by=" +
+    searchBy +
+    "&zip_code=" +
+    zipCode;
   return fetch(url, {
     method: "GET",
   }).then((response) => {

@@ -41,7 +41,7 @@
     </sui-divider>
     <div v-if="loading === false">
       <leaflet-map-neighborhood
-        :latLngs="properties"
+        :latLngs="allProperties"
         @updateBounds="updateBounds"
         @addProperty="addToSelectedPropertyList"
         mapStyle="height: 350px; width: 100%"
@@ -53,7 +53,7 @@
         <sui-loader content="Loading..." />
       </sui-dimmer>
     </div>
-    <data-table :rows="properties" title="Properties" />
+    <data-table :rows="allProperties" title="Properties" />
     <data-table :rows="selectedProperties" title="Selected Properties" />
   </div>
 </template>
@@ -75,7 +75,7 @@ export default {
       includeLegend: false,
       rows: [],
       columns: [],
-      properties: [],
+      searchResultProperties: [],
       selectedProperties: [],
       mapBounds: {},
       zipCode: null,
@@ -89,11 +89,25 @@ export default {
   computed: {
     propertyDict() {
       let obj = {};
-      this.properties.map(function(x) {
+      this.searchResultProperties.map(function(x) {
         let parcel_number = x.parcel_number;
         obj[parcel_number] = x;
       });
       return obj;
+    },
+    allProperties() {
+      let properties = this.selectedProperties.slice(); // clone array;
+      let selectedParcelNumbers = this.selectedProperties.map(
+        (x) => x.parcel_number
+      );
+
+      for (var i = 0; i < this.searchResultProperties.length; i++) {
+        let thisProperty = this.searchResultProperties[i];
+        if (!selectedParcelNumbers.includes(thisProperty.parcel_number)) {
+          properties.push(thisProperty);
+        }
+      }
+      return [...new Set(properties)];
     },
   },
   methods: {
@@ -102,18 +116,23 @@ export default {
     },
     updatePropertyList() {
       this.loading = true;
+      this.selectedProperties = [];
       getNeighborhoodsPageInfo(
         this.mapBounds,
         this.zipCode,
         this.searchBy
       ).then(
         (results) => (
-          (this.properties = results.properties), (this.loading = false)
+          (this.searchResultProperties = results.properties),
+          (this.loading = false)
         )
       );
     },
     addToSelectedPropertyList(property) {
-      this.selectedProperties.push(this.propertyDict[property.parcelNumber]);
+      let thisProperty = this.propertyDict[property.parcelNumber];
+      thisProperty["color"] = "red";
+      this.selectedProperties.push(thisProperty);
+      this.selectedProperties = [...new Set(this.selectedProperties)];
     },
   },
   created() {

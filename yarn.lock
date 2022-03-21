@@ -2729,6 +2729,11 @@ core-js-compat@^3.6.5, core-js-compat@^3.9.0, core-js-compat@^3.9.1:
     browserslist "^4.16.6"
     semver "7.0.0"
 
+core-js@^2.6.5:
+  version "2.6.12"
+  resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.6.12.tgz#d9333dfa7b065e347cc5682219d6f690859cc2ec"
+  integrity sha512-Kb2wC0fvsWfQrgk8HU5lW6U/Lcs8+9aaYcy4ZFc6DDlo4nZ7n70dEgE5rtR0oG6ufKDUnrwfWL1mXR5ljDatrQ==
+
 core-js@^3.20.2, core-js@^3.6.5:
   version "3.20.2"
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-3.20.2.tgz#46468d8601eafc8b266bd2dd6bf9dee622779581"
@@ -5414,12 +5419,22 @@ launch-editor@^2.2.1:
     chalk "^2.3.0"
     shell-quote "^1.6.1"
 
+leaflet-draw@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/leaflet-draw/-/leaflet-draw-1.0.4.tgz#45be92f378ed253e7202fdeda1fcc71885198d46"
+  integrity sha512-rsQ6saQO5ST5Aj6XRFylr5zvarWgzWnrg46zQ1MEOEIHsppdC/8hnN8qMoFvACsPvTioAuysya/TVtog15tyAQ==
+
+leaflet-toolbar@^0.4.0-alpha.2:
+  version "0.4.0-alpha.2"
+  resolved "https://registry.yarnpkg.com/leaflet-toolbar/-/leaflet-toolbar-0.4.0-alpha.2.tgz#ab58092d65b3dd158fb874c3f7e36b7ebdb994f8"
+  integrity sha512-g1KeU3DYGUOwXTS0vKIgJ8KgY0h/2B0qENNQUSYMFtSY2yzwaHWMbDyhDbk+aO8LgJ1iOX4fUt2bh1sYZbpmmQ==
+
 leaflet.markercluster@^1.4.1:
   version "1.5.3"
   resolved "https://registry.yarnpkg.com/leaflet.markercluster/-/leaflet.markercluster-1.5.3.tgz#9cdb52a4eab92671832e1ef9899669e80efc4056"
   integrity sha512-vPTw/Bndq7eQHjLBVlWpnGeLa3t+3zGiuM7fJwCkiMFq+nmRuG3RI3f7f4N4TDX7T4NpbAXpR2+NTRSEGfCSeA==
 
-leaflet@^1.7.1:
+leaflet@^1.5.1, leaflet@^1.7.1:
   version "1.7.1"
   resolved "https://registry.yarnpkg.com/leaflet/-/leaflet-1.7.1.tgz#10d684916edfe1bf41d688a3b97127c0322a2a19"
   integrity sha512-/xwPEBidtg69Q3HlqPdU3DnrXQOvQU/CCHA1tcDQVzOwm91YMYaILjNp7L4Eaw5Z4sOYdbBz6koWyibppd8Zqw==
@@ -8651,6 +8666,17 @@ vue-template-es2015-compiler@^1.9.0:
   resolved "https://registry.yarnpkg.com/vue-template-es2015-compiler/-/vue-template-es2015-compiler-1.9.1.tgz#1ee3bc9a16ecbf5118be334bb15f9c46f82f5825"
   integrity sha512-4gDntzrifFnCEvyoO8PqyJDmguXgVPxKiIxrBKjIowvL9l+N66196+72XVYR8BBf1Uv1Fgt3bGevJ+sEmxfZzw==
 
+vue2-leaflet-draw-toolbar@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/vue2-leaflet-draw-toolbar/-/vue2-leaflet-draw-toolbar-0.1.1.tgz#5d93b5a140a41f2055fda9b12d60cb9b7f1f18cf"
+  integrity sha512-1cTfNu9FJP+mZ9nRjHCIB/jDCulnHVMSFsP8H/usajlUuJot4Tzs5Yq5Lfcm2r9K6GHOlHaQTitENkWlCx04iQ==
+  dependencies:
+    core-js "^2.6.5"
+    leaflet "^1.5.1"
+    leaflet-draw "^1.0.4"
+    leaflet-toolbar "^0.4.0-alpha.2"
+    vue "^2.6.10"
+
 vue2-leaflet-markercluster@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/vue2-leaflet-markercluster/-/vue2-leaflet-markercluster-3.1.0.tgz#aec30b76846dc311bb5bd6ce63ec7eeabc3d9434"
@@ -8663,7 +8689,7 @@ vue2-leaflet@^2.7.1:
   resolved "https://registry.yarnpkg.com/vue2-leaflet/-/vue2-leaflet-2.7.1.tgz#2f95c287621bf778f10804c88223877f5c049257"
   integrity sha512-K7HOlzRhjt3Z7+IvTqEavIBRbmCwSZSCVUlz9u4Rc+3xGCLsHKz4TAL4diAmfHElCQdPPVdZdJk8wPUt2fu6WQ==
 
-vue@^2.6.14:
+vue@^2.6.10, vue@^2.6.14:
   version "2.6.14"
   resolved "https://registry.yarnpkg.com/vue/-/vue-2.6.14.tgz#e51aa5250250d569a3fbad3a8a5a687d6036e235"
   integrity sha512-x2284lgYvjOMj3Za7kqzRcUSxBboHqtgRE2zlos1qWaOye5yUmHn42LB1250NJBLRwEcdrB0JRwyPTEPhfQjiQ==

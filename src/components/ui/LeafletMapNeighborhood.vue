@@ -2,13 +2,16 @@
   <div>
     <l-map
       :zoom="zoom"
+      ref="map"
       :center="center"
       :bounds="mapBounds"
       @update:bounds="updateBounds"
+      @draw:created="drawnBounds"
       :sleep="true"
       :options="leafletOptions"
       :style="mapStyle"
     >
+      <l-draw-toolbar />
       <l-tile-layer :url="url" :attribution="attribution" />
       <l-circle-marker
         :lat-lng="marker.latLng"
@@ -33,6 +36,8 @@
 
 <script>
 import { latLngBounds, latLng } from "leaflet";
+import LDrawToolbar from "vue2-leaflet-draw-toolbar";
+
 import {
   LMap,
   LTileLayer,
@@ -49,6 +54,7 @@ export default {
     LPopup,
     LControl,
     LCircleMarker,
+    LDrawToolbar,
   },
   props: {
     latLngs: {
@@ -63,15 +69,12 @@ export default {
       type: String,
       default: "height: 500px; width: 100%",
     },
-    highlightedLatLng: {
-      type: Object,
-    },
   },
   data() {
     return {
       loading: false,
+      leafletMap: null,
       leafletOptions: { scrollWheelZoom: false },
-      highlightedCircleWeight: 100,
       zoom: 6,
       center: [48, -1.219482],
       fillColor: "#e4ce7f",
@@ -82,23 +85,12 @@ export default {
     };
   },
   computed: {
-    highlightedMapMarker() {
-      if (this.highlightedLatLng) {
-        return {
-          latLng: latLng(
-            this.highlightedLatLng.lat,
-            this.highlightedLatLng.lng
-          ),
-          color: "black",
-          parcelNumber: this.highlightedLatLng.parcel_number,
-          popUp:
-            this.highlightedLatLng.location +
-            " " +
-            (this.highlightedLatLng.unit || ""),
-        };
-      } else {
-        return null;
-      }
+    layers() {
+      let layers = [];
+      this.$refs.map.mapObject.eachLayer(function(layer) {
+        layers.push(layer);
+      });
+      return layers;
     },
     mapMarkers() {
       return this.latLngs.map((latLngTuple) => ({
@@ -118,11 +110,14 @@ export default {
     updateBounds(bounds) {
       this.$emit("updateBounds", bounds);
     },
+    drawnBounds(e) {
+      this.$emit("updateBounds", e.layer._bounds);
+    },
     addProperty(marker) {
+      this.$refs.map.mapObject.closePopup();
       this.$emit("addProperty", marker);
     },
   },
-  async created() {},
 };
 </script>
 <style>

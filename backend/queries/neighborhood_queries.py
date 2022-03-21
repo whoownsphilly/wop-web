@@ -56,6 +56,5 @@ async def properties_by_organizability_results(
     ORDER BY n_complaints desc
     LIMIT {n_results}
     """
-    print(query)
     df = (await carto_request(query)).replace({np.nan: None})
     return {"properties": df.to_dict("records")}

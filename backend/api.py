@@ -56,7 +56,7 @@ class PrettifiableJsonResponse(JsonResponse):
 
 
 async def _cache_page_response(func, request):
-    data_key = base64.b64encode(f"{func.__name__}_{request.GET}".encode("utf-32-le"))
+    data_key = str(hash(f"{func.__name__}_{request.GET}"))
     output = cache.get(data_key, {})
     request_params = request.GET.dict()
     pretty_print = request_params.pop("pretty_print", False)
@@ -66,7 +66,7 @@ async def _cache_page_response(func, request):
         output.update(await func(**request_params))
         output["cache"] = False
         cache.set(data_key, output)
-    output["data_key"] = data_key.decode()
+    output["data_key"] = data_key
     return PrettifiableJsonResponse(output, pretty_print=pretty_print)
 
 

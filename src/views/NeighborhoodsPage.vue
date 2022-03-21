@@ -1,5 +1,16 @@
 <template>
   <div style="font-size: 18px">
+    <p>
+      Select a geographic area to find the 100 properties with the most
+      violations in that area.
+    </p>
+    <p>
+      Click <b>"Search By: Zip Code"</b> to enter a zip code as the geographic
+      area of focus. Click <b>"Search By: Map Boundary"</b> to select your own
+      geographic area of choice. You can do this either by zooming in on the
+      map, or by clicking one of the shapes on the map legend and drawing a
+      custom geographic area.
+    </p>
     <sui-grid>
       <sui-grid-row>
         <sui-grid-column :width="2">
@@ -31,7 +42,7 @@
           <sui-input
             v-model="zipCode"
             v-if="searchBy != 'mapBoundary'"
-            placeholder="..."
+            placeholder="Enter zip code here..."
           />
         </sui-grid-column>
       </sui-grid-row>
@@ -66,7 +77,7 @@ export default {
   name: "NeighborhoodView",
   data() {
     return {
-      searchBy: "zipCode",
+      searchBy: "mapBoundary",
       buildingTypes: [
         { text: "abc", value: 1 },
         { text: "def", value: 2 },

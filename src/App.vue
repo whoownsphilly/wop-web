@@ -7,6 +7,8 @@
         ><b>Click Here to Take Action</b></router-link
       >
       |
+      <router-link to="/neighborhoods"><b>Neighborhoods</b></router-link>
+      |
       <router-link to="/about"><b>About</b></router-link>
     </div>
     <router-view />

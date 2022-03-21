@@ -56,17 +56,21 @@ export const getCrowdSourcedPageInfo = (parcelNumber) => {
   });
 };
 
-export const getNeighborhoodsPageInfo = (bounds) => {
+export const getNeighborhoodsPageInfo = (bounds, zipCode, searchBy) => {
   const url =
     "api/v1/neighborhoods/" +
-    "?northeastLat=" +
+    "?northeast_lat=" +
     bounds._northEast.lat +
-    "&northeastLng=" +
+    "&northeast_lng=" +
     bounds._northEast.lng +
-    "&southwestLat=" +
+    "&southwest_lat=" +
     bounds._southWest.lat +
-    "&southwestLng=" +
-    bounds._southWest.lng;
+    "&southwest_lng=" +
+    bounds._southWest.lng +
+    "&search_by=" +
+    searchBy +
+    "&zip_code=" +
+    zipCode;
   return fetch(url, {
     method: "GET",
   }).then((response) => {

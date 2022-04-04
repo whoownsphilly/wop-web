@@ -29,6 +29,14 @@
           >Download this table</a
         >
       </div>
+      <template slot="table-row" slot-scope="props">
+        <span v-if="props.column.field == 'link'">
+          <a target="_blank" :href="props.row.link">Click Here</a>
+        </span>
+        <span v-else>
+          {{ props.formattedRow[props.column.field] }}
+        </span>
+      </template>
     </vue-good-table>
   </div>
 </template>

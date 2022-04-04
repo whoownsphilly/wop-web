@@ -2,7 +2,8 @@
   <div style="font-size: 18px">
     <p>
       Select a geographic area to find the 100 properties with the most
-      violations in that area.
+      violations in that area. These are properties that have an active rental
+      license and violations are only counted if they occurred after 2018-01-01.
     </p>
     <p>
       Click <b>"Search By: Zip Code"</b> to enter a zip code as the geographic
@@ -10,7 +11,6 @@
       geographic area of choice. You can do this either by zooming in on the
       map, or by clicking one of the shapes on the map legend and drawing a
       custom geographic area.
-      <i>Coming soon: Ability to filter by building type.</i>
     </p>
     <p>
       Once you have selected a geographic area, click "Update Map", which will
@@ -55,6 +55,19 @@
             placeholder="Enter zip code here..."
           />
         </sui-grid-column>
+        <sui-grid-column :width="6">
+          Filter By: <br />Building Type
+          <sui-dropdown
+            direction="upward"
+            multiple
+            fluid
+            :options="buildingTypes"
+            placeholder="Building Type"
+            search
+            selection
+            v-model="selectedBuildingTypes"
+          />
+        </sui-grid-column>
       </sui-grid-row>
     </sui-grid>
     <sui-divider horizontal>
@@ -92,14 +105,18 @@ export default {
     return {
       searchBy: "mapBoundary",
       buildingTypes: [
-        { text: "abc", value: 1 },
-        { text: "def", value: 2 },
+        { key: "Multi Family", text: "Multi Family", value: "Multi Family" },
+        { key: "Single Family", text: "Single Family", value: "Single Family" },
+        { key: "Mixed Use", text: "Mixed Use", value: "Mixed Use" },
+        { key: "Vacant Land", text: "Vacant Land", value: "Vacant Land" },
+        { key: "Industrial", text: "Industrial", value: "Industrial" },
+        { key: "Commercial", text: "Commercial", value: "Commercial" },
       ],
-      selectedBuildingTypes: [],
+      selectedBuildingTypes: ["Multi Family", "Single Family"],
       includeLegend: false,
       rows: [],
       columns: [],
-      searchResultProperties: [],
+      rawSearchResultProperties: [],
       selectedProperties: [],
       mapBounds: {},
       zipCode: null,
@@ -111,6 +128,15 @@ export default {
     DataTable,
   },
   computed: {
+    searchResultProperties() {
+      for (var i = 0; i < this.rawSearchResultProperties.length; i++) {
+        let thisProp = this.rawSearchResultProperties[i];
+        let url = `${window.location.origin}/#/property/${thisProp.parcel_number}`;
+        thisProp.link = url;
+      }
+
+      return this.rawSearchResultProperties;
+    },
     propertyDict() {
       let obj = {};
       this.searchResultProperties.map(function(x) {
@@ -143,10 +169,11 @@ export default {
       getNeighborhoodsPageInfo(
         this.mapBounds,
         this.zipCode,
-        this.searchBy
+        this.searchBy,
+        this.selectedBuildingTypes
       ).then(
         (results) => (
-          (this.searchResultProperties = results.properties),
+          (this.rawSearchResultProperties = results.properties),
           (this.loading = false)
         )
       );

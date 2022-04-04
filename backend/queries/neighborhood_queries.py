@@ -12,22 +12,31 @@ async def properties_by_organizability_results(
     southwest_lng,
     zip_code,
     search_by,
+    building_types,
     must_have_rental_license=False,
     n_results=100,
 ):
     where_str = ""
+
+    # building_types, add a single quote around each type
+    building_type_str = ",".join(
+        [f"'{build_type}'" for build_type in building_types.split(",")]
+    )
+
     if search_by == "mapBoundary" and southwest_lat != "null":
         where_str = f"""
-        WHERE
+        AND
             ST_contains(
              ST_MakeEnvelope({southwest_lng},{southwest_lat},{northeast_lng}, {northeast_lat},4326),
              the_geom
           )
         """
     elif search_by == "zipCode" and zip_code != "null":
-        where_str = f"WHERE zip_code = '{zip_code}'"
+        where_str = f"AND zip_code = '{zip_code}'"
     query = f"""
-        SELECT ST_Y(opp.the_geom) AS lat, ST_X(opp.the_geom) AS lng, opp.location, opp.unit, opp.parcel_number, n_complaints, n_violations, has_rental_license from opa_properties_public opp
+        SELECT ST_Y(opp.the_geom) AS lat, ST_X(opp.the_geom) AS lng, opp.category_code_description, opp.location, opp.unit, rtt.property_count, opp.parcel_number, n_complaints, n_violations, 
+        CASE WHEN has_rental_license is not null THEN True ELSE False END as has_rental_license 
+        from opa_properties_public opp
         JOIN (
             SELECT opa_account_num, count(*) as n_complaints 
              from complaints 
@@ -45,6 +54,13 @@ async def properties_by_organizability_results(
          ) v
         ON v.opa_account_num = opp.parcel_number
         LEFT JOIN (
+            -- This could be done better to get the current property count
+            SELECT opa_account_num, max(property_count) as property_count
+             from rtt_summary
+             GROUP by opa_account_num
+         ) rtt
+        ON rtt.opa_account_num = opp.parcel_number
+        LEFT JOIN (
             SELECT opa_account_num, count(*) as has_rental_license
              from business_licenses
         where licensetype = 'Rental'  and licensestatus = 'Active'
@@ -52,6 +68,7 @@ async def properties_by_organizability_results(
             
          ) l
         ON l.opa_account_num = opp.parcel_number
+    WHERE category_code_description in ({building_type_str})
     {where_str}
     ORDER BY n_complaints desc
     LIMIT {n_results}

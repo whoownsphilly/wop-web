@@ -63,7 +63,8 @@ export default {
     columns() {
       if (this.rows.length > 0) {
         return Object.keys(this.rows[0]).map((col) => {
-          return { label: col, field: col };
+          let fieldType = isNaN(this.rows[0][col]) ? "string" : "number";
+          return { label: col, field: col, type: fieldType };
         });
       } else {
         return [];

@@ -34,7 +34,7 @@ async def properties_by_organizability_results(
     elif search_by == "zipCode" and zip_code != "null":
         where_str = f"AND zip_code = '{zip_code}'"
     query = f"""
-        SELECT ST_Y(opp.the_geom) AS lat, ST_X(opp.the_geom) AS lng, opp.category_code_description, opp.location, opp.unit, rtt.property_count, opp.parcel_number, n_complaints, n_violations, 
+        SELECT ST_Y(opp.the_geom) AS lat, ST_X(opp.the_geom) AS lng, opp.category_code_description, opp.location, opp.unit, rtt.property_count, opp.owner_1, opp.owner_2, opp.mailing_street, opp.mailing_address_1, opp.parcel_number, n_complaints, n_violations, 
         CASE WHEN has_rental_license is not null THEN True ELSE False END as has_rental_license 
         from opa_properties_public opp
         JOIN (

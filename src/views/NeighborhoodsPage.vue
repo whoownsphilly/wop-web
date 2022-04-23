@@ -81,6 +81,7 @@
         @addProperty="addToSelectedPropertyList"
         mapStyle="height: 350px; width: 100%"
         :includeLegend="includeLegend"
+        :customPropertyLists="customPropertyLists"
       />
     </div>
     <div v-else>
@@ -88,10 +89,35 @@
         <sui-loader content="Loading..." />
       </sui-dimmer>
     </div>
-    <h2>Properties meeting search criteria</h2>
-    <data-table :rows="allProperties" title="Properties" />
-    <h2>Selected properties</h2>
-    <data-table :rows="selectedProperties" title="Selected Properties" />
+    <sui-tab>
+      <sui-tab-pane title="All Properties">
+        <h2>Properties meeting search criteria</h2>
+        <data-table :rows="allProperties" title="Properties" />
+      </sui-tab-pane>
+      <sui-tab-pane title="+ (Add List)">
+        <h2>Add a new list</h2>
+        <sui-input
+          placeholder="Put name here..."
+          v-model="newCustomPropertyListName"
+        />
+        <sui-dropdown
+          placeholder="Color"
+          selection
+          :options="colorOptions"
+          v-model="newCustomPropertyListColor"
+        />
+        <sui-button v-on:click="saveNewCustomPropertyList">Save</sui-button>
+      </sui-tab-pane>
+
+      <sui-tab-pane
+        v-for="(thisList, name) in customPropertyLists"
+        :key="name"
+        :title="getPropertyListNameAndCount(name)"
+      >
+        <h2>{{ name }}</h2>
+        <data-table :rows="thisList" :title="name" />
+      </sui-tab-pane>
+    </sui-tab>
   </div>
 </template>
 <script>
@@ -113,11 +139,18 @@ export default {
         { key: "Commercial", text: "Commercial", value: "Commercial" },
       ],
       selectedBuildingTypes: ["Multi Family", "Single Family"],
+      newCustomPropertyListName: "",
+      newCustomPropertyListColor: "red",
+      colorOptions: [
+        { text: "red", value: "red" },
+        { text: "green", value: "green" },
+      ],
+      customPropertyLists: {},
+      customPropertyListColors: {},
       includeLegend: false,
       rows: [],
       columns: [],
       rawSearchResultProperties: [],
-      selectedProperties: [],
       mapBounds: {},
       zipCode: null,
       loading: false,
@@ -146,10 +179,8 @@ export default {
       return obj;
     },
     allProperties() {
-      let properties = this.selectedProperties.slice(); // clone array;
-      let selectedParcelNumbers = this.selectedProperties.map(
-        (x) => x.parcel_number
-      );
+      let properties = Object.values(this.customPropertyLists).flat();
+      let selectedParcelNumbers = properties.map((x) => x.parcel_number);
 
       for (var i = 0; i < this.searchResultProperties.length; i++) {
         let thisProperty = this.searchResultProperties[i];
@@ -163,6 +194,22 @@ export default {
   methods: {
     updateBounds(bounds) {
       this.mapBounds = bounds;
+    },
+    saveNewCustomPropertyList() {
+      let listName = this.newCustomPropertyListName;
+      if (!(listName in this.customPropertyLists)) {
+        this.$set(this.customPropertyLists, listName, []);
+      }
+      this.$set(
+        this.customPropertyListColors,
+        listName,
+        this.newCustomPropertyListColor
+      );
+
+      this.newCustomPropertyListName = "";
+    },
+    getPropertyListNameAndCount(name) {
+      return `${name} (${this.customPropertyLists[name].length}) (${this.customPropertyListColors[name]})`;
     },
     updatePropertyList() {
       this.loading = true;
@@ -178,11 +225,13 @@ export default {
         )
       );
     },
-    addToSelectedPropertyList(property) {
+    addToSelectedPropertyList(listName, property) {
       let thisProperty = this.propertyDict[property.parcelNumber];
-      thisProperty["color"] = "red";
-      this.selectedProperties.push(thisProperty);
-      this.selectedProperties = [...new Set(this.selectedProperties)];
+      thisProperty["color"] = this.customPropertyListColors[listName];
+      this.customPropertyLists[listName].push(thisProperty);
+      this.customPropertyLists[listName] = [
+        ...new Set(this.customPropertyLists[listName]),
+      ];
     },
   },
   created() {

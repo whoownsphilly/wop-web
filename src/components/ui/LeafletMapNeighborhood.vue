@@ -21,6 +21,14 @@
         :fillColor="marker.color"
       >
         <l-popup>
+          <sui-dropdown
+            :options="customPropertyListNames"
+            placeholder="Property List"
+            fluid
+            search
+            selection
+            v-model="selectedPropertyListName"
+          />
           <a v-on:click="addProperty(marker)">{{ marker.popUp }}</a>
         </l-popup>
       </l-circle-marker>
@@ -69,10 +77,14 @@ export default {
       type: String,
       default: "height: 500px; width: 100%",
     },
+    customPropertyLists: {
+      type: Object,
+    },
   },
   data() {
     return {
       loading: false,
+      selectedPropertyListName: "abc",
       leafletMap: null,
       leafletOptions: { scrollWheelZoom: false },
       zoom: 6,
@@ -91,6 +103,12 @@ export default {
         layers.push(layer);
       });
       return layers;
+    },
+    customPropertyListNames() {
+      return Object.keys(this.customPropertyLists).map((x) => ({
+        text: x,
+        value: x,
+      }));
     },
     mapMarkers() {
       return this.latLngs.map((latLngTuple) => ({
@@ -115,7 +133,8 @@ export default {
     },
     addProperty(marker) {
       this.$refs.map.mapObject.closePopup();
-      this.$emit("addProperty", marker);
+      this.$emit("addProperty", this.selectedPropertyListName, marker);
+      this.selectedPropertyListName = "";
     },
   },
 };

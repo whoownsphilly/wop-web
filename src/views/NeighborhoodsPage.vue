@@ -28,6 +28,19 @@
       'Add to List'. By clicking on the address, it will then add that property
       to your own personal list, which can be subsequently downloaded.
     </p>
+    <p>
+      After creating a list, you can share out 2 different types of links. There
+      is a 'Link to read-only version of this List' which will link people
+      directly to what is inside the Tab (a copy of the list and a map of just
+      those selected properties). There is also a 'Link to walking directions'
+      which will open up all of the selected properties in an external Google
+      Maps page.
+    </p>
+    <p>
+      If you are working on a list and are not completed with it, you can copy
+      the URL (which changes whenever a property is added) and that URL should
+      return you to the same list that you were working on.
+    </p>
     <sui-grid>
       <sui-grid-row>
         <sui-grid-column :width="2">
@@ -129,9 +142,6 @@
         <sui-button v-on:click="addSelectionToSelectedPropertyList"
           >Button</sui-button
         >
-        <a target="_blank" :href="customPropertyListGoogleUrls[name]">
-          Google Directions
-        </a>
         <property-list :name="name" :propertyList="thisList" />
       </sui-tab-pane>
     </sui-tab>
@@ -176,7 +186,6 @@ export default {
       newCustomPropertyListColor: "red",
       customPropertyLists: {},
       customPropertyListColors: {},
-      customPropertyListGoogleUrls: {},
       rows: [],
       columns: [],
       rawSearchResultProperties: [],

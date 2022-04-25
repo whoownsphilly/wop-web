@@ -2,9 +2,10 @@
   <div style="font-size: 18px">
     <h2>{{ name }}</h2>
     <a target="_blank" :href="directionsUrl">
-      <a target="_blank" :href="pageUrl">Read-Only Link To this List</a
+      <a target="_blank" :href="pageUrl"
+        >Link To read-only version of this List</a
       ><br /><br />
-      Google Directions
+      Link to Walking Directions
     </a>
     <data-table :rows="propertyList" :title="name" />
     <span v-if="propertyList.length > 0">

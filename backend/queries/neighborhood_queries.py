@@ -1,8 +1,21 @@
 import numpy as np
+import pandas as pd
 
 from backend.queries.queries import (
     carto_request,
 )
+import asyncio
+
+
+async def properties_by_parcel_lists_results(**kwargs):
+    tasks = []
+    for list_name, parcel_numbers in kwargs.items():
+        parcel_number_str = ",".join([f"'{num}'" for num in parcel_numbers.split(",")])
+        where_str = f"WHERE parcel_number in ({parcel_number_str})"
+        dfs = tasks.append(_get_neighborhood_results(where_str, list_name=list_name))
+    dfs = await asyncio.gather(*tasks)
+    output = {k: v for d in dfs for k, v in d.items()}
+    return {"saved_properties": output}
 
 
 async def properties_by_organizability_results(
@@ -16,15 +29,14 @@ async def properties_by_organizability_results(
     must_have_rental_license=False,
     n_results=100,
 ):
-    where_str = ""
-
     # building_types, add a single quote around each type
     building_type_str = ",".join(
         [f"'{build_type}'" for build_type in building_types.split(",")]
     )
+    where_str = f"WHERE category_code_description in ({building_type_str})\n"
 
     if search_by == "mapBoundary" and southwest_lat != "null":
-        where_str = f"""
+        where_str += f"""
         AND
             ST_contains(
              ST_MakeEnvelope({southwest_lng},{southwest_lat},{northeast_lng}, {northeast_lat},4326),
@@ -32,7 +44,14 @@ async def properties_by_organizability_results(
           )
         """
     elif search_by == "zipCode" and zip_code != "null":
-        where_str = f"AND zip_code = '{zip_code}'"
+        where_str += f"AND zip_code = '{zip_code}'"
+    return await _get_neighborhood_results(where_str, n_results=n_results)
+
+
+async def _get_neighborhood_results(
+    where_str, list_name="searched_properties", n_results=None
+):
+    limit_str = f"LIMIT {n_results}" if n_results else ""
     query = f"""
         SELECT ST_Y(opp.the_geom) AS lat, ST_X(opp.the_geom) AS lng, opp.category_code_description, opp.location, opp.unit, rtt.property_count, opp.owner_1, opp.owner_2, opp.mailing_street, opp.mailing_address_1, opp.parcel_number, n_complaints, n_violations, 
         CASE WHEN has_rental_license is not null THEN True ELSE False END as has_rental_license 
@@ -68,10 +87,9 @@ async def properties_by_organizability_results(
             
          ) l
         ON l.opa_account_num = opp.parcel_number
-    WHERE category_code_description in ({building_type_str})
     {where_str}
     ORDER BY n_complaints desc
-    LIMIT {n_results}
+    {limit_str}
     """
     df = (await carto_request(query)).replace({np.nan: None})
-    return {"properties": df.to_dict("records")}
+    return {list_name: df.to_dict("records")}

@@ -84,3 +84,13 @@ export const getNeighborhoodsPageInfo = (
     return response.json();
   });
 };
+
+export const getNeighborhoodsPageFromParcelNumbers = (parcelList) => {
+  let params = new URLSearchParams(parcelList).toString();
+  const url = "api/v1/neighborhoods_by_parcel_lists/?" + params;
+  return fetch(url, {
+    method: "GET",
+  }).then((response) => {
+    return response.json();
+  });
+};

@@ -96,6 +96,14 @@ const routes = [
     component: () =>
       import(/* webpackChunkName: "about" */ "../views/NeighborhoodsPage.vue"),
   },
+  {
+    path: "/neighborhood-view",
+    name: "NeighborhoodView",
+    component: () =>
+      import(
+        /* webpackChunkName: "about" */ "../views/NeighborhoodListViewPage.vue"
+      ),
+  },
 ];
 
 const router = new VueRouter({

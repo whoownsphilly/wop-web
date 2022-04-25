@@ -23,6 +23,7 @@ from backend.queries import (
     property_latest_owner_detail_results,
     property_details_page_results,
     properties_by_owner_name_results,
+    properties_by_parcel_lists_results,
     properties_by_mailing_address_results,
     properties_by_autocomplete_results,
     airtable_entries_by_mailing_address_results,
@@ -118,3 +119,8 @@ async def crowd_sourced_response(request):
 async def neighborhoods_page_response(request):
     """Used to get the information for the Property Basics page"""
     return await _cache_page_response(properties_by_organizability_results, request)
+
+
+async def neighborhoods_page_by_parcel_lists_response(request):
+    """Used to get the information for the Property Basics page by parcel list"""
+    return await _cache_page_response(properties_by_parcel_lists_results, request)

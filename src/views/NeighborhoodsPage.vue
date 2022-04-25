@@ -9,17 +9,24 @@
       Click <b>"Search By: Zip Code"</b> to enter a zip code as the geographic
       area of focus. Click <b>"Search By: Map Boundary"</b> to select your own
       geographic area of choice. You can do this either by zooming in on the
-      map, or by clicking one of the shapes on the map legend and drawing a
-      custom geographic area.
+      map, or <i><b>by clicking one of the shapes on the map legend</b></i> and
+      drawing a custom geographic area.
     </p>
     <p>
       Once you have selected a geographic area, click "Update Map", which will
       update the markers on the map to represent the 100 properties with the
       most violations within that area. The list below the map will also
-      populate with this list. If you click on a property marker in the map,
-      it's address will pop up. By clicking on the address, it will then add
-      that property to your own personal list, which can be subsequently
-      downloaded.
+      populate with this list.
+    </p>
+    <p>
+      To generate custom lists, you first have to use the "+ Add List" tab to
+      create a new list. Currently, each new list automatically gets assigned a
+      different color. The system can reliably handle about 5 lists at a time,
+      but this could be increased in the future. After creating a list, you can
+      click on a property marker in the map, it's address will pop up along with
+      a drop-down menu with the populated list names, and a button that says
+      'Add to List'. By clicking on the address, it will then add that property
+      to your own personal list, which can be subsequently downloaded.
     </p>
     <sui-grid>
       <sui-grid-row>
@@ -78,9 +85,9 @@
       <leaflet-map-neighborhood
         :latLngs="allProperties"
         @updateBounds="updateBounds"
+        @selectMarkers="selectMarkers"
         @addProperty="addToSelectedPropertyList"
         mapStyle="height: 350px; width: 100%"
-        :includeLegend="includeLegend"
         :customPropertyLists="customPropertyLists"
       />
     </div>
@@ -89,47 +96,72 @@
         <sui-loader content="Loading..." />
       </sui-dimmer>
     </div>
-    <sui-tab>
-      <sui-tab-pane title="All Properties">
-        <h2>Properties meeting search criteria</h2>
-        <data-table :rows="allProperties" title="Properties" />
-      </sui-tab-pane>
-      <sui-tab-pane title="+ (Add List)">
+    <sui-tab
+      @change="handleTabChange"
+      :menu="{ attached: false, tabular: false }"
+    >
+      <sui-tab-pane title="+ (Add List)" :attached="false">
         <h2>Add a new list</h2>
         <sui-input
           placeholder="Put name here..."
           v-model="newCustomPropertyListName"
         />
-        <sui-dropdown
+        <!--<sui-dropdown
           placeholder="Color"
           selection
           :options="colorOptions"
           v-model="newCustomPropertyListColor"
-        />
+        />-->
         <sui-button v-on:click="saveNewCustomPropertyList">Save</sui-button>
+      </sui-tab-pane>
+      <sui-tab-pane title="Searched Properties" :attached="false">
+        <h2>Properties meeting search criteria</h2>
+        <data-table :rows="allProperties" title="Properties" />
       </sui-tab-pane>
 
       <sui-tab-pane
         v-for="(thisList, name) in customPropertyLists"
         :key="name"
-        :title="getPropertyListNameAndCount(name)"
+        :label="getPropertyListCountAndColor(name)"
+        :title="name"
+        :attached="false"
       >
-        <h2>{{ name }}</h2>
-        <data-table :rows="thisList" :title="name" />
+        <sui-button v-on:click="addSelectionToSelectedPropertyList"
+          >Button</sui-button
+        >
+        <a target="_blank" :href="customPropertyListGoogleUrls[name]">
+          Google Directions
+        </a>
+        <property-list :name="name" :propertyList="thisList" />
       </sui-tab-pane>
     </sui-tab>
   </div>
 </template>
 <script>
 import LeafletMapNeighborhood from "@/components/ui/LeafletMapNeighborhood";
+import PropertyList from "@/components/page/neighborhoods/PropertyList";
 import DataTable from "@/components/ui/DataTable";
-import { getNeighborhoodsPageInfo } from "@/api/pages";
+import {
+  getNeighborhoodsPageInfo,
+  getNeighborhoodsPageFromParcelNumbers,
+} from "@/api/pages";
 
 export default {
   name: "NeighborhoodView",
+  components: {
+    LeafletMapNeighborhood,
+    DataTable,
+    PropertyList,
+  },
   data() {
     return {
+      activeTabPane: null,
       searchBy: "mapBoundary",
+      colorOptions: ["red", "green", "blue", "yellow", "orange", "pink"],
+      /*colorOptions: [
+        { text: "red", value: "red" },
+        { text: "green", value: "green" },
+      ],*/
       buildingTypes: [
         { key: "Multi Family", text: "Multi Family", value: "Multi Family" },
         { key: "Single Family", text: "Single Family", value: "Single Family" },
@@ -139,15 +171,12 @@ export default {
         { key: "Commercial", text: "Commercial", value: "Commercial" },
       ],
       selectedBuildingTypes: ["Multi Family", "Single Family"],
+      selectedMarkers: [],
       newCustomPropertyListName: "",
       newCustomPropertyListColor: "red",
-      colorOptions: [
-        { text: "red", value: "red" },
-        { text: "green", value: "green" },
-      ],
       customPropertyLists: {},
       customPropertyListColors: {},
-      includeLegend: false,
+      customPropertyListGoogleUrls: {},
       rows: [],
       columns: [],
       rawSearchResultProperties: [],
@@ -155,10 +184,6 @@ export default {
       zipCode: null,
       loading: false,
     };
-  },
-  components: {
-    LeafletMapNeighborhood,
-    DataTable,
   },
   computed: {
     searchResultProperties() {
@@ -172,14 +197,28 @@ export default {
     },
     propertyDict() {
       let obj = {};
-      this.searchResultProperties.map(function(x) {
-        let parcel_number = x.parcel_number;
-        obj[parcel_number] = x;
-      });
+      this.searchResultProperties
+        .concat(this.customProperties)
+        .map(function(x) {
+          let parcel_number = x.parcel_number;
+          obj[parcel_number] = x;
+        });
       return obj;
     },
+    customProperties() {
+      let properties = [];
+      for (const [key, list] of Object.entries(this.customPropertyLists)) {
+        properties.push(
+          list.map((v) => ({
+            ...v,
+            color: this.customPropertyListColors[key],
+          }))
+        );
+      }
+      return properties.flat();
+    },
     allProperties() {
-      let properties = Object.values(this.customPropertyLists).flat();
+      let properties = this.customProperties.slice();
       let selectedParcelNumbers = properties.map((x) => x.parcel_number);
 
       for (var i = 0; i < this.searchResultProperties.length; i++) {
@@ -192,24 +231,33 @@ export default {
     },
   },
   methods: {
+    handleTabChange(e, activePane) {
+      this.activeTabPane = activePane.title;
+    },
     updateBounds(bounds) {
       this.mapBounds = bounds;
+    },
+    selectMarkers(selectedMarkers) {
+      this.selectedMarkers = selectedMarkers;
     },
     saveNewCustomPropertyList() {
       let listName = this.newCustomPropertyListName;
       if (!(listName in this.customPropertyLists)) {
         this.$set(this.customPropertyLists, listName, []);
       }
+      // For now we set the color by default
+      let colorIndex = Object.keys(this.customPropertyLists).length - 1;
+
       this.$set(
         this.customPropertyListColors,
         listName,
-        this.newCustomPropertyListColor
+        this.colorOptions[colorIndex]
       );
 
       this.newCustomPropertyListName = "";
     },
-    getPropertyListNameAndCount(name) {
-      return `${name} (${this.customPropertyLists[name].length}) (${this.customPropertyListColors[name]})`;
+    getPropertyListCountAndColor(name) {
+      return `(${this.customPropertyLists[name].length}) (${this.customPropertyListColors[name]})`;
     },
     updatePropertyList() {
       this.loading = true;
@@ -220,26 +268,65 @@ export default {
         this.selectedBuildingTypes
       ).then(
         (results) => (
-          (this.rawSearchResultProperties = results.properties),
+          (this.rawSearchResultProperties = results.searched_properties),
           (this.loading = false)
         )
+      );
+    },
+    setColorsAndUrlToSavedPropertyLists(lists) {
+      let listColors = {};
+      lists.forEach(
+        (value, index) => (listColors[value] = this.colorOptions[index])
+      );
+      return listColors;
+    },
+    addSelectionToSelectedPropertyList() {
+      this.selectedMarkers.forEach((marker) =>
+        this.addToSelectedPropertyList(this.activeTabPane, marker)
       );
     },
     addToSelectedPropertyList(listName, property) {
       let thisProperty = this.propertyDict[property.parcelNumber];
       thisProperty["color"] = this.customPropertyListColors[listName];
       this.customPropertyLists[listName].push(thisProperty);
+
       this.customPropertyLists[listName] = [
         ...new Set(this.customPropertyLists[listName]),
       ];
+
+      // Convert {'list1': [{parcel: 102}, {parcel: 103}]}
+      // to {'list1': [102, 103]}
+      let customPropertyParcelNumberDict = {};
+      Object.entries(this.customPropertyLists).map(function(entry) {
+        customPropertyParcelNumberDict[entry[0]] = entry[1].map(
+          (x) => x.parcel_number
+        );
+        return customPropertyParcelNumberDict;
+      });
+      this.$router.replace({
+        name: "Neighborhoods",
+        query: {
+          ...customPropertyParcelNumberDict,
+        },
+      });
     },
   },
   created() {
     this.mapBounds = {
-      _northEast: { lat: null, lng: null },
-      _southWest: { lat: null, lng: null },
+      _northEast: { lat: 39.977523, lng: -75.136808 },
+      _southWest: { lat: 39.922655, lng: -75.193699 },
     };
-    this.updatePropertyList();
+    // Get the property list from the parcel numbers
+    this.loading = true;
+    getNeighborhoodsPageFromParcelNumbers(this.$route.query).then(
+      (results) => (
+        (this.customPropertyLists = results.saved_properties),
+        (this.customPropertyListColors = this.setColorsAndUrlToSavedPropertyLists(
+          Object.keys(results.saved_properties)
+        )),
+        (this.loading = false)
+      )
+    );
   },
 };
 </script>

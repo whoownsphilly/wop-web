@@ -27,6 +27,7 @@ from .api import (
     owner_page_properties_by_mailing_address_response,
     property_latest_owner_details_response,
     neighborhoods_page_response,
+    neighborhoods_page_by_parcel_lists_response,
 )
 
 api_urlpatterns = [
@@ -66,6 +67,11 @@ api_urlpatterns = [
         "api/v1/neighborhoods/",
         neighborhoods_page_response,
         name="neighborhoods_page_list",
+    ),
+    path(
+        "api/v1/neighborhoods_by_parcel_lists/",
+        neighborhoods_page_by_parcel_lists_response,
+        name="neighborhoods_page_by_parcel_lists_list",
     ),
 ]
 

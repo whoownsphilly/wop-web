@@ -21,23 +21,30 @@
         :fillColor="marker.color"
       >
         <l-popup>
-          <sui-dropdown
-            :options="customPropertyListNames"
-            placeholder="Property List"
-            fluid
-            search
-            selection
-            v-model="selectedPropertyListName"
-          />
-          <a v-on:click="addProperty(marker)">{{ marker.popUp }}</a>
+          {{ marker.popUp }}<br />
+          <span
+            v-if="customPropertyLists && customPropertyListNames.length > 0"
+          >
+            Choose a List Name from the dropdown:
+            <sui-dropdown
+              :options="customPropertyListNames"
+              placeholder="Property List"
+              fluid
+              selection
+              v-model="selectedPropertyListName"
+            />
+            <span v-if="selectedPropertyListName">
+              <sui-button size="mini" v-on:click="addProperty(marker)"
+                >Add to {{ selectedPropertyListName }}</sui-button
+              >
+            </span>
+          </span>
+          <span v-else-if="customPropertyLists"
+            >No lists found, you need to add a List using the "+ (Add List)" tab
+            below</span
+          >
         </l-popup>
       </l-circle-marker>
-      <l-control v-if="includeLegend" class="legend" :position="'bottomleft'">
-        <i style="background: black"></i><span>This Property</span><br />
-        <i style="background: yellow"></i><span>Same Mailing Address</span
-        ><br />
-        <i style="background: red"></i><span>Same Owner</span><br />
-      </l-control>
     </l-map>
   </div>
 </template>
@@ -46,13 +53,7 @@
 import { latLngBounds, latLng } from "leaflet";
 import LDrawToolbar from "vue2-leaflet-draw-toolbar";
 
-import {
-  LMap,
-  LTileLayer,
-  LCircleMarker,
-  LControl,
-  LPopup,
-} from "vue2-leaflet";
+import { LMap, LTileLayer, LCircleMarker, LPopup } from "vue2-leaflet";
 
 export default {
   name: "LeafletMapNeighborhood",
@@ -60,7 +61,6 @@ export default {
     LMap,
     LTileLayer,
     LPopup,
-    LControl,
     LCircleMarker,
     LDrawToolbar,
   },
@@ -69,10 +69,6 @@ export default {
       type: Array,
       required: true,
     },
-    includeLegend: {
-      type: Boolean,
-      default: true,
-    },
     mapStyle: {
       type: String,
       default: "height: 500px; width: 100%",
@@ -80,11 +76,15 @@ export default {
     customPropertyLists: {
       type: Object,
     },
+    colorOverride: {
+      type: String,
+      default: null,
+    },
   },
   data() {
     return {
       loading: false,
-      selectedPropertyListName: "abc",
+      selectedPropertyListName: null,
       leafletMap: null,
       leafletOptions: { scrollWheelZoom: false },
       zoom: 6,
@@ -113,15 +113,22 @@ export default {
     mapMarkers() {
       return this.latLngs.map((latLngTuple) => ({
         latLng: latLng(latLngTuple.lat, latLngTuple.lng),
-        color: latLngTuple.color,
+        color: this.colorOverride || latLngTuple.color,
         popUp: latLngTuple.location + " " + (latLngTuple.unit || ""),
         parcelNumber: latLngTuple.parcel_number,
       }));
     },
     mapBounds() {
-      return latLngBounds(
-        this.latLngs.map((latLngTuple) => [latLngTuple.lat, latLngTuple.lng])
-      );
+      if (this.latLngs.length > 0) {
+        return latLngBounds(
+          this.latLngs.map((latLngTuple) => [latLngTuple.lat, latLngTuple.lng])
+        );
+      } else {
+        return latLngBounds([
+          [39.977523, -75.136808],
+          [39.922655, -75.193699],
+        ]);
+      }
     },
   },
   methods: {
@@ -130,11 +137,42 @@ export default {
     },
     drawnBounds(e) {
       this.$emit("updateBounds", e.layer._bounds);
+      let selectedMarkers = [];
+      this.mapMarkers.map((marker) => {
+        if (this.isMarkerInsidePolygon(marker, e.layer)) {
+          selectedMarkers.push(marker);
+        }
+      });
+      this.$emit("selectMarkers", selectedMarkers);
     },
     addProperty(marker) {
       this.$refs.map.mapObject.closePopup();
       this.$emit("addProperty", this.selectedPropertyListName, marker);
       this.selectedPropertyListName = "";
+    },
+
+    isMarkerInsidePolygon(marker, poly) {
+      var polyPoints = poly.getLatLngs()[0];
+      var x = marker.latLng.lat,
+        y = marker.latLng.lng;
+
+      var inside = false;
+      for (
+        var i = 0, j = polyPoints.length - 1;
+        i < polyPoints.length;
+        j = i++
+      ) {
+        var xi = polyPoints[i].lat;
+        var yi = polyPoints[i].lng;
+        var xj = polyPoints[j].lat;
+        var yj = polyPoints[j].lng;
+
+        var intersect =
+          yi > y != yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+        if (intersect) inside = !inside;
+      }
+
+      return inside;
     },
   },
 };

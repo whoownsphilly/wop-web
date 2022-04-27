@@ -2,7 +2,8 @@
   <div style="font-size: 18px">
     <sui-container>
       <sui-divider horizontal>Instructions</sui-divider>
-      Please read the following instructions to help navigate this page:
+      This is a search tool for open violations in the city. Please read the
+      following instructions to help navigate this page:
       <sui-accordion exclusive>
         <sui-accordion-title>
           <sui-icon name="dropdown" />

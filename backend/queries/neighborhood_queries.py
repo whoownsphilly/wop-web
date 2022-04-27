@@ -53,15 +53,21 @@ async def _get_neighborhood_results(
 ):
     limit_str = f"LIMIT {n_results}" if n_results else ""
     query = f"""
-        SELECT ST_Y(opp.the_geom) AS lat, ST_X(opp.the_geom) AS lng, opp.category_code_description, opp.location, opp.unit, rtt.property_count, opp.owner_1, opp.owner_2, opp.mailing_street, opp.mailing_address_1, opp.parcel_number, n_complaints, n_violations, 
+        SELECT ST_Y(opp.the_geom) AS lat, ST_X(opp.the_geom) AS lng, opp.category_code_description, opp.location, opp.unit, rtt.property_count, opp.owner_1, opp.owner_2, opp.mailing_street, opp.mailing_address_1, opp.parcel_number, n_complaints, n_violations, n_violations_open, 
         CASE WHEN has_rental_license is not null THEN True ELSE False END as has_rental_license 
         from opa_properties_public opp
         JOIN (
+            SELECT opa_account_num, count(*) as n_violations_open
+             from violations
+        where violationdate > '2018-01-01' and violationstatus = 'OPEN'
+             group by opa_account_num 
+         ) v_open
+        ON v_open.opa_account_num = opp.parcel_number
+        LEFT JOIN (
             SELECT opa_account_num, count(*) as n_complaints 
              from complaints 
         where complaintdate > '2018-01-01'
              group by opa_account_num 
-            
          ) c
         ON c.opa_account_num = opp.parcel_number
         LEFT JOIN (
@@ -69,7 +75,6 @@ async def _get_neighborhood_results(
              from violations
         where violationdate > '2018-01-01'
              group by opa_account_num 
-            
          ) v
         ON v.opa_account_num = opp.parcel_number
         LEFT JOIN (
@@ -84,11 +89,10 @@ async def _get_neighborhood_results(
              from business_licenses
         where licensetype = 'Rental'  and licensestatus = 'Active'
              group by opa_account_num 
-            
          ) l
         ON l.opa_account_num = opp.parcel_number
     {where_str}
-    ORDER BY n_complaints desc
+    ORDER BY n_violations_open desc
     {limit_str}
     """
     df = (await carto_request(query)).replace({np.nan: None})

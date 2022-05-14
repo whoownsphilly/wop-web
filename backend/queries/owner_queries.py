@@ -748,7 +748,7 @@ async def properties_by_mailing_address_results(parcel_number):
         .values
     )
     # get timeline with purchased and sold date cols by property
-    ma_property_timeline_df["color"] = "yellow"
+    ma_property_timeline_df["color"] = "blue"
 
     owner_property_counts_by_name = (
         ma_property_timeline_df.groupby(["likely_owner", "current_owner"])
@@ -774,7 +774,7 @@ async def properties_by_mailing_address_results(parcel_number):
         )
     )
     alias_names = list(set((mailing_care_of_names + owner_names)))
-    current_properties["color"] = "yellow"
+    current_properties["color"] = "blue"
     current_properties["source"] = "mailing_address"
 
     output = {

@@ -35,6 +35,7 @@ ALLOWED_HOSTS = ["127.0.0.1"]
 # Application definition
 
 INSTALLED_APPS = [
+    "rest_framework",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -216,3 +217,5 @@ def get_cache():
 
 
 CACHES = get_cache()
+
+REST_FRAMEWORK = {"TEST_REQUEST_DEFAULT_FORMAT": "json"}

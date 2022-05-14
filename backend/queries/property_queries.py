@@ -279,14 +279,14 @@ async def properties_by_owner_name_autocomplete_results(owner_substr, n_results)
                   document_type='DEED LAND BANK'
 
                 )
-                AND (
-                    grantees like '%{search_to_match_like_str}%'
-                    OR grantees like '%{search_to_match_like_str_rev}%'
-                )
                 GROUP by opa_account_num
                 
                 ) rtt_inner 
             ON rtt_inner.document_id = rtt_summary.document_id
+            WHERE (
+                    grantees like '%{search_to_match_like_str}%'
+                    OR grantees like '%{search_to_match_like_str_rev}%'
+                )
         ) rtt
         ON opa_properties_public.parcel_number = rtt.opa_account_num
         WHERE ( 

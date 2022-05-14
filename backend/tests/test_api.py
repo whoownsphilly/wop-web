@@ -5,6 +5,7 @@ import pandas as pd
 import pytest
 from requests import get as request_get  # so we don't get recursive issues
 from rest_framework.test import APIRequestFactory
+from rest_framework.settings import api_settings
 
 
 @pytest.fixture

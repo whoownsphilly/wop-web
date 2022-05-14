@@ -42,8 +42,7 @@
       </div>
       <l-control v-if="includeLegend" class="legend" :position="'bottomleft'">
         <i style="background: black"></i><span>This Property</span><br />
-        <i style="background: yellow"></i><span>Same Mailing Address</span
-        ><br />
+        <i style="background: blue"></i><span>Same Mailing Address</span><br />
         <i style="background: red"></i><span>Same Owner</span><br />
       </l-control>
     </l-map>

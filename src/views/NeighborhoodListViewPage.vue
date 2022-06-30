@@ -20,21 +20,21 @@ export default {
     return {
       name: null,
       loading: false,
-      thisList: [],
+      thisList: []
     };
   },
   components: {
-    PropertyList,
+    PropertyList
   },
   created() {
     this.name = Object.keys(this.$route.query)[0];
     this.loading = true;
     getNeighborhoodsPageFromParcelNumbers(this.$route.query).then(
-      (results) => (
+      results => (
         (this.thisList = results.saved_properties[this.name]),
         (this.loading = false)
       )
     );
-  },
+  }
 };
 </script>

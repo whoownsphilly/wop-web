@@ -66,7 +66,7 @@ export default {
       query: format(this.$route.query.q || ""),
       loading: false,
       error: null,
-      columns: [],
+      columns: []
     };
   },
   computed: {
@@ -82,7 +82,7 @@ export default {
         .join("\n")
         .replace(/\n/g, " ")
         .replace(/\s\s+/g, " ");
-    },
+    }
   },
   methods: {
     executeQuery(click, updateRoute = true) {
@@ -93,38 +93,38 @@ export default {
         this.queryForUrl
       )}`;
       fetch(url, {
-        method: "GET",
+        method: "GET"
       })
-        .then((response) => {
+        .then(response => {
           if (updateRoute === true) {
             this.$router.push({
               query: Object.assign({}, this.$route.query, {
-                q: this.query,
-              }),
+                q: this.query
+              })
             });
           }
           return response.json();
         })
-        .then((response_json) => {
+        .then(response_json => {
           this.loading = false;
           this.error = null;
           if ("error" in response_json) {
             this.error = response_json["error"][0];
           } else {
-            Object.keys(response_json["fields"]).forEach((row) => {
+            Object.keys(response_json["fields"]).forEach(row => {
               this.columns.push({ label: row, field: row });
             });
             this.rows = response_json["rows"];
             console.log(this.query, updateRoute);
           }
         });
-    },
+    }
   },
   created() {
     if (this.query.length > 0) {
       this.executeQuery(null, false);
     }
-  },
+  }
 };
 </script>
 <style>

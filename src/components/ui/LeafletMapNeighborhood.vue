@@ -62,24 +62,24 @@ export default {
     LTileLayer,
     LPopup,
     LCircleMarker,
-    LDrawToolbar,
+    LDrawToolbar
   },
   props: {
     latLngs: {
       type: Array,
-      required: true,
+      required: true
     },
     mapStyle: {
       type: String,
-      default: "height: 500px; width: 100%",
+      default: "height: 500px; width: 100%"
     },
     customPropertyLists: {
-      type: Object,
+      type: Object
     },
     colorOverride: {
       type: String,
-      default: null,
-    },
+      default: null
+    }
   },
   data() {
     return {
@@ -93,7 +93,7 @@ export default {
       //url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
       url: "https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png",
       attribution:
-        '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+        '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
     };
   },
   computed: {
@@ -105,31 +105,31 @@ export default {
       return layers;
     },
     customPropertyListNames() {
-      return Object.keys(this.customPropertyLists).map((x) => ({
+      return Object.keys(this.customPropertyLists).map(x => ({
         text: x,
-        value: x,
+        value: x
       }));
     },
     mapMarkers() {
-      return this.latLngs.map((latLngTuple) => ({
+      return this.latLngs.map(latLngTuple => ({
         latLng: latLng(latLngTuple.lat, latLngTuple.lng),
         color: this.colorOverride || latLngTuple.color,
         popUp: latLngTuple.location + " " + (latLngTuple.unit || ""),
-        parcelNumber: latLngTuple.parcel_number,
+        parcelNumber: latLngTuple.parcel_number
       }));
     },
     mapBounds() {
       if (this.latLngs.length > 0) {
         return latLngBounds(
-          this.latLngs.map((latLngTuple) => [latLngTuple.lat, latLngTuple.lng])
+          this.latLngs.map(latLngTuple => [latLngTuple.lat, latLngTuple.lng])
         );
       } else {
         return latLngBounds([
           [39.977523, -75.136808],
-          [39.922655, -75.193699],
+          [39.922655, -75.193699]
         ]);
       }
-    },
+    }
   },
   methods: {
     updateBounds(bounds) {
@@ -138,7 +138,7 @@ export default {
     drawnBounds(e) {
       this.$emit("updateBounds", e.layer._bounds);
       let selectedMarkers = [];
-      this.mapMarkers.map((marker) => {
+      this.mapMarkers.map(marker => {
         if (this.isMarkerInsidePolygon(marker, e.layer)) {
           selectedMarkers.push(marker);
         }
@@ -173,8 +173,8 @@ export default {
       }
 
       return inside;
-    },
-  },
+    }
+  }
 };
 </script>
 <style>

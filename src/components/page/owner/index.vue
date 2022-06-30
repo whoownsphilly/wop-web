@@ -147,7 +147,7 @@
 <script>
 import {
   getOwnerPageInfoByName,
-  getOwnerPageInfoByMailingAddress,
+  getOwnerPageInfoByMailingAddress
 } from "@/api/pages";
 import OwnerPortfolio from "@/components/page/owner/Portfolio";
 //import VueApexBarChart from "@/components/ui/charts/BarChart";
@@ -161,13 +161,13 @@ export default {
     //VueApexBarChart,
     DataTable,
     SingleColumnDataTable,
-    OwnerPortfolio,
+    OwnerPortfolio
   },
   props: {
     parcelNumber: {
       type: String,
-      required: true,
-    },
+      required: true
+    }
   },
   data() {
     return {
@@ -188,14 +188,14 @@ export default {
       mailingAddressBasedOwnerPropertyCountsByName: [],
       mailingAddressBasedViolations: [],
       mailingAddressBasedComplaints: [],
-      violationsComplaintsDateSince: "2007-01-01",
+      violationsComplaintsDateSince: "2007-01-01"
     };
   },
   computed: {
     thisProperty() {
       let parcelNumber = this.parcelNumber;
       return this.currentProperties.filter(
-        (x) => x.opa_account_num == parcelNumber
+        x => x.opa_account_num == parcelNumber
       )[0];
     },
     currentProperties() {
@@ -257,25 +257,25 @@ export default {
         nViolationsClosed: nViolationsClosed,
         nComplaints: nComplaints,
         currentProperties: allUniqueCurrentProperties,
-        marketValue: marketValue,
+        marketValue: marketValue
       };
     },
     isPageStillLoading() {
       return this.ownerLoading || this.mailingAddressLoading;
-    },
+    }
   },
   methods: {
     getFormattedCurrency(value) {
       // It won't let me directly call the function so I had to make a method
       return formatCurrencyValue(value);
-    },
+    }
   },
   created() {
     this.ownerLoading = true;
     this.mailingAddressLoading = true;
 
     getOwnerPageInfoByMailingAddress(this.parcelNumber).then(
-      (propertyResults) => {
+      propertyResults => {
         this.mailingAddress = propertyResults["metadata"]["mailing_address"];
         this.mailingAddressBasedNames =
           propertyResults["results"]["alias_names"];
@@ -292,7 +292,7 @@ export default {
         this.mailingAddressLoading = false;
       }
     );
-    getOwnerPageInfoByName(this.parcelNumber).then((propertyResults) => {
+    getOwnerPageInfoByName(this.parcelNumber).then(propertyResults => {
       this.ownerBasedPropertyTimelineData =
         propertyResults["results"]["timeline"];
       this.ownerBasedViolations = propertyResults["results"]["violations"];
@@ -302,7 +302,7 @@ export default {
         propertyResults["display_inputs"]["owner_property_counts_by_name"];
       this.ownerLoading = false;
     });
-  },
+  }
 };
 </script>
 <style>

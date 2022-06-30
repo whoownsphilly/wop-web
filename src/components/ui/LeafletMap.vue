@@ -57,7 +57,7 @@ import {
   LTileLayer,
   LCircleMarker,
   LControl,
-  LPopup,
+  LPopup
 } from "vue2-leaflet";
 
 export default {
@@ -68,24 +68,24 @@ export default {
     LPopup,
     LControl,
     LCircleMarker,
-    Vue2LeafletMarkerCluster,
+    Vue2LeafletMarkerCluster
   },
   props: {
     latLngs: {
       type: Array,
-      required: true,
+      required: true
     },
     includeLegend: {
       type: Boolean,
-      default: true,
+      default: true
     },
     mapStyle: {
       type: String,
-      default: "height: 500px; width: 100%",
+      default: "height: 500px; width: 100%"
     },
     highlightedLatLng: {
-      type: Object,
-    },
+      type: Object
+    }
   },
   data() {
     return {
@@ -98,7 +98,7 @@ export default {
       //url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
       url: "https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png",
       attribution:
-        '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+        '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
     };
   },
   computed: {
@@ -114,25 +114,25 @@ export default {
           popUp:
             this.highlightedLatLng.location +
             " " +
-            (this.highlightedLatLng.unit || ""),
+            (this.highlightedLatLng.unit || "")
         };
       } else {
         return null;
       }
     },
     mapMarkers() {
-      return this.latLngs.map((latLngTuple) => ({
+      return this.latLngs.map(latLngTuple => ({
         latLng: latLng(latLngTuple.lat, latLngTuple.lng),
         color: latLngTuple.color,
         popUp: latLngTuple.location + " " + (latLngTuple.unit || ""),
-        parcelNumber: latLngTuple.opa_account_num,
+        parcelNumber: latLngTuple.opa_account_num
       }));
     },
     mapBounds() {
       return latLngBounds(
-        this.latLngs.map((latLngTuple) => [latLngTuple.lat, latLngTuple.lng])
+        this.latLngs.map(latLngTuple => [latLngTuple.lat, latLngTuple.lng])
       );
-    },
+    }
   },
   methods: {
     updateBounds(bounds) {
@@ -144,9 +144,9 @@ export default {
     jumpToProperty(parcelNumber) {
       this.$router.push("/property/" + parcelNumber);
       this.$router.go();
-    },
+    }
   },
-  async created() {},
+  async created() {}
 };
 </script>
 <style>

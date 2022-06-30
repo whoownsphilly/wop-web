@@ -7,7 +7,7 @@
         enabled: true,
         trigger: 'enter',
         skipDiacritics: true,
-        placeholder: 'Search...',
+        placeholder: 'Search...'
       }"
       :pagination-options="{
         enabled: true,
@@ -22,7 +22,7 @@
         rowsPerPageLabel: 'Rows per page',
         ofLabel: 'of',
         pageLabel: 'page', // for 'pages' mode
-        allLabel: 'All',
+        allLabel: 'All'
       }"
       ><div slot="table-actions">
         <a :href="generateCSVUrl" :download="filename" target="_blank"
@@ -47,11 +47,11 @@ export default {
   props: {
     rows: {
       type: Array,
-      required: true,
+      required: true
     },
     title: {
-      type: String,
-    },
+      type: String
+    }
   },
   data() {
     return {};
@@ -62,7 +62,7 @@ export default {
     },
     columns() {
       if (this.rows.length > 0) {
-        return Object.keys(this.rows[0]).map((col) => {
+        return Object.keys(this.rows[0]).map(col => {
           let fieldType = isNaN(this.rows[0][col]) ? "string" : "number";
           return { label: col, field: col, type: fieldType };
         });
@@ -71,19 +71,19 @@ export default {
       }
     },
     generateCSVUrl() {
-      let colNames = this.columns.map((col) => {
+      let colNames = this.columns.map(col => {
         return col.label;
       });
       let csv = colNames.join(",") + "\n";
-      this.rows.forEach((row) => {
+      this.rows.forEach(row => {
         let outputRow = [];
-        colNames.forEach((col) => {
+        colNames.forEach(col => {
           outputRow.push(row[col]);
         });
         csv += outputRow.join(",") + "\n";
       });
       return "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
-    },
-  },
+    }
+  }
 };
 </script>

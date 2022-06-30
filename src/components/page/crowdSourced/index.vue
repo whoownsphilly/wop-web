@@ -93,13 +93,13 @@ import { getCrowdSourcedPageInfo } from "@/api/pages";
 export default {
   name: "CrowdSourcedTab",
   components: {
-    BioResult,
+    BioResult
   },
   props: {
     parcelNumber: {
       type: String,
-      required: true,
-    },
+      required: true
+    }
   },
   data() {
     return {
@@ -107,7 +107,7 @@ export default {
       fullMailingAddress: null,
       mailingStreet: null,
       modalOpen: false,
-      disclaimerOpen: false,
+      disclaimerOpen: false
     };
   },
   computed: {
@@ -116,7 +116,7 @@ export default {
         "https://airtable.com/embed/shrAacunffP2mP3PC?backgroundColor=orange&prefill_mailing_street=" +
         this.mailingStreet
       );
-    },
+    }
   },
   methods: {
     toggle() {
@@ -124,14 +124,14 @@ export default {
     },
     disclaimerToggle() {
       this.disclaimerOpen = !this.disclaimerOpen;
-    },
+    }
   },
   created() {
-    getCrowdSourcedPageInfo(this.parcelNumber).then((results) => {
+    getCrowdSourcedPageInfo(this.parcelNumber).then(results => {
       this.bioResults = results["results"];
       this.fullMailingAddress = results["full_mailing_address"];
       this.mailingStreet = results["query"]["mailing_street"];
     });
-  },
+  }
 };
 </script>

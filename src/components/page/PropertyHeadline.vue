@@ -29,23 +29,23 @@ export default {
   props: {
     propertyString: {
       type: String,
-      required: true,
+      required: true
     },
     latestOwnerString: {
       type: String,
-      required: true,
+      required: true
     },
     mailingAddress: {
-      type: String,
+      type: String
     },
     propertySourceString: {
       type: String,
-      required: true,
-    },
+      required: true
+    }
   },
   components: {},
   computed: {},
-  methods: {},
+  methods: {}
 };
 </script>
 <style>

@@ -11,23 +11,23 @@ import LeafletMap from "@/components/ui/LeafletMap";
 export default {
   name: "PropertyPortfolio",
   components: {
-    LeafletMap,
+    LeafletMap
   },
   props: {
     properties: {
       type: Array,
-      required: true,
+      required: true
     },
     thisProperty: {
       type: Object,
-      required: true,
-    },
+      required: true
+    }
   },
   data() {
     return {
-      nProperties: null,
+      nProperties: null
     };
-  },
+  }
 };
 </script>
 <style>

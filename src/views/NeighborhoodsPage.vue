@@ -117,7 +117,7 @@ import InstructionsText from "@/components/page/neighborhoods/InstructionsText";
 import DataTable from "@/components/ui/DataTable";
 import {
   getNeighborhoodsPageInfo,
-  getNeighborhoodsPageFromParcelNumbers,
+  getNeighborhoodsPageFromParcelNumbers
 } from "@/api/pages";
 
 export default {
@@ -126,7 +126,7 @@ export default {
     LeafletMapNeighborhood,
     DataTable,
     PropertyList,
-    InstructionsText,
+    InstructionsText
   },
   data() {
     return {
@@ -143,7 +143,7 @@ export default {
         { key: "Mixed Use", text: "Mixed Use", value: "Mixed Use" },
         { key: "Vacant Land", text: "Vacant Land", value: "Vacant Land" },
         { key: "Industrial", text: "Industrial", value: "Industrial" },
-        { key: "Commercial", text: "Commercial", value: "Commercial" },
+        { key: "Commercial", text: "Commercial", value: "Commercial" }
       ],
       selectedBuildingTypes: ["Multi Family", "Single Family"],
       selectedMarkers: [],
@@ -156,7 +156,7 @@ export default {
       rawSearchResultProperties: [],
       mapBounds: {},
       zipCode: null,
-      loading: false,
+      loading: false
     };
   },
   computed: {
@@ -183,9 +183,9 @@ export default {
       let properties = [];
       for (const [key, list] of Object.entries(this.customPropertyLists)) {
         properties.push(
-          list.map((v) => ({
+          list.map(v => ({
             ...v,
-            color: this.customPropertyListColors[key],
+            color: this.customPropertyListColors[key]
           }))
         );
       }
@@ -193,7 +193,7 @@ export default {
     },
     allProperties() {
       let properties = this.customProperties.slice();
-      let selectedParcelNumbers = properties.map((x) => x.parcel_number);
+      let selectedParcelNumbers = properties.map(x => x.parcel_number);
 
       for (var i = 0; i < this.searchResultProperties.length; i++) {
         let thisProperty = this.searchResultProperties[i];
@@ -202,7 +202,7 @@ export default {
         }
       }
       return [...new Set(properties)];
-    },
+    }
   },
   methods: {
     handleTabChange(e, activePane) {
@@ -241,7 +241,7 @@ export default {
         this.searchBy,
         this.selectedBuildingTypes
       ).then(
-        (results) => (
+        results => (
           (this.rawSearchResultProperties = results.searched_properties),
           (this.loading = false)
         )
@@ -255,7 +255,7 @@ export default {
       return listColors;
     },
     addSelectionToSelectedPropertyList() {
-      this.selectedMarkers.forEach((marker) =>
+      this.selectedMarkers.forEach(marker =>
         this.addToSelectedPropertyList(this.activeTabPane, marker)
       );
     },
@@ -265,7 +265,7 @@ export default {
       this.customPropertyLists[listName].push(thisProperty);
 
       this.customPropertyLists[listName] = [
-        ...new Set(this.customPropertyLists[listName]),
+        ...new Set(this.customPropertyLists[listName])
       ];
 
       // Convert {'list1': [{parcel: 102}, {parcel: 103}]}
@@ -273,27 +273,27 @@ export default {
       let customPropertyParcelNumberDict = {};
       Object.entries(this.customPropertyLists).map(function(entry) {
         customPropertyParcelNumberDict[entry[0]] = entry[1].map(
-          (x) => x.parcel_number
+          x => x.parcel_number
         );
         return customPropertyParcelNumberDict;
       });
       this.$router.replace({
         name: "Neighborhoods",
         query: {
-          ...customPropertyParcelNumberDict,
-        },
+          ...customPropertyParcelNumberDict
+        }
       });
-    },
+    }
   },
   created() {
     this.mapBounds = {
       _northEast: { lat: 39.977523, lng: -75.136808 },
-      _southWest: { lat: 39.922655, lng: -75.193699 },
+      _southWest: { lat: 39.922655, lng: -75.193699 }
     };
     // Get the property list from the parcel numbers
     this.loading = true;
     getNeighborhoodsPageFromParcelNumbers(this.$route.query).then(
-      (results) => (
+      results => (
         (this.customPropertyLists = results.saved_properties),
         (this.customPropertyListColors = this.setColorsAndUrlToSavedPropertyLists(
           Object.keys(results.saved_properties)
@@ -301,7 +301,7 @@ export default {
         (this.loading = false)
       )
     );
-  },
+  }
 };
 </script>
 <style>

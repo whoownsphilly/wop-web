@@ -10,22 +10,24 @@
         <sui-statistic-value>Does</sui-statistic-value>
         <sui-statistic-label
           >have an active rental license (expires on
-          {{ rentalLicenseExpiration | luxon }})</sui-statistic-label
-        >
+          {{ rentalLicenseExpiration | luxon }})
+          <a :href="licenseInspectionsLink" target="_blank">(Link to L&I)</a>
+        </sui-statistic-label>
       </sui-statistic>
       <sui-statistic in-group v-else-if="hasHomesteadExemption">
         <sui-statistic-value>Does not</sui-statistic-value>
         <sui-statistic-label
           >have an active rental license but has a homestead exemption (this
-          property might not be a rental)</sui-statistic-label
-        >
+          property might not be a rental)
+          <a :href="licenseInspectionsLink" target="_blank">(Link to L&I)</a>
+        </sui-statistic-label>
       </sui-statistic>
       <sui-statistic in-group v-else color="red">
         <sui-statistic-value>Does not</sui-statistic-value>
         <sui-statistic-label
-          >have an active rental license and also no homestead
-          exemption</sui-statistic-label
-        >
+          >have an active rental license and also no homestead exemption
+          <a :href="licenseInspectionsLink" target="_blank">(Link to L&I)</a>
+        </sui-statistic-label>
       </sui-statistic>
       <sui-statistic in-group>
         <sui-statistic-value>{{ categoryCodeDescription }}</sui-statistic-value>
@@ -98,7 +100,7 @@ export default {
   data() {
     return {
       propertyResults: null,
-      streetViewLink: null,
+      location: null,
       hasActiveRentalLicense: null,
       rentalLicenseExperiation: null,
       latestAssessmentMarketValue: null,
@@ -115,6 +117,11 @@ export default {
       loading: false,
       violationsComplaintsDateSince: "2007-01-01" //violations data starts in 2007
     };
+  },
+  computed: {
+    licenseInspectionsLink() {
+      return `https://li.phila.gov/property-history/search?address=${this.location}`;
+    }
   },
   created() {
     this.loading = true;
@@ -143,7 +150,7 @@ export default {
         propertyResults["category_code_description"];
       this.buildingCodeDescription =
         propertyResults["building_code_description"];
-      this.streetViewLink = propertyResults["street_view_link"];
+      this.location = propertyResults["location"];
       this.loading = false;
     });
   },

@@ -28,37 +28,37 @@ export default {
   },
   components: {
     LeafletMapNeighborhood,
-    DataTable,
+    DataTable
   },
   props: {
     name: {
       type: String,
-      required: true,
+      required: true
     },
     propertyList: {
       type: Array,
-      required: true,
-    },
+      required: true
+    }
   },
   computed: {
     directionsUrl() {
       let locations = this.propertyList.map(
-        (x) => `${x.location}, Philadelphia, PA`
+        x => `${x.location}, Philadelphia, PA`
       );
       return `https://www.google.com/maps/dir/${locations
         .join("/")
         .replaceAll(" ", "+")}/data=!4m2!4m1!3e2`;
     },
     pageUrl() {
-      let parcelNumbers = this.propertyList.map((x) => x.parcel_number);
+      let parcelNumbers = this.propertyList.map(x => x.parcel_number);
       let query = {};
       query[this.name] = parcelNumbers;
       let url = this.$router.resolve({
         name: "NeighborhoodView",
-        query: query,
+        query: query
       });
       return `${window.location.origin}${url.href}`;
-    },
-  },
+    }
+  }
 };
 </script>

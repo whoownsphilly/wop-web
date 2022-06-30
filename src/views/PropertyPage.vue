@@ -48,7 +48,7 @@ import { getPropertyLatestOwnerDetailsInfo } from "@/api/pages";
 export default {
   name: "PropertyPage",
   components: {
-    PropertyHeadline,
+    PropertyHeadline
   },
   data() {
     return {
@@ -62,41 +62,41 @@ export default {
       latestTransaction: null,
       ownerBasedResults: {
         violations: { rows: [] },
-        complaints: { rows: [] },
+        complaints: { rows: [] }
       },
       latestRentalLicense: null,
       fullOwnersList: [],
-      ownerTimelineData: [],
+      ownerTimelineData: []
     };
   },
   methods: {
     isActive(name) {
       return this.$route.name === name;
-    },
+    }
   },
   computed: {
     summaryLink() {
       return {
         name: "property-summary",
-        params: { parcelNumber: this.parcelNumber },
+        params: { parcelNumber: this.parcelNumber }
       };
     },
     propertyDetailsLink() {
       return {
         name: "property-details",
-        params: { parcelNumber: this.parcelNumber },
+        params: { parcelNumber: this.parcelNumber }
       };
     },
     ownerDetailsLink() {
       return {
         name: "owner",
-        params: { parcelNumber: this.parcelNumber },
+        params: { parcelNumber: this.parcelNumber }
       };
     },
     crowdSourcedLink() {
       return {
         name: "crowd-sourced",
-        params: { parcelNumber: this.parcelNumber },
+        params: { parcelNumber: this.parcelNumber }
       };
     },
     loadingContent() {
@@ -105,12 +105,12 @@ export default {
         this.loadingStep +
         " related information (may take some time)..."
       );
-    },
+    }
   },
   created() {
     this.loading = true;
     // get all time-based data for the last year
-    getPropertyLatestOwnerDetailsInfo(this.parcelNumber).then((result) => {
+    getPropertyLatestOwnerDetailsInfo(this.parcelNumber).then(result => {
       this.propertyResult = result;
       this.propertyString = result["full_address"];
       this.latestOwnerString = result["latest_owner"];
@@ -122,7 +122,7 @@ export default {
       this.streetViewLink = result["street_view_link"];
       this.loading = false;
     });
-  },
+  }
 };
 </script>
 <style>

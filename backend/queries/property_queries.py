@@ -62,6 +62,7 @@ async def property_latest_owner_detail_results(parcel_number):
             "latest_mailing_address_1": mailing_address_1,
             "latest_mailing_zip": mailing_zip,
             "street_view_link": f"https://cyclomedia.phila.gov/?address={longitude},{latitude}",
+            "li_link": f"https://li.phila.gov/property-history/search?address={address}",
         }
 
         output["query"] = query

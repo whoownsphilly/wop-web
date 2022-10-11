@@ -14,7 +14,7 @@ httpx==0.22.0
 simplejson==3.17.6
 urllib3==1.26.6
 whitenoise==5.3.0
-pylibmc==1.6.1
+pylibmc==1.6.3
 
 # testing
 pytest==6.2.4

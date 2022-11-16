@@ -4,4 +4,8 @@ COPY requirements.txt ./
 RUN pip install -r requirements.txt
 COPY . /app
 WORKDIR /app
-#RUN pip install -e phillydb
+
+# Here we're switching to a non-root user in the container to remove some categories
+# of container-escape attack.
+USER 1000:1000
+CMD [ "/render/process/web" ]

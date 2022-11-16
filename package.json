@@ -1,6 +1,9 @@
 {
   "name": "phillydb-web",
   "version": "0.1.0",
+  "engines": {
+    "node": "16.x"
+  },
   "private": true,
   "scripts": {
     "serve": "export VUE_APP_DJANGO_PORT=${DJANGO_PORT:-8000}; export VUE_APP_DJANGO_URL=localhost; vue-cli-service serve",

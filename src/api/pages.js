@@ -61,6 +61,7 @@ export const getNeighborhoodsPageInfo = (
   zipCode,
   searchBy,
   filterBy,
+  nResults,
   buildingTypes
 ) => {
   const url =
@@ -77,6 +78,8 @@ export const getNeighborhoodsPageInfo = (
     searchBy +
     "&filter_by=" +
     filterBy +
+    "&n_results=" +
+    nResults +
     "&building_types=" +
     buildingTypes +
     "&zip_code=" +

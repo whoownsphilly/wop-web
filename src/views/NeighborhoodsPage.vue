@@ -167,6 +167,7 @@ export default {
       activeTabPane: null,
       searchBy: "mapBoundary",
       filterBy: "with_license",
+      nResults: 1000,
       colorOptions: ["red", "green", "blue", "yellow", "orange", "pink"],
       /*colorOptions: [
         { text: "red", value: "red" },
@@ -275,6 +276,7 @@ export default {
         this.zipCode,
         this.searchBy,
         this.FilterBy,
+        this.nResults,
         this.selectedBuildingTypes
       ).then(
         results => (

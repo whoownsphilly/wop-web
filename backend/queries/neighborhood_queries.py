@@ -25,6 +25,7 @@ async def properties_by_organizability_results(
     southwest_lng,
     zip_code,
     search_by,
+    filter_by,
     building_types,
     must_have_rental_license=False,
     n_results=100,
@@ -45,6 +46,12 @@ async def properties_by_organizability_results(
         """
     elif search_by == "zipCode" and zip_code != "null":
         where_str += f"AND zip_code = '{zip_code}'"
+    if filter_by == "violations":
+        where_str += "AND n_violations > 0"
+    elif filter_by == "with_license":
+        where_str += "AND has_rental_license is true"
+    elif filter_by == "without_license":
+        where_str += "AND has_rental_license is false"
     return await _get_neighborhood_results(where_str, n_results=n_results)
 
 
@@ -56,7 +63,7 @@ async def _get_neighborhood_results(
         SELECT ST_Y(opp.the_geom) AS lat, ST_X(opp.the_geom) AS lng, opp.category_code_description, opp.location, opp.unit, rtt.property_count, opp.owner_1, opp.owner_2, opp.mailing_street, opp.mailing_address_1, opp.parcel_number, n_complaints, n_violations, n_violations_open, 
         CASE WHEN has_rental_license is not null THEN True ELSE False END as has_rental_license 
         from opa_properties_public opp
-        JOIN (
+        LEFT JOIN (
             SELECT opa_account_num, count(*) as n_violations_open
              from violations
         where violationdate > '2018-01-01' and violationstatus = 'OPEN'

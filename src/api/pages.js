@@ -60,6 +60,7 @@ export const getNeighborhoodsPageInfo = (
   bounds,
   zipCode,
   searchBy,
+  filterBy,
   buildingTypes
 ) => {
   const url =
@@ -74,6 +75,8 @@ export const getNeighborhoodsPageInfo = (
     bounds._southWest.lng +
     "&search_by=" +
     searchBy +
+    "&filter_by=" +
+    filterBy +
     "&building_types=" +
     buildingTypes +
     "&zip_code=" +

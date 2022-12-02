@@ -50,6 +50,40 @@
               v-model="selectedBuildingTypes"
             />
           </sui-grid-column>
+          <sui-grid-column :width="6">
+            <label for="search_by">Must have:</label>
+            <sui-form>
+              <sui-form-fields grouped>
+                <sui-form-field>
+                  <sui-checkbox
+                    radio
+                    name="filter_by"
+                    label="a rental license"
+                    value="with_license"
+                    v-model="filterBy"
+                  />
+                </sui-form-field>
+                <sui-form-field>
+                  <sui-checkbox
+                    radio
+                    name="filter_by"
+                    label="no rental license"
+                    value="without_license"
+                    v-model="filterBy"
+                  />
+                </sui-form-field>
+                <sui-form-field>
+                  <sui-checkbox
+                    radio
+                    name="filter_by"
+                    label="Violations"
+                    value="violations"
+                    v-model="filterBy"
+                  />
+                </sui-form-field>
+              </sui-form-fields>
+            </sui-form>
+          </sui-grid-column>
         </sui-grid-row>
       </sui-grid>
     </sui-container>
@@ -132,6 +166,7 @@ export default {
     return {
       activeTabPane: null,
       searchBy: "mapBoundary",
+      filterBy: "with_license",
       colorOptions: ["red", "green", "blue", "yellow", "orange", "pink"],
       /*colorOptions: [
         { text: "red", value: "red" },
@@ -239,6 +274,7 @@ export default {
         this.mapBounds,
         this.zipCode,
         this.searchBy,
+        this.FilterBy,
         this.selectedBuildingTypes
       ).then(
         results => (

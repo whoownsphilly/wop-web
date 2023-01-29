@@ -77,7 +77,7 @@ class NeighborhoodQuery:
         self.limit_str = f"LIMIT {self.n_results}" if self.n_results else ""
 
 class NeighborhoodPropertyQuery(NeighborhoodQuery):
-    def __init__(self, building_types:list[str], has_homestead_exemption:bool|None, in_a_condo:bool|None, where_str:str, n_results:int):
+    def __init__(self, building_types:list[str], has_homestead_exemption:bool, in_a_condo:bool, where_str:str, n_results:int):
         super().__init__(n_results=n_results, where_str=where_str)
         self.building_type_str = ",".join(
             [f"'{build_type.upper()}'" for build_type in building_types.split(",")]
@@ -141,7 +141,7 @@ class NeighborhoodPropertyQuery(NeighborhoodQuery):
 
 
 class NeighborhoodRentalLicenseQuery(NeighborhoodQuery):
-    def __init__(self, rental_building_types:list[str], is_owner_occupied: bool|None, where_str:str, n_results:int):
+    def __init__(self, rental_building_types:list[str], is_owner_occupied: bool, where_str:str, n_results:int):
         super().__init__(n_results=n_results, where_str=where_str)
         self.rental_building_type_str = ",".join(
             [f"'{build_type}'" for build_type in rental_building_types.split(",")]

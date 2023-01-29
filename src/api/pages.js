@@ -60,9 +60,12 @@ export const getNeighborhoodsPageInfo = (
   bounds,
   zipCode,
   searchBy,
-  filterBy,
+  licenseFilter,
+  condoFilter,
+  ownerOccupiedFilter,
   nResults,
-  buildingTypes
+  buildingTypes,
+  rentalBuildingTypes
 ) => {
   const url =
     "api/v1/neighborhoods/" +
@@ -76,12 +79,18 @@ export const getNeighborhoodsPageInfo = (
     bounds._southWest.lng +
     "&search_by=" +
     searchBy +
-    "&filter_by=" +
-    filterBy +
+    "&license_filter=" +
+    licenseFilter +
+    "&condo_filter=" +
+    condoFilter +
+    "&owner_occupied_filter=" +
+    ownerOccupiedFilter +
     "&n_results=" +
     nResults +
     "&building_types=" +
     buildingTypes +
+    "&rental_building_types=" +
+    rentalBuildingTypes +
     "&zip_code=" +
     zipCode;
   return fetch(url, {

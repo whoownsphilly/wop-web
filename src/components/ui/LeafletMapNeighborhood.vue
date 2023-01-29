@@ -13,12 +13,17 @@
     >
       <l-draw-toolbar />
       <l-tile-layer :url="url" :attribution="attribution" />
+      <l-geo-json
+        :geojson="overlayMapGeojson"
+        :options="overlayMapOptions"
+      ></l-geo-json>
       <l-circle-marker
         :lat-lng="marker.latLng"
         v-for="(marker, index) in mapMarkers"
         :key="index"
         :color="marker.color"
         :fillColor="marker.color"
+        :radius="marker.radius"
       >
         <l-popup>
           {{ marker.popUp }}<br />
@@ -53,7 +58,13 @@
 import { latLngBounds, latLng } from "leaflet";
 import LDrawToolbar from "vue2-leaflet-draw-toolbar";
 
-import { LMap, LTileLayer, LCircleMarker, LPopup } from "vue2-leaflet";
+import {
+  LMap,
+  LTileLayer,
+  LCircleMarker,
+  LPopup,
+  LGeoJson
+} from "vue2-leaflet";
 
 export default {
   name: "LeafletMapNeighborhood",
@@ -62,6 +73,7 @@ export default {
     LTileLayer,
     LPopup,
     LCircleMarker,
+    LGeoJson,
     LDrawToolbar
   },
   props: {
@@ -86,6 +98,19 @@ export default {
       loading: false,
       selectedPropertyListName: null,
       leafletMap: null,
+      overlayMapGeojson: null,
+      overlayVar: "DISTRICT",
+      overlayTextPrefix: "CouncilDistrict",
+      overlayUrl:
+        "https://services.arcgis.com/fLeGjb7u4uXqeF9q/arcgis/rest/services/Council_Districts_2016/FeatureServer",
+      overlayMapOptions: {
+        style: {
+          weight: 4,
+          color: "yellow",
+          fillOpacity: 0
+        },
+        onEachFeature: this.overlayOnEachFeature
+      },
       leafletOptions: { scrollWheelZoom: false },
       zoom: 6,
       center: [48, -1.219482],
@@ -115,6 +140,7 @@ export default {
         latLng: latLng(latLngTuple.lat, latLngTuple.lng),
         color: this.colorOverride || latLngTuple.color,
         popUp: latLngTuple.location + " " + (latLngTuple.unit || ""),
+        radius: Math.pow(latLngTuple.num_units, 0.5),
         parcelNumber: latLngTuple.parcel_number
       }));
     },
@@ -131,7 +157,29 @@ export default {
       }
     }
   },
+  created() {
+    // let url = "https://services.arcgis.com/rkitYk91zieQFZov/arcgis/rest/services/Philadelphia_Neighborhoods/FeatureServer";
+
+    fetch(`${this.overlayUrl}/0/query?outFields=*&where=1%3D1&f=pgeojson`).then(
+      response => {
+        response.json().then(result => {
+          console.log(result);
+          this.overlayMapGeojson = result;
+        });
+      }
+    );
+  },
   methods: {
+    overlayOnEachFeature(feature, layer) {
+      const overlayTextPrefix = this.overlayTextPrefix;
+      const overlayVar = this.overlayVar;
+      layer.on({
+        mouseover: function(e) {
+          const propertyStr = `${overlayTextPrefix} ${e.target.feature.properties[overlayVar]}`;
+          layer.bindTooltip(propertyStr).openTooltip();
+        }
+      });
+    },
     updateBounds(bounds) {
       this.$emit("updateBounds", bounds);
     },

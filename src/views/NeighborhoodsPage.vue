@@ -5,7 +5,7 @@
     <sui-container>
       <sui-grid>
         <sui-grid-row>
-          <sui-grid-column :width="2">
+          <sui-grid-column :width="4">
             <label for="search_by">Search By:</label>
             <sui-form>
               <sui-form-fields grouped>
@@ -27,17 +27,17 @@
                     v-model="searchBy"
                   />
                 </sui-form-field>
+                <sui-form-field>
+                  <sui-input
+                    v-model="zipCode"
+                    v-if="searchBy != 'mapBoundary'"
+                    placeholder="Enter zip code here..."
+                  />
+                </sui-form-field>
               </sui-form-fields>
             </sui-form>
           </sui-grid-column>
           <sui-grid-column :width="4">
-            <sui-input
-              v-model="zipCode"
-              v-if="searchBy != 'mapBoundary'"
-              placeholder="Enter zip code here..."
-            />
-          </sui-grid-column>
-          <sui-grid-column :width="6">
             Filter By: <br />Building Type
             <sui-dropdown
               direction="upward"
@@ -49,36 +49,111 @@
               selection
               v-model="selectedBuildingTypes"
             />
+            Filter By: <br />Rental Building Type
+            <sui-dropdown
+              direction="upward"
+              multiple
+              fluid
+              :options="rentalBuildingTypes"
+              placeholder="Rental Building Type"
+              search
+              selection
+              v-model="selectedRentalBuildingTypes"
+            />
           </sui-grid-column>
           <sui-grid-column :width="6">
-            <label for="search_by">Must have:</label>
+            <label for="licenseFilter">Rental License</label>
             <sui-form>
               <sui-form-fields grouped>
                 <sui-form-field>
                   <sui-checkbox
                     radio
-                    name="filter_by"
-                    label="a rental license"
-                    value="with_license"
-                    v-model="filterBy"
+                    name="licenseFilter"
+                    label="with license"
+                    value="true"
+                    v-model="licenseFilter"
                   />
                 </sui-form-field>
                 <sui-form-field>
                   <sui-checkbox
                     radio
-                    name="filter_by"
-                    label="no rental license"
-                    value="without_license"
-                    v-model="filterBy"
+                    name="licenseFilter"
+                    label="without license"
+                    value="false"
+                    v-model="licenseFilter"
                   />
                 </sui-form-field>
                 <sui-form-field>
                   <sui-checkbox
                     radio
-                    name="filter_by"
-                    label="Violations"
-                    value="violations"
-                    v-model="filterBy"
+                    name="licenseFilter"
+                    label="both with and without license"
+                    value=""
+                    v-model="licenseFilter"
+                  />
+                </sui-form-field>
+              </sui-form-fields>
+            </sui-form>
+            <label for="condoFilter">Is in a Condo</label>
+            <sui-form>
+              <sui-form-fields grouped>
+                <sui-form-field>
+                  <sui-checkbox
+                    radio
+                    name="condoFilter"
+                    label="is in a condo building"
+                    value="true"
+                    v-model="condoFilter"
+                  />
+                </sui-form-field>
+                <sui-form-field>
+                  <sui-checkbox
+                    radio
+                    name="condoFilter"
+                    label="is not in a condo building"
+                    value="false"
+                    v-model="condoFilter"
+                  />
+                </sui-form-field>
+                <sui-form-field>
+                  <sui-checkbox
+                    radio
+                    name="condoFilter"
+                    label="both in and not in condo buildings"
+                    value=""
+                    v-model="condoFilter"
+                  />
+                </sui-form-field>
+              </sui-form-fields>
+            </sui-form>
+            <label for="condoFilter">Is Likely Owner Occupied</label>
+            <sui-form>
+              <sui-form-fields grouped>
+                <sui-form-field>
+                  <sui-checkbox
+                    radio
+                    name="ownerOccupiedFilter"
+                    label="license says owner-occupied or has homestead exemption"
+                    value="true"
+                    v-model="ownerOccupiedFilter"
+                  />
+                </sui-form-field>
+                <sui-form-field>
+                  <sui-checkbox
+                    radio
+                    name="ownerOccupiedFilter"
+                    label="license doesn't say owner occupied or doesn't have a homestead exemption"
+                    value="false"
+                    v-model="ownerOccupiedFilter"
+                  />
+                </sui-form-field>
+                <sui-form-field>
+                  <sui-checkbox
+                    radio
+                    name="ownerOccupiedFilter"
+                    label="license can say either, property may or may not have exemption"
+                    value=""
+                    v-model="ownerOccupiedFilter"
                   />
                 </sui-form-field>
               </sui-form-fields>
@@ -166,7 +241,9 @@ export default {
     return {
       activeTabPane: null,
       searchBy: "mapBoundary",
-      filterBy: "with_license",
+      licenseFilter: "",
+      condoFilter: "",
+      ownerOccupiedFilter: "",
       nResults: 1000,
       colorOptions: ["red", "green", "blue", "yellow", "orange", "pink"],
       /*colorOptions: [
@@ -181,7 +258,23 @@ export default {
         { key: "Industrial", text: "Industrial", value: "Industrial" },
         { key: "Commercial", text: "Commercial", value: "Commercial" }
       ],
+      rentalBuildingTypes: [
+        { key: "Other", text: "Other", value: "Other" },
+        { key: "Dormitories", text: "Dormitories", value: "Dormitories" },
+        {
+          key: "Residential Dwellings",
+          text: "Residential Dwellings",
+          value: "Residential Dwellings"
+        },
+        {
+          key: "Rooming House / Boarding House",
+          text: "Rooming House / Boarding House",
+          value: "Rooming House / Boarding House"
+        },
+        { key: "Hotel", text: "Hotel", value: "Hotel" }
+      ],
       selectedBuildingTypes: ["Multi Family", "Single Family"],
+      selectedRentalBuildingTypes: ["Residential Dwellings"],
       selectedMarkers: [],
       newCustomPropertyListName: "",
       newCustomPropertyListColor: "red",
@@ -275,9 +368,12 @@ export default {
         this.mapBounds,
         this.zipCode,
         this.searchBy,
-        this.FilterBy,
+        this.licenseFilter,
+        this.condoFilter,
+        this.ownerOccupiedFilter,
         this.nResults,
-        this.selectedBuildingTypes
+        this.selectedBuildingTypes,
+        this.selectedRentalBuildingTypes
       ).then(
         results => (
           (this.rawSearchResultProperties = results.searched_properties),

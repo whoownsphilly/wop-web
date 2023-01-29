@@ -32,9 +32,7 @@ export default {
       type: String,
       required: true
     }
-  },
-  methods: {},
-  created() {}
+  }
 };
 </script>
 <style>

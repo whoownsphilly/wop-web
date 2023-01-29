@@ -242,7 +242,7 @@ async def properties_by_autocomplete_results(
             "success": False,
             "results": {},
             "query": "",
-            "metadata": {"search_to_match": search_to_match},
+            "metadata": {"search_to_match": startswith_str},
         }
     else:
         results = await properties_by_property_autocomplete_results(
@@ -365,6 +365,7 @@ async def properties_by_property_autocomplete_results(property_substr, n_results
     CAST(opa_properties_public.recording_date as TEXT) as mailing_address_recording_date,
     CAST(rtt_summary.recording_date as TEXT) as latest_owners_recording_date,
     computed_location,
+    computed_location as location_unit,
     1 as grantees_source_priority
     FROM opa_properties_public JOIN (
         SELECT 
@@ -409,6 +410,7 @@ async def properties_by_property_autocomplete_results(property_substr, n_results
     CAST(recording_date as TEXT) as mailing_address_recording_date, 
     null as latest_owners_recording_date,
     location as computed_location,
+    CASE WHEN unit is null THEN location ELSE concat(location, ' UNIT ',unit) END as location_unit,
     2 as grantees_source_priority
     FROM opa_properties_public WHERE location like '{search_to_match}%' 
     """
@@ -426,9 +428,9 @@ async def properties_by_property_autocomplete_results(property_substr, n_results
     # temporary
     def aka_location(x):
         if x.location != x.computed_location:
-            return x.computed_location + f" (a.k.a. {x.location})"
+            return x.location_unit + f" (a.k.a. {x.location})"
         else:
-            return x.computed_location
+            return x.location_unit
 
     if not df.empty:
         df["location_unit"] = df.apply(aka_location, axis=1)

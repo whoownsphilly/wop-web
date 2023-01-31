@@ -244,7 +244,7 @@ export default {
       licenseFilter: "",
       condoFilter: "",
       ownerOccupiedFilter: "",
-      nResults: 1000,
+      nResults: 100,
       colorOptions: ["red", "green", "blue", "yellow", "orange", "pink"],
       /*colorOptions: [
         { text: "red", value: "red" },

@@ -57,18 +57,32 @@ async def properties_by_organizability_results(
 
     queries_to_run = []
     if include_property_query and include_license_query:
-        n_results = int(int(n_results)/2)
+        n_results = int(int(n_results) / 2)
     if include_property_query:
-        query = NeighborhoodPropertyQuery(building_types=building_types, has_homestead_exemption=is_owner_occupied, in_a_condo=in_a_condo, where_str=where_str, n_results=n_results).query
+        query = NeighborhoodPropertyQuery(
+            building_types=building_types,
+            has_homestead_exemption=is_owner_occupied,
+            in_a_condo=in_a_condo,
+            where_str=where_str,
+            n_results=n_results,
+        ).query
         queries_to_run.append(query)
     if include_license_query:
-        query = NeighborhoodRentalLicenseQuery(rental_building_types=rental_building_types, is_owner_occupied=is_owner_occupied,  where_str=where_str, n_results=n_results).query
+        query = NeighborhoodRentalLicenseQuery(
+            rental_building_types=rental_building_types,
+            is_owner_occupied=is_owner_occupied,
+            where_str=where_str,
+            n_results=n_results,
+        ).query
         queries_to_run.append(query)
 
     dfs = await asyncio.gather(*[carto_request(query) for query in queries_to_run])
     df = pd.concat(dfs).replace({np.nan: None})
 
+    df = get_walk_list_order(df, starting_place=df.iloc[0]["location"])
+
     return {"searched_properties": df.to_dict("records")}
+
 
 class NeighborhoodQuery:
     def __init__(self, n_results, where_str):
@@ -76,14 +90,22 @@ class NeighborhoodQuery:
         self.where_str = where_str
         self.limit_str = f"LIMIT {self.n_results}" if self.n_results else ""
 
+
 class NeighborhoodPropertyQuery(NeighborhoodQuery):
-    def __init__(self, building_types:list[str], has_homestead_exemption:bool, in_a_condo:bool, where_str:str, n_results:int):
+    def __init__(
+        self,
+        building_types: list[str],
+        has_homestead_exemption: bool,
+        in_a_condo: bool,
+        where_str: str,
+        n_results: int,
+    ):
         super().__init__(n_results=n_results, where_str=where_str)
         self.building_type_str = ",".join(
             [f"'{build_type.upper()}'" for build_type in building_types.split(",")]
         )
         if has_homestead_exemption is True:
-            self.homestead_exemption_str = "homestead_exemption > 0" 
+            self.homestead_exemption_str = "homestead_exemption > 0"
         elif has_homestead_exemption is False:
             self.homestead_exemption_str = "homestead_exemption = 0"
         elif has_homestead_exemption is None:
@@ -139,9 +161,14 @@ class NeighborhoodPropertyQuery(NeighborhoodQuery):
         """
 
 
-
 class NeighborhoodRentalLicenseQuery(NeighborhoodQuery):
-    def __init__(self, rental_building_types:list[str], is_owner_occupied: bool, where_str:str, n_results:int):
+    def __init__(
+        self,
+        rental_building_types: list[str],
+        is_owner_occupied: bool,
+        where_str: str,
+        n_results: int,
+    ):
         super().__init__(n_results=n_results, where_str=where_str)
         self.rental_building_type_str = ",".join(
             [f"'{build_type}'" for build_type in rental_building_types.split(",")]
@@ -237,3 +264,47 @@ async def _get_neighborhood_results2(
     """
     df = (await carto_request(query)).replace({np.nan: None})
     return {list_name: df.to_dict("records")}
+
+
+def get_walk_list_order(df, starting_place):
+    def populate(lat_lis, lon_lis, r=3958.75):
+        lat_mtx = np.array([lat_lis]).T * np.pi / 180
+        lon_mtx = np.array([lon_lis]).T * np.pi / 180
+
+        cos_lat_i = np.cos(lat_mtx)
+        cos_lat_j = np.cos(lat_mtx)
+        cos_lat_J = np.repeat(cos_lat_j, len(lat_mtx), axis=1).T
+
+        lat_Mtx = np.repeat(lat_mtx, len(lat_mtx), axis=1).T
+        cos_lat_d = np.cos(lat_mtx - lat_Mtx)
+
+        lon_Mtx = np.repeat(lon_mtx, len(lon_mtx), axis=1).T
+        cos_lon_d = np.cos(lon_mtx - lon_Mtx)
+
+        mtx = r * np.arccos(cos_lat_d - cos_lat_i * cos_lat_J * (1 - cos_lon_d))
+        return mtx
+
+    dist_matrix = populate(df.lat.values, df.lng.values)
+
+    df_dist = pd.DataFrame(dist_matrix, columns=df.location, index=df.location)
+    df_dist.index.name = "start"
+    df_dist = df_dist.reset_index().melt(
+        id_vars=["start"], value_vars=df.location.values
+    )
+    df_dist.columns = ["start", "end", "distance"]
+
+    walk_list = []
+    remaining_df = df_dist.copy()
+
+    next_stop = starting_place
+    remaining_df = remaining_df[remaining_df.end != next_stop]
+    walk_list.append(next_stop)
+    while len(remaining_df) > 0:
+        next_stop_index = remaining_df[
+            remaining_df["start"] == next_stop
+        ].distance.idxmin()
+        next_stop = remaining_df.loc[next_stop_index].end
+        walk_list.append(next_stop)
+        remaining_df = remaining_df[remaining_df.end != next_stop]
+
+    return df.set_index("location").loc[walk_list].reset_index()

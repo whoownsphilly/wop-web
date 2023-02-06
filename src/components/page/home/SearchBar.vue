@@ -1,5 +1,5 @@
 <template lang="html">
-  <sui-search action="search category" @select="select" fluid ref="searchBar">
+  <sui-search action="search homepage" @select="select" fluid ref="searchBar">
     <template v-slot:input="{ props, handlers }">
       <div v-if="$siteMode.mode !== 'basic'">
         Search By:

@@ -20,6 +20,7 @@ from .views import index
 from .api import (
     crowd_sourced_response,
     autocomplete_response,
+    autocomplete_properties_response,
     settings_response,
     property_basics_page_response,
     property_details_page_response,
@@ -33,6 +34,11 @@ from .api import (
 api_urlpatterns = [
     path("api/", settings_response, name="settings"),
     path("api/v1/autocomplete/", autocomplete_response, name="autocomplete_list"),
+    path(
+        "api/v1/autocomplete-properties/",
+        autocomplete_properties_response,
+        name="autocomplete_properties_list",
+    ),
     path(
         "api/v1/crowd_sourced/",
         crowd_sourced_response,

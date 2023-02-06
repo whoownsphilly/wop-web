@@ -24,13 +24,15 @@ async def properties_by_organizability_results(
     northeast_lng,
     southwest_lng,
     zip_code,
+    search_latitude,
+    search_longitude,
     search_by,
     license_filter,
     owner_occupied_filter,
     condo_filter,
     building_types,
     rental_building_types,
-    n_results=100,
+    num_total_units=100,
 ):
     if search_by == "mapBoundary" and southwest_lat != "null":
         where_str = f"""
@@ -41,6 +43,18 @@ async def properties_by_organizability_results(
         """
     elif search_by == "zipCode" and zip_code != "null":
         where_str = f" zip_code = '{zip_code}'"
+    elif (
+        search_by == "address"
+        and search_latitude != "null"
+        and search_longitude != "null"
+    ):
+        where_str = f"""
+            ST_DWithin(
+                    the_geom,
+              CDB_LatLng({search_latitude}, {search_longitude})::geography,
+              100
+            )
+        """
 
     def boolify_noneify_str(value, none_value=None):
         if value == "true":
@@ -56,15 +70,13 @@ async def properties_by_organizability_results(
     in_a_condo = boolify_noneify_str(condo_filter)
 
     queries_to_run = []
-    if include_property_query and include_license_query:
-        n_results = int(int(n_results) / 2)
     if include_property_query:
         query = NeighborhoodPropertyQuery(
             building_types=building_types,
             has_homestead_exemption=is_owner_occupied,
             in_a_condo=in_a_condo,
             where_str=where_str,
-            n_results=n_results,
+            n_results=num_total_units,
         ).query
         queries_to_run.append(query)
     if include_license_query:
@@ -72,14 +84,28 @@ async def properties_by_organizability_results(
             rental_building_types=rental_building_types,
             is_owner_occupied=is_owner_occupied,
             where_str=where_str,
-            n_results=n_results,
+            n_results=num_total_units,
         ).query
         queries_to_run.append(query)
 
     dfs = await asyncio.gather(*[carto_request(query) for query in queries_to_run])
     df = pd.concat(dfs).replace({np.nan: None})
 
-    df = get_walk_list_order(df, starting_place=df.iloc[0]["location"])
+    if search_latitude and search_longitude:
+        starting_latitude = search_latitude
+        starting_longitude = search_longitude
+    else:
+        starting_latitude = df.iloc[0]["lat"]
+        starting_longitude = df.iloc[0]["lng"]
+    # remove duplicates by sorting by first rental license and removing duplicate by lat/lng
+    df = df.sort_values("type").drop_duplicates(["lat", "lng"])
+
+    df = get_walk_list_order(
+        df, starting_lat=starting_latitude, starting_lng=starting_longitude
+    )
+    df.index.name = "walk_order"
+    df = df.reset_index()
+    df = df[df["num_units"].cumsum() <= float(num_total_units)]
 
     return {"searched_properties": df.to_dict("records")}
 
@@ -122,9 +148,9 @@ class NeighborhoodPropertyQuery(NeighborhoodQuery):
     def query(self):
         return f"""
         SELECT 
-            ST_Y(the_geom) AS lat, ST_X(the_geom) AS lng, 
             'no-rental-license' as type,
-            location, unit, num_units, category_code_description, num_unique_owners, owner_most_ownership, likely_owner_occupied, other_info, parcel_number, zip_code
+            location, unit, num_units, category_code_description, num_unique_owners, owner_most_ownership, likely_owner_occupied, other_info, parcel_number, zip_code,
+            ST_Y(the_geom) AS lat, ST_X(the_geom) AS lng 
             FROM
               (
                 select
@@ -184,12 +210,11 @@ class NeighborhoodRentalLicenseQuery(NeighborhoodQuery):
     def query(self):
         return f"""
             select
-              ST_Y(the_geom) AS lat, ST_X(the_geom) AS lng, 
               opa_account_num as parcel_number,
               address as location,
               zip_code,
               'has-rental-license' as type,
-              unit_num as unit,
+              CASE WHEN numberofunits > 1 THEN '' ELSE unit_num END as unit,
               numberofunits as num_units,
               null as category_code_description,
               1 as num_unique_owners,
@@ -202,7 +227,8 @@ class NeighborhoodRentalLicenseQuery(NeighborhoodQuery):
                 ', rental_expires_on:',
                 expirationdate
               ) as other_info,
-              owneroccupied as likely_owner_occupied
+              owneroccupied as likely_owner_occupied,
+              ST_Y(the_geom) AS lat, ST_X(the_geom) AS lng
             from
               (select left(zip,5) as zip_code, * from business_licenses) bl
             where
@@ -214,59 +240,7 @@ class NeighborhoodRentalLicenseQuery(NeighborhoodQuery):
         """
 
 
-async def _get_neighborhood_results2(
-    where_str, list_name="searched_properties", n_results=None
-):
-    limit_str = f"LIMIT {n_results}" if n_results else ""
-    query = f"""
-        SELECT ST_Y(opp.the_geom) AS lat, ST_X(opp.the_geom) AS lng, opp.category_code_description, opp.location, opp.unit, rtt.property_count, opp.owner_1, opp.owner_2, opp.mailing_street, opp.mailing_address_1, opp.parcel_number, n_complaints, n_violations, n_violations_open, 
-        CASE WHEN has_rental_license is not null THEN True ELSE False END as has_rental_license 
-        from opa_properties_public opp
-        LEFT JOIN (
-            SELECT opa_account_num, count(*) as n_violations_open
-             from violations
-        where violationdate > '2018-01-01' and violationstatus = 'OPEN'
-             group by opa_account_num 
-         ) v_open
-        ON v_open.opa_account_num = opp.parcel_number
-        LEFT JOIN (
-            SELECT opa_account_num, count(*) as n_complaints 
-             from complaints 
-        where complaintdate > '2018-01-01'
-             group by opa_account_num 
-         ) c
-        ON c.opa_account_num = opp.parcel_number
-        LEFT JOIN (
-            SELECT opa_account_num, count(*) as n_violations
-             from violations
-        where violationdate > '2018-01-01'
-             group by opa_account_num 
-         ) v
-        ON v.opa_account_num = opp.parcel_number
-        LEFT JOIN (
-            -- This could be done better to get the current property count
-            SELECT opa_account_num, max(property_count) as property_count
-             from rtt_summary
-             GROUP by opa_account_num
-         ) rtt
-        ON rtt.opa_account_num = opp.parcel_number
-        LEFT JOIN (
-            SELECT opa_account_num, 
-            CASE WHEN count(*) > 0  THEN True ELSE False END as has_rental_license 
-             from business_licenses
-        where licensetype = 'Rental'  and licensestatus = 'Active'
-             group by opa_account_num 
-         ) l
-        ON l.opa_account_num = opp.parcel_number
-    {where_str}
-    ORDER BY n_violations_open desc
-    {limit_str}
-    """
-    df = (await carto_request(query)).replace({np.nan: None})
-    return {list_name: df.to_dict("records")}
-
-
-def get_walk_list_order(df, starting_place):
+def get_walk_list_order(df, starting_lat, starting_lng):
     def populate(lat_lis, lon_lis, r=3958.75):
         lat_mtx = np.array([lat_lis]).T * np.pi / 180
         lon_mtx = np.array([lon_lis]).T * np.pi / 180
@@ -284,9 +258,16 @@ def get_walk_list_order(df, starting_place):
         mtx = r * np.arccos(cos_lat_d - cos_lat_i * cos_lat_J * (1 - cos_lon_d))
         return mtx
 
-    dist_matrix = populate(df.lat.values, df.lng.values)
+    dist_matrix = populate(
+        list(df.lat.values) + [float(starting_lat)],
+        list(df.lng.values) + [float(starting_lng)],
+    )
 
-    df_dist = pd.DataFrame(dist_matrix, columns=df.location, index=df.location)
+    df_dist = pd.DataFrame(
+        dist_matrix,
+        columns=list(df.location.values) + ["starting_place"],
+        index=list(df.location.values) + ["starting_place"],
+    )
     df_dist.index.name = "start"
     df_dist = df_dist.reset_index().melt(
         id_vars=["start"], value_vars=df.location.values
@@ -296,9 +277,8 @@ def get_walk_list_order(df, starting_place):
     walk_list = []
     remaining_df = df_dist.copy()
 
-    next_stop = starting_place
+    next_stop = "starting_place"
     remaining_df = remaining_df[remaining_df.end != next_stop]
-    walk_list.append(next_stop)
     while len(remaining_df) > 0:
         next_stop_index = remaining_df[
             remaining_df["start"] == next_stop

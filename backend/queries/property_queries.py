@@ -234,26 +234,47 @@ async def property_details_page_results(parcel_number):
     return output
 
 
-async def properties_by_autocomplete_results(
-    startswith_str, n_results=10, min_search_length=4
+async def properties_by_autocomplete_results_only_search_by_properties(
+    startswith_str,
+    n_results=10,
+    min_search_length=4,
 ):
+    return await properties_by_autocomplete_results(
+        startswith_str=startswith_str,
+        n_results=n_results,
+        min_search_length=min_search_length,
+        search_by_owner_on_fail=False,
+        include_aka_string=False,
+    )
+
+
+async def properties_by_autocomplete_results(
+    startswith_str,
+    n_results=10,
+    min_search_length=4,
+    search_by_owner_on_fail=True,
+    include_aka_string=True,
+):
+    empty_result = {
+        "success": False,
+        "results": [],
+        "query": "",
+        "metadata": {"search_to_match": startswith_str},
+    }
     if len(startswith_str) < min_search_length:
-        return {
-            "success": False,
-            "results": {},
-            "query": "",
-            "metadata": {"search_to_match": startswith_str},
-        }
+        return empty_result
     else:
         results = await properties_by_property_autocomplete_results(
-            startswith_str, n_results
+            startswith_str, n_results, include_aka_string=include_aka_string
         )
     if results:
         return results
-    else:
+    elif search_by_owner_on_fail:
         return await properties_by_owner_name_autocomplete_results(
             startswith_str, n_results
         )
+    else:
+        return empty_result
 
 
 async def properties_by_owner_name_autocomplete_results(owner_substr, n_results):
@@ -261,6 +282,7 @@ async def properties_by_owner_name_autocomplete_results(owner_substr, n_results)
     search_to_match_like_str_rev = "%".join(owner_substr.split(" ")[::-1]).upper()
     query = f"""
         SELECT location, unit, 
+        ST_Y(the_geom) AS lat, ST_X(the_geom) AS lng,
         CASE 
             WHEN grantees is null 
             THEN concat_ws('; ', owner_1, owner_2) 
@@ -314,7 +336,9 @@ async def properties_by_owner_name_autocomplete_results(owner_substr, n_results)
     }
 
 
-async def properties_by_property_autocomplete_results(property_substr, n_results):
+async def properties_by_property_autocomplete_results(
+    property_substr, n_results, include_aka_string
+):
 
     try:
         search_to_match = get_normalized_address(property_substr)
@@ -361,6 +385,7 @@ async def properties_by_property_autocomplete_results(property_substr, n_results
     SELECT distinct location, opa_account_num, 
     --WARNING mailing addresses may not line up with the newest owners if OPA table is outdated
     grantees,
+    ST_Y(the_geom) AS lat, ST_X(the_geom) AS lng,
     mailing_address_1, mailing_address_2, mailing_care_of, 
     CAST(opa_properties_public.recording_date as TEXT) as mailing_address_recording_date,
     CAST(rtt_summary.recording_date as TEXT) as latest_owners_recording_date,
@@ -406,6 +431,7 @@ async def properties_by_property_autocomplete_results(property_substr, n_results
     -- as backup, just get any address where the location matches the search
     UNION ALL
     SELECT distinct location, parcel_number as opa_account_num, concat_ws('; ', owner_1, owner_2) as grantees, 
+    ST_Y(the_geom) AS lat, ST_X(the_geom) AS lng,
     mailing_address_1, mailing_address_2, mailing_care_of, 
     CAST(recording_date as TEXT) as mailing_address_recording_date, 
     null as latest_owners_recording_date,
@@ -433,7 +459,8 @@ async def properties_by_property_autocomplete_results(property_substr, n_results
             return x.location_unit
 
     if not df.empty:
-        df["location_unit"] = df.apply(aka_location, axis=1)
+        if include_aka_string:
+            df["location_unit"] = df.apply(aka_location, axis=1)
         df["description"] = df["grantees"]
         df["parcel_number"] = df["opa_account_num"]
     return {

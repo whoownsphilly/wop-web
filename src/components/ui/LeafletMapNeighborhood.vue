@@ -139,7 +139,8 @@ export default {
       return this.latLngs.map(latLngTuple => ({
         latLng: latLng(latLngTuple.lat, latLngTuple.lng),
         color: this.colorOverride || latLngTuple.color,
-        popUp: latLngTuple.location + " " + (latLngTuple.unit || ""),
+        popUp:
+          latLngTuple.location + " (" + latLngTuple.num_units + " unit(s))",
         radius: Math.pow(latLngTuple.num_units, 0.5),
         parcelNumber: latLngTuple.parcel_number
       }));

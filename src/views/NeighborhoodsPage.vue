@@ -6,6 +6,19 @@
       <sui-grid>
         <sui-grid-row>
           <sui-grid-column :width="4">
+            <label for="limit_by">Number of total units:</label>
+            <sui-form>
+              <sui-form-fields grouped>
+                <sui-form-field width="six">
+                  <sui-input
+                    radio
+                    name="limit_by"
+                    label="limit_by"
+                    v-model="numTotalUnits"
+                  />
+                </sui-form-field>
+              </sui-form-fields>
+            </sui-form>
             <label for="search_by">Search By:</label>
             <sui-form>
               <sui-form-fields grouped>
@@ -22,6 +35,35 @@
                   <sui-checkbox
                     radio
                     name="search_by"
+                    label="Distance From Address"
+                    value="address"
+                    v-model="searchBy"
+                  />
+                  <sui-search
+                    action="search properties"
+                    v-if="searchBy == 'address'"
+                    @select="searchByAddressSelected"
+                    fluid
+                    ref="searchBar"
+                  >
+                    <template v-slot:input="{ props, handlers }">
+                      <sui-input
+                        v-bind="props"
+                        v-on:blur="handlers.blur"
+                        v-on:input="handlers.input"
+                        v-on:focus="handlers.focus"
+                        v-model="searchByAddressSelectionTitle"
+                        icon="search"
+                        focus
+                        fluid
+                      />
+                    </template>
+                  </sui-search>
+                </sui-form-field>
+                <sui-form-field>
+                  <sui-checkbox
+                    radio
+                    name="search_by"
                     label="Zip Code"
                     value="zipCode"
                     v-model="searchBy"
@@ -29,8 +71,8 @@
                 </sui-form-field>
                 <sui-form-field>
                   <sui-input
-                    v-model="zipCode"
-                    v-if="searchBy != 'mapBoundary'"
+                    v-model="searchByZipCode"
+                    v-if="searchBy == 'zipCode'"
                     placeholder="Enter zip code here..."
                   />
                 </sui-form-field>
@@ -239,12 +281,17 @@ export default {
   },
   data() {
     return {
+      searchByAddressSelectionTitle: null,
+      searchByAddressSelection: null,
+      searchByZipCode: null,
+      searchByAddressLatitude: null,
+      searchByAddressLongitude: null,
       activeTabPane: null,
       searchBy: "mapBoundary",
       licenseFilter: "",
       condoFilter: "",
       ownerOccupiedFilter: "",
-      nResults: 100,
+      numTotalUnits: 100,
       colorOptions: ["red", "green", "blue", "yellow", "orange", "pink"],
       /*colorOptions: [
         { text: "red", value: "red" },
@@ -284,7 +331,6 @@ export default {
       columns: [],
       rawSearchResultProperties: [],
       mapBounds: {},
-      zipCode: null,
       loading: false
     };
   },
@@ -334,6 +380,14 @@ export default {
     }
   },
   methods: {
+    searchByAddressSelected(selection) {
+      this.searchByAddressSelectionTitle = selection["title"];
+      const selectionIndex = selection["url"];
+      let selectedResult = this.$store.state.searchResults[selectionIndex];
+      console.log(selectedResult);
+      this.searchByAddressLatitude = selectedResult.lat;
+      this.searchByAddressLongitude = selectedResult.lng;
+    },
     handleTabChange(e, activePane) {
       this.activeTabPane = activePane.title;
     },
@@ -366,12 +420,14 @@ export default {
       this.loading = true;
       getNeighborhoodsPageInfo(
         this.mapBounds,
-        this.zipCode,
+        this.searchByZipCode,
+        this.searchByAddressLatitude,
+        this.searchByAddressLongitude,
         this.searchBy,
         this.licenseFilter,
         this.condoFilter,
         this.ownerOccupiedFilter,
-        this.nResults,
+        this.numTotalUnits,
         this.selectedBuildingTypes,
         this.selectedRentalBuildingTypes
       ).then(

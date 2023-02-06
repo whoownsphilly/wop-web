@@ -23,7 +23,7 @@ import store from "./store/store";
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
   iconUrl: require("leaflet/dist/images/marker-icon.png"),
-  shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
+  shadowUrl: require("leaflet/dist/images/marker-shadow.png")
 });
 
 Vue.config.productionTip = false;
@@ -47,7 +47,9 @@ new Vue({
     sui: {
       api: {
         api: {
-          "search category": "api/v1/autocomplete?startswith_str={value}",
+          "search homepage": "api/v1/autocomplete?startswith_str={value}",
+          "search properties":
+            "api/v1/autocomplete-properties?startswith_str={value}"
         },
         onSelect() {
           return false;
@@ -66,14 +68,14 @@ new Vue({
                   "|",
                   "| Owner's Mailing Address: "
                 ),
-              title: result["location_unit"],
+              title: result["location_unit"]
             });
           });
           // let searchResults = response.results
           return searchBarResults;
-        },
-      },
-    },
+        }
+      }
+    }
   },
-  render: (h) => h(App),
+  render: h => h(App)
 }).$mount("#app");

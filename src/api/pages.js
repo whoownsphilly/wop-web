@@ -59,11 +59,13 @@ export const getCrowdSourcedPageInfo = parcelNumber => {
 export const getNeighborhoodsPageInfo = (
   bounds,
   zipCode,
+  latitude,
+  longitude,
   searchBy,
   licenseFilter,
   condoFilter,
   ownerOccupiedFilter,
-  nResults,
+  numTotalUnits,
   buildingTypes,
   rentalBuildingTypes
 ) => {
@@ -85,12 +87,16 @@ export const getNeighborhoodsPageInfo = (
     condoFilter +
     "&owner_occupied_filter=" +
     ownerOccupiedFilter +
-    "&n_results=" +
-    nResults +
+    "&num_total_units=" +
+    numTotalUnits +
     "&building_types=" +
     buildingTypes +
     "&rental_building_types=" +
     rentalBuildingTypes +
+    "&search_latitude=" +
+    latitude +
+    "&search_longitude=" +
+    longitude +
     "&zip_code=" +
     zipCode;
   return fetch(url, {

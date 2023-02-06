@@ -13,6 +13,8 @@ async def test_walklist():
         northeast_lng=None,
         southwest_lng=None,
         zip_code=19103,
+        search_latitude=None,
+        search_longitude=None,
         search_by="zipCode",
         license_filter="",
         owner_occupied_filter="",
@@ -22,6 +24,8 @@ async def test_walklist():
         n_results=100,
     )
     df = pd.DataFrame(results["searched_properties"])
-    starting_place = df.iloc[0]["location"]
-    df = get_walk_list_order(df, starting_place)
+    starting_place = df.iloc[0]
+    df = get_walk_list_order(
+        df, starting_lat=starting_place.lat, starting_lng=starting_place.lng
+    )
     assert not df.empty

@@ -26,6 +26,7 @@ from backend.queries import (
     properties_by_parcel_lists_results,
     properties_by_mailing_address_results,
     properties_by_autocomplete_results,
+    properties_by_autocomplete_results_only_search_by_properties,
     airtable_entries_by_mailing_address_results,
     properties_by_organizability_results,
 )
@@ -81,6 +82,13 @@ async def settings_response(request):
 async def autocomplete_response(request):
     """Used to get the mailing_address related properties and response for the owner page"""
     return await _cache_page_response(properties_by_autocomplete_results, request)
+
+
+async def autocomplete_properties_response(request):
+    """Used to get the mailing_address related properties and response for the owner page"""
+    return await _cache_page_response(
+        properties_by_autocomplete_results_only_search_by_properties, request
+    )
 
 
 async def owner_page_properties_by_mailing_address_response(request):

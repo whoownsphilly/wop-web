@@ -91,7 +91,12 @@ async def properties_by_organizability_results(
     dfs = await asyncio.gather(*[carto_request(query) for query in queries_to_run])
     df = pd.concat(dfs).replace({np.nan: None})
 
-    if search_latitude and search_longitude:
+    if (
+        search_latitude
+        and search_longitude
+        and search_latitude != "null"
+        and search_longitude != "null"
+    ):
         starting_latitude = search_latitude
         starting_longitude = search_longitude
     else:
@@ -105,9 +110,12 @@ async def properties_by_organizability_results(
     )
     df.index.name = "walk_order"
     df = df.reset_index()
-    df = df[df["num_units"].cumsum() <= float(num_total_units)]
+    # df = df[df["num_units"].cumsum() <= float(num_total_units)]
 
-    return {"searched_properties": df.to_dict("records")}
+    return {
+        "searched_properties": df.to_dict("records"),
+        "abc_properties": df.to_dict("records"),
+    }
 
 
 class NeighborhoodQuery:
@@ -131,16 +139,16 @@ class NeighborhoodPropertyQuery(NeighborhoodQuery):
             [f"'{build_type.upper()}'" for build_type in building_types.split(",")]
         )
         if has_homestead_exemption is True:
-            self.homestead_exemption_str = "homestead_exemption > 0"
+            self.homestead_exemption_str = "likely_owner_occupied > 0"
         elif has_homestead_exemption is False:
-            self.homestead_exemption_str = "homestead_exemption = 0"
+            self.homestead_exemption_str = "likely_owner_occupied = 0"
         elif has_homestead_exemption is None:
             self.homestead_exemption_str = "1=1"
 
         if in_a_condo is True:
-            self.in_a_condo_str = "in_a_condo = 1"
+            self.in_a_condo_str = "in_condo = 1"
         elif in_a_condo is False:
-            self.in_a_condo_str = "in_a_condo = 0"
+            self.in_a_condo_str = "in_condo = 0"
         elif in_a_condo is None:
             self.in_a_condo_str = "1=1"
 
@@ -200,9 +208,9 @@ class NeighborhoodRentalLicenseQuery(NeighborhoodQuery):
             [f"'{build_type}'" for build_type in rental_building_types.split(",")]
         )
         if is_owner_occupied is True:
-            self.owner_occupied_str = "likely_owner_occupied = 'No'"
+            self.owner_occupied_str = "owneroccupied = 'No'"
         elif is_owner_occupied is False:
-            self.owner_occupied_str = "likely_owner_occupied = 'Yes'"
+            self.owner_occupied_str = "owneroccupied = 'Yes'"
         elif is_owner_occupied is None:
             self.owner_occupied_str = "1=1"
 

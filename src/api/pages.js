@@ -59,6 +59,7 @@ export const getCrowdSourcedPageInfo = parcelNumber => {
 export const getNeighborhoodsPageInfo = (
   bounds,
   zipCode,
+  addressDistance,
   latitude,
   longitude,
   searchBy,
@@ -96,10 +97,12 @@ export const getNeighborhoodsPageInfo = (
     buildingTypes +
     "&rental_building_types=" +
     rentalBuildingTypes +
-    "&search_latitude=" +
+    "&starting_latitude=" +
     latitude +
-    "&search_longitude=" +
+    "&starting_longitude=" +
     longitude +
+    "&address_distance=" +
+    addressDistance +
     "&zip_code=" +
     zipCode;
   return fetch(url, {

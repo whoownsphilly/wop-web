@@ -83,7 +83,7 @@ export default {
     },
     mapStyle: {
       type: String,
-      default: "height: 500px; width: 100%"
+      default: "height: 100%; width: 100%"
     },
     customPropertyLists: {
       type: Object
@@ -91,6 +91,12 @@ export default {
     colorOverride: {
       type: String,
       default: null
+    },
+    center: {
+      type: Array
+    },
+    zoom: {
+      type: Number
     }
   },
   data() {
@@ -112,8 +118,6 @@ export default {
         onEachFeature: this.overlayOnEachFeature
       },
       leafletOptions: { scrollWheelZoom: false },
-      zoom: 6,
-      center: [48, -1.219482],
       fillColor: "#e4ce7f",
       //url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
       url: "https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png",

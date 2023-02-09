@@ -23,6 +23,28 @@
                     v-model="numLists"
                   />
                 </sui-form-field>
+                <sui-form-field>
+                  <label for="searchBar">Starting Address</label>
+                  <sui-search
+                    action="search properties"
+                    @select="startingAddressSelected"
+                    fluid
+                    ref="searchBar"
+                  >
+                    <template v-slot:input="{ props, handlers }">
+                      <sui-input
+                        v-bind="props"
+                        v-on:blur="handlers.blur"
+                        v-on:input="handlers.input"
+                        v-on:focus="handlers.focus"
+                        v-model="startingAddressSelectionTitle"
+                        icon="search"
+                        focus
+                        fluid
+                      />
+                    </template>
+                  </sui-search>
+                </sui-form-field>
               </sui-form-fields>
             </sui-form>
             <label for="search_by">Search By:</label>
@@ -41,30 +63,15 @@
                   <sui-checkbox
                     radio
                     name="search_by"
-                    label="Distance From Address"
+                    label="Number of blocks from address"
                     value="address"
                     v-model="searchBy"
                   />
-                  <sui-search
-                    action="search properties"
+                  <sui-input
+                    v-model="searchByStartingAddressDistance"
                     v-if="searchBy == 'address'"
-                    @select="searchByAddressSelected"
-                    fluid
-                    ref="searchBar"
-                  >
-                    <template v-slot:input="{ props, handlers }">
-                      <sui-input
-                        v-bind="props"
-                        v-on:blur="handlers.blur"
-                        v-on:input="handlers.input"
-                        v-on:focus="handlers.focus"
-                        v-model="searchByAddressSelectionTitle"
-                        icon="search"
-                        focus
-                        fluid
-                      />
-                    </template>
-                  </sui-search>
+                    placeholder="Enter number of blocks away here..."
+                  />
                 </sui-form-field>
                 <sui-form-field>
                   <sui-checkbox
@@ -74,8 +81,6 @@
                     value="zipCode"
                     v-model="searchBy"
                   />
-                </sui-form-field>
-                <sui-form-field>
                   <sui-input
                     v-model="searchByZipCode"
                     v-if="searchBy == 'zipCode'"
@@ -217,10 +222,12 @@
     <div v-if="loading === false">
       <leaflet-map-neighborhood
         :latLngs="allProperties"
+        :zoom="mapZoom"
+        :center="mapCenter"
         @updateBounds="updateBounds"
         @selectMarkers="selectMarkers"
         @addProperty="addToSelectedPropertyList"
-        mapStyle="height: 350px; width: 100%"
+        mapStyle="height: 800px; width: 100%"
         :customPropertyLists="customPropertyLists"
       />
     </div>
@@ -231,7 +238,7 @@
     </div>
     <sui-tab
       @change="handleTabChange"
-      :menu="{ attached: false, tabular: false }"
+      :menu="{ attached: false, tabular: false, vertical: true }"
     >
       <sui-tab-pane title="+ (Add List)" :attached="false">
         <h2>Add a new list</h2>
@@ -287,18 +294,22 @@ export default {
   },
   data() {
     return {
-      searchByAddressSelectionTitle: null,
-      searchByAddressSelection: null,
-      searchByZipCode: null,
-      searchByAddressLatitude: null,
-      searchByAddressLongitude: null,
+      startingAddressSelectionTitle: null,
+      startingAddressSelection: null,
+      startingAddressLatitude: null,
+      startingAddressLongitude: null,
       activeTabPane: null,
       searchBy: "mapBoundary",
+      searchByZipCode: null,
+      searchByStartingAddressDistance: null,
       licenseFilter: "",
       condoFilter: "",
       ownerOccupiedFilter: "",
       numUnitsPerList: 100,
       numLists: 1,
+      mapZoom: 6,
+      mapBounds: {},
+      mapCenter: null,
       colorOptions: ["red", "green", "blue", "orange", "pink", "purple"],
       /*colorOptions: [
         { text: "red", value: "red" },
@@ -337,7 +348,6 @@ export default {
       rows: [],
       columns: [],
       rawSearchResultProperties: [],
-      mapBounds: {},
       loading: false
     };
   },
@@ -387,12 +397,16 @@ export default {
     }
   },
   methods: {
-    searchByAddressSelected(selection) {
-      this.searchByAddressSelectionTitle = selection["title"];
+    startingAddressSelected(selection) {
+      this.startingAddressSelectionTitle = selection["title"];
       const selectionIndex = selection["url"];
       let selectedResult = this.$store.state.searchResults[selectionIndex];
-      this.searchByAddressLatitude = selectedResult.lat;
-      this.searchByAddressLongitude = selectedResult.lng;
+      this.startingAddressLatitude = selectedResult.lat;
+      this.startingAddressLongitude = selectedResult.lng;
+      console.log(selectedResult);
+      this.mapCenter = [selectedResult.lat, selectedResult.lng];
+      // required otherwise it zooms to the old center
+      new Promise(r => setTimeout(r, 200)).then(() => (this.mapZoom = 16));
     },
     handleTabChange(e, activePane) {
       this.activeTabPane = activePane.title;
@@ -429,8 +443,9 @@ export default {
       getNeighborhoodsPageInfo(
         this.mapBounds,
         this.searchByZipCode,
-        this.searchByAddressLatitude,
-        this.searchByAddressLongitude,
+        this.searchByStartingAddressDistance,
+        this.startingAddressLatitude,
+        this.startingAddressLongitude,
         this.searchBy,
         this.licenseFilter,
         this.condoFilter,

@@ -24,18 +24,48 @@ async def properties_by_parcel_lists_results(**kwargs):
 
 
 async def properties_by_organizability_results(
-    *args, num_units_per_list, num_lists, **kwargs
+    *args,
+    starting_latitude,
+    starting_longitude,
+    num_units_per_list,
+    num_lists,
+    **kwargs,
 ):
     num_lists = int(num_lists)
     num_units_per_list = int(num_units_per_list)
     df_orig = await get_results(
-        *args, num_total_units=num_units_per_list * num_lists, **kwargs
+        *args,
+        num_total_units=num_units_per_list * num_lists,
+        starting_latitude=starting_latitude,
+        starting_longitude=starting_longitude,
+        **kwargs,
     )
+    if (
+        starting_latitude
+        and starting_longitude
+        and starting_latitude != "null"
+        and starting_longitude != "null"
+    ):
+        starting_latitude = starting_latitude
+        starting_longitude = starting_longitude
+    else:
+        starting_latitude = df.iloc[0]["lat"]
+        starting_longitude = df.iloc[0]["lng"]
+    # remove duplicates by sorting by first rental license and removing duplicate by lat/lng
+    df_orig = df_orig.sort_values("type").drop_duplicates(["lat", "lng"])
+
+    df_orig = get_walk_list_order(
+        df_orig, starting_lat=starting_latitude, starting_lng=starting_longitude
+    )
+    # Cluster
+
+    # Split
     dfs = np.array_split(df_orig, num_lists)
     results = {}
     for df in dfs:
         name = df.location.iloc[0]
         results[name] = df.to_dict("records")
+
     return {"searched_properties": df_orig.to_dict("records"), "walk_lists": results}
 
 
@@ -45,8 +75,9 @@ async def get_results(
     northeast_lng=None,
     southwest_lng=None,
     zip_code=None,
-    search_latitude=None,
-    search_longitude=None,
+    address_distance=None,
+    starting_latitude=None,
+    starting_longitude=None,
     search_by=None,
     license_filter=None,
     owner_occupied_filter=None,
@@ -68,8 +99,9 @@ async def get_results(
     def noneify_null_str(value):
         return None if value is None or value == "" or value == "null" else value
 
-    search_latitude = noneify_null_str(search_latitude)
-    search_longitude = noneify_null_str(search_longitude)
+    starting_latitude = noneify_null_str(starting_latitude)
+    starting_longitude = noneify_null_str(starting_longitude)
+    address_distance = noneify_null_str(address_distance)
     zip_code = noneify_null_str(zip_code)
     southwest_lat = noneify_null_str(southwest_lat)
     northeast_lat = noneify_null_str(northeast_lat)
@@ -90,15 +122,20 @@ async def get_results(
         """
     elif search_by == "zipCode":
         where_str = f" zip_code = '{zip_code}'"
-    elif search_by == "address" and search_latitude and search_longitude:
-        # 1 city block is ~80 meters, so 10 city block radius
+    elif search_by == "address" and address_distance:
+        # 1 city block is ~80? meters
         where_str = f"""
             ST_DWithin(
                     the_geom,
-              CDB_LatLng({search_latitude}, {search_longitude})::geography,
-              80 * 10
+              CDB_LatLng({starting_latitude}, {starting_longitude})::geography,
+              80 * {address_distance}
             )
         """
+
+    if starting_latitude and starting_longitude:
+        order_by_str = f"ST_Distance( the_geom, CDB_LatLng({starting_latitude}, {starting_longitude}))"
+    else:
+        order_by_str = f"num_units"
 
     queries_to_run = []
     if include_property_query:
@@ -108,6 +145,7 @@ async def get_results(
             in_a_condo=in_a_condo,
             where_str=where_str,
             n_results=num_total_units,
+            order_by_str=order_by_str,
         ).query
         queries_to_run.append(query)
     if include_license_query:
@@ -116,37 +154,22 @@ async def get_results(
             is_owner_occupied=is_owner_occupied,
             where_str=where_str,
             n_results=num_total_units,
+            order_by_str=order_by_str,
         ).query
         queries_to_run.append(query)
 
     dfs = await asyncio.gather(*[carto_request(query) for query in queries_to_run])
     df = pd.concat(dfs).replace({np.nan: None})
 
-    if (
-        search_latitude
-        and search_longitude
-        and search_latitude != "null"
-        and search_longitude != "null"
-    ):
-        starting_latitude = search_latitude
-        starting_longitude = search_longitude
-    else:
-        starting_latitude = df.iloc[0]["lat"]
-        starting_longitude = df.iloc[0]["lng"]
-    # remove duplicates by sorting by first rental license and removing duplicate by lat/lng
-    df = df.sort_values("type").drop_duplicates(["lat", "lng"])
-
-    df = get_walk_list_order(
-        df, starting_lat=starting_latitude, starting_lng=starting_longitude
-    )
     # df = df[df["num_units"].cumsum() <= float(num_total_units)]
     return df
 
 
 class NeighborhoodQuery:
-    def __init__(self, n_results, where_str):
+    def __init__(self, n_results, where_str, order_by_str):
         self.n_results = n_results
         self.where_str = where_str
+        self.order_by_str = order_by_str
         self.limit_str = f"LIMIT {self.n_results}" if self.n_results else ""
 
 
@@ -157,9 +180,12 @@ class NeighborhoodPropertyQuery(NeighborhoodQuery):
         has_homestead_exemption: bool,
         in_a_condo: bool,
         where_str: str,
+        order_by_str: str,
         n_results: int,
     ):
-        super().__init__(n_results=n_results, where_str=where_str)
+        super().__init__(
+            n_results=n_results, where_str=where_str, order_by_str=order_by_str
+        )
         if building_types:
             building_type_list_str = ",".join(
                 [f"'{build_type.upper()}'" for build_type in building_types.split(",")]
@@ -221,7 +247,7 @@ class NeighborhoodPropertyQuery(NeighborhoodQuery):
                 and {self.homestead_exemption_str}
                 and {self.where_str}
             order by
-              num_units desc
+              {self.order_by_str}
               {self.limit_str}
         """
 
@@ -232,9 +258,12 @@ class NeighborhoodRentalLicenseQuery(NeighborhoodQuery):
         rental_building_types: list[str],
         is_owner_occupied: bool,
         where_str: str,
+        order_by_str: str,
         n_results: int,
     ):
-        super().__init__(n_results=n_results, where_str=where_str)
+        super().__init__(
+            n_results=n_results, where_str=where_str, order_by_str=order_by_str
+        )
         """
         self.rental_building_type_str = ",".join(
             [f"'{build_type}'" for build_type in rental_building_types.split(",")]
@@ -280,6 +309,7 @@ class NeighborhoodRentalLicenseQuery(NeighborhoodQuery):
               and {self.owner_occupied_str}
             ) subquery WHERE
               {self.where_str}
+            ORDER BY {self.order_by_str}
               {self.limit_str}
         """
 

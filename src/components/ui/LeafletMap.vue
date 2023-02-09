@@ -85,6 +85,13 @@ export default {
     },
     highlightedLatLng: {
       type: Object
+    },
+    center: {
+      type: Array
+    },
+    zoom: {
+      type: Number,
+      default: () => 6
     }
   },
   data() {
@@ -92,8 +99,6 @@ export default {
       loading: false,
       leafletOptions: { scrollWheelZoom: false },
       highlightedCircleWeight: 100,
-      zoom: 6,
-      center: [48, -1.219482],
       fillColor: "#e4ce7f",
       //url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
       url: "https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png",

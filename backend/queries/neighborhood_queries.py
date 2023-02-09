@@ -11,63 +11,94 @@ async def properties_by_parcel_lists_results(**kwargs):
     tasks = []
     for list_name, parcel_numbers in kwargs.items():
         parcel_number_str = ",".join([f"'{num}'" for num in parcel_numbers.split(",")])
-        where_str = f"WHERE parcel_number in ({parcel_number_str})"
-        dfs = tasks.append(_get_neighborhood_results(where_str, list_name=list_name))
+        where_str = f"parcel_number in ({parcel_number_str})"
+
+        async def return_results_in_dict(where_str, list_name):
+            df = await get_results(where_str_override=where_str)
+            return {list_name: df.to_dict("records")}
+
+        dfs = tasks.append(return_results_in_dict(where_str, list_name))
     dfs = await asyncio.gather(*tasks)
     output = {k: v for d in dfs for k, v in d.items()}
     return {"saved_properties": output}
 
 
 async def properties_by_organizability_results(
-    northeast_lat,
-    southwest_lat,
-    northeast_lng,
-    southwest_lng,
-    zip_code,
-    search_latitude,
-    search_longitude,
-    search_by,
-    license_filter,
-    owner_occupied_filter,
-    condo_filter,
-    building_types,
-    rental_building_types,
-    num_total_units=100,
+    *args, num_units_per_list, num_lists, **kwargs
 ):
-    if search_by == "mapBoundary" and southwest_lat != "null":
+    num_lists = int(num_lists)
+    num_units_per_list = int(num_units_per_list)
+    df_orig = await get_results(
+        *args, num_total_units=num_units_per_list * num_lists, **kwargs
+    )
+    dfs = np.array_split(df_orig, num_lists)
+    results = {}
+    for df in dfs:
+        name = df.location.iloc[0]
+        results[name] = df.to_dict("records")
+    return {"searched_properties": df_orig.to_dict("records"), "walk_lists": results}
+
+
+async def get_results(
+    northeast_lat=None,
+    southwest_lat=None,
+    northeast_lng=None,
+    southwest_lng=None,
+    zip_code=None,
+    search_latitude=None,
+    search_longitude=None,
+    search_by=None,
+    license_filter=None,
+    owner_occupied_filter=None,
+    condo_filter=None,
+    building_types=[],
+    rental_building_types=[],
+    num_total_units=None,
+    where_str_override=None,
+    list_name="searched_properties",
+):
+    def boolify_noneify_str(value, none_value=None):
+        if value == "true":
+            return True
+        elif value == "false":
+            return False
+        elif value is None or value == "" or value == "null":
+            return none_value
+
+    def noneify_null_str(value):
+        return None if value is None or value == "" or value == "null" else value
+
+    search_latitude = noneify_null_str(search_latitude)
+    search_longitude = noneify_null_str(search_longitude)
+    zip_code = noneify_null_str(zip_code)
+    southwest_lat = noneify_null_str(southwest_lat)
+    northeast_lat = noneify_null_str(northeast_lat)
+    southwest_lng = noneify_null_str(southwest_lng)
+    northeast_lng = noneify_null_str(northeast_lng)
+    include_license_query = boolify_noneify_str(license_filter, none_value=True)
+    include_property_query = not boolify_noneify_str(license_filter, none_value=False)
+    is_owner_occupied = boolify_noneify_str(owner_occupied_filter)
+    in_a_condo = boolify_noneify_str(condo_filter)
+    if where_str_override:
+        where_str = where_str_override
+    elif search_by == "mapBoundary" and southwest_lat:
         where_str = f"""
             ST_contains(
              ST_MakeEnvelope({southwest_lng},{southwest_lat},{northeast_lng}, {northeast_lat},4326),
              the_geom
           )
         """
-    elif search_by == "zipCode" and zip_code != "null":
+    elif search_by == "zipCode":
         where_str = f" zip_code = '{zip_code}'"
-    elif (
-        search_by == "address"
-        and search_latitude != "null"
-        and search_longitude != "null"
-    ):
+    elif search_by == "address" and search_latitude and search_longitude:
+        # 1 city block is ~80 meters, so 10 city block radius
         where_str = f"""
             ST_DWithin(
                     the_geom,
               CDB_LatLng({search_latitude}, {search_longitude})::geography,
-              100
+              80 * 10
             )
         """
-
-    def boolify_noneify_str(value, none_value=None):
-        if value == "true":
-            return True
-        elif value == "false":
-            return False
-        elif value is None or value == "":
-            return none_value
-
-    include_license_query = boolify_noneify_str(license_filter, none_value=True)
-    include_property_query = not boolify_noneify_str(license_filter, none_value=False)
-    is_owner_occupied = boolify_noneify_str(owner_occupied_filter)
-    in_a_condo = boolify_noneify_str(condo_filter)
 
     queries_to_run = []
     if include_property_query:
@@ -108,14 +139,8 @@ async def properties_by_organizability_results(
     df = get_walk_list_order(
         df, starting_lat=starting_latitude, starting_lng=starting_longitude
     )
-    df.index.name = "walk_order"
-    df = df.reset_index()
     # df = df[df["num_units"].cumsum() <= float(num_total_units)]
-
-    return {
-        "searched_properties": df.to_dict("records"),
-        "abc_properties": df.to_dict("records"),
-    }
+    return df
 
 
 class NeighborhoodQuery:
@@ -135,9 +160,15 @@ class NeighborhoodPropertyQuery(NeighborhoodQuery):
         n_results: int,
     ):
         super().__init__(n_results=n_results, where_str=where_str)
-        self.building_type_str = ",".join(
-            [f"'{build_type.upper()}'" for build_type in building_types.split(",")]
-        )
+        if building_types:
+            building_type_list_str = ",".join(
+                [f"'{build_type.upper()}'" for build_type in building_types.split(",")]
+            )
+            self.building_type_str = (
+                f"upper(category_code_description) in ({building_type_list_str})"
+            )
+        else:
+            self.building_type_str = "1=1"
         if has_homestead_exemption is True:
             self.homestead_exemption_str = "likely_owner_occupied > 0"
         elif has_homestead_exemption is False:
@@ -181,12 +212,12 @@ class NeighborhoodPropertyQuery(NeighborhoodQuery):
                   ) as in_condo
                 from
                   opa_properties_public
-                where upper(category_code_description) in ({self.building_type_str})
                 group by
                   the_geom
               ) col
             where
                 {self.in_a_condo_str}
+                and {self.building_type_str}
                 and {self.homestead_exemption_str}
                 and {self.where_str}
             order by
@@ -204,9 +235,11 @@ class NeighborhoodRentalLicenseQuery(NeighborhoodQuery):
         n_results: int,
     ):
         super().__init__(n_results=n_results, where_str=where_str)
+        """
         self.rental_building_type_str = ",".join(
             [f"'{build_type}'" for build_type in rental_building_types.split(",")]
         )
+        """
         if is_owner_occupied is True:
             self.owner_occupied_str = "owneroccupied = 'No'"
         elif is_owner_occupied is False:
@@ -217,7 +250,9 @@ class NeighborhoodRentalLicenseQuery(NeighborhoodQuery):
     @property
     def query(self):
         return f"""
+        select * from (
             select
+              the_geom,
               opa_account_num as parcel_number,
               address as location,
               zip_code,
@@ -243,7 +278,8 @@ class NeighborhoodRentalLicenseQuery(NeighborhoodQuery):
               licensestatus = 'Active'
               and licensetype = 'Rental'
               and {self.owner_occupied_str}
-              and {self.where_str}
+            ) subquery WHERE
+              {self.where_str}
               {self.limit_str}
         """
 
@@ -295,4 +331,7 @@ def get_walk_list_order(df, starting_lat, starting_lng):
         walk_list.append(next_stop)
         remaining_df = remaining_df[remaining_df.end != next_stop]
 
-    return df.set_index("location").loc[walk_list].reset_index()
+    walk_list_df = df.set_index("location").loc[walk_list].reset_index()
+    walk_list_df.index.name = "walk_order"
+    walk_list_df = walk_list_df.reset_index()
+    return walk_list_df

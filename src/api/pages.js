@@ -65,7 +65,8 @@ export const getNeighborhoodsPageInfo = (
   licenseFilter,
   condoFilter,
   ownerOccupiedFilter,
-  numTotalUnits,
+  numUnitsPerList,
+  numLists,
   buildingTypes,
   rentalBuildingTypes
 ) => {
@@ -87,8 +88,10 @@ export const getNeighborhoodsPageInfo = (
     condoFilter +
     "&owner_occupied_filter=" +
     ownerOccupiedFilter +
-    "&num_total_units=" +
-    numTotalUnits +
+    "&num_units_per_list=" +
+    numUnitsPerList +
+    "&num_lists=" +
+    numLists +
     "&building_types=" +
     buildingTypes +
     "&rental_building_types=" +

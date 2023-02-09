@@ -6,15 +6,21 @@
       <sui-grid>
         <sui-grid-row>
           <sui-grid-column :width="4">
-            <label for="limit_by">Number of total units:</label>
             <sui-form>
               <sui-form-fields grouped>
-                <sui-form-field width="six">
+                <sui-form-field>
+                  <label for="limit_by">Number of units per list:</label>
                   <sui-input
-                    radio
                     name="limit_by"
                     label="limit_by"
-                    v-model="numTotalUnits"
+                    v-model="numUnitsPerList"
+                  />
+                  <label for="number_of_lists">Number of lists:</label>
+                  <sui-input
+                    radio
+                    name="number_of_lists"
+                    label="number_of_lists"
+                    v-model="numLists"
                   />
                 </sui-form-field>
               </sui-form-fields>
@@ -291,8 +297,9 @@ export default {
       licenseFilter: "",
       condoFilter: "",
       ownerOccupiedFilter: "",
-      numTotalUnits: 100,
-      colorOptions: ["red", "green", "blue", "yellow", "orange", "pink"],
+      numUnitsPerList: 100,
+      numLists: 1,
+      colorOptions: ["red", "green", "blue", "orange", "pink", "purple"],
       /*colorOptions: [
         { text: "red", value: "red" },
         { text: "green", value: "green" },
@@ -384,7 +391,6 @@ export default {
       this.searchByAddressSelectionTitle = selection["title"];
       const selectionIndex = selection["url"];
       let selectedResult = this.$store.state.searchResults[selectionIndex];
-      console.log(selectedResult);
       this.searchByAddressLatitude = selectedResult.lat;
       this.searchByAddressLongitude = selectedResult.lng;
     },
@@ -397,8 +403,10 @@ export default {
     selectMarkers(selectedMarkers) {
       this.selectedMarkers = selectedMarkers;
     },
-    saveNewCustomPropertyList() {
-      let listName = this.newCustomPropertyListName;
+    saveNewCustomPropertyListOnClick() {
+      this.saveNewCustomPropertyList(this.newCustomPropertyListName);
+    },
+    saveNewCustomPropertyList(listName) {
       if (!(listName in this.customPropertyLists)) {
         this.$set(this.customPropertyLists, listName, []);
       }
@@ -427,14 +435,24 @@ export default {
         this.licenseFilter,
         this.condoFilter,
         this.ownerOccupiedFilter,
-        this.numTotalUnits,
+        this.numUnitsPerList,
+        this.numLists,
         this.selectedBuildingTypes,
         this.selectedRentalBuildingTypes
       ).then(
-        results => (
-          (this.rawSearchResultProperties = results.searched_properties),
-          (this.loading = false)
-        )
+        function(results) {
+          this.rawSearchResultProperties = results.searched_properties;
+          Object.keys(results.walk_lists).forEach(walkListName => {
+            this.saveNewCustomPropertyList(walkListName);
+            results.walk_lists[walkListName].forEach(thisProperty => {
+              this.addToSelectedPropertyList(
+                walkListName,
+                thisProperty.parcel_number
+              );
+            });
+          });
+          this.loading = false;
+        }.bind(this)
       );
     },
     setColorsAndUrlToSavedPropertyLists(lists) {
@@ -446,11 +464,11 @@ export default {
     },
     addSelectionToSelectedPropertyList() {
       this.selectedMarkers.forEach(marker =>
-        this.addToSelectedPropertyList(this.activeTabPane, marker)
+        this.addToSelectedPropertyList(this.activeTabPane, marker.parcelNumber)
       );
     },
-    addToSelectedPropertyList(listName, property) {
-      let thisProperty = this.propertyDict[property.parcelNumber];
+    addToSelectedPropertyList(listName, parcelNumber) {
+      let thisProperty = this.propertyDict[parcelNumber];
       thisProperty["color"] = this.customPropertyListColors[listName];
       this.customPropertyLists[listName].push(thisProperty);
 

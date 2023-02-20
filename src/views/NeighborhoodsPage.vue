@@ -217,7 +217,11 @@
     </sui-container>
     <sui-divider horizontal>
       <sui-button v-on:click="updatePropertyList">Update Map</sui-button>
+      <sui-button v-on:click="clearPropertyList">Clear</sui-button>
     </sui-divider>
+    <div v-if="errorMessage" class="ui negative message">
+      {{ errorMessage }}
+    </div>
 
     <div v-if="loading === false">
       <leaflet-map-neighborhood
@@ -236,9 +240,11 @@
         <sui-loader content="Loading..." />
       </sui-dimmer>
     </div>
+    <sui-button v-on:click="downloadExcel">Download</sui-button>
     <sui-tab
       @change="handleTabChange"
       :menu="{ attached: false, tabular: false, vertical: true }"
+      :key="lastUpdated"
     >
       <sui-tab-pane title="+ (Add List)" :attached="false">
         <h2>Add a new list</h2>
@@ -278,6 +284,7 @@
 import LeafletMapNeighborhood from "@/components/ui/LeafletMapNeighborhood";
 import PropertyList from "@/components/page/neighborhoods/PropertyList";
 import InstructionsText from "@/components/page/neighborhoods/InstructionsText";
+import * as XLSX from "xlsx/xlsx.mjs";
 import DataTable from "@/components/ui/DataTable";
 import {
   getNeighborhoodsPageInfo,
@@ -294,11 +301,13 @@ export default {
   },
   data() {
     return {
+      lastUpdated: null, // Needed to refresh the tab panes on clear
       startingAddressSelectionTitle: null,
       startingAddressSelection: null,
       startingAddressLatitude: null,
       startingAddressLongitude: null,
       activeTabPane: null,
+      errorMessage: "",
       searchBy: "mapBoundary",
       searchByZipCode: null,
       searchByStartingAddressDistance: null,
@@ -310,11 +319,33 @@ export default {
       mapZoom: 6,
       mapBounds: {},
       mapCenter: null,
-      colorOptions: ["red", "green", "blue", "orange", "pink", "purple"],
-      /*colorOptions: [
-        { text: "red", value: "red" },
-        { text: "green", value: "green" },
-      ],*/
+      colorOptions: [
+        "red",
+        "green",
+        "blue",
+        "cyan",
+        "magenta",
+        "yellow",
+        "orange",
+        "pink",
+        "purple",
+        "brown",
+        "lime",
+        "maroon",
+        "olive",
+        "teal",
+        "silver",
+        "sky blue",
+        "lavender",
+        "peach",
+        "periwinkle",
+        "powder blue",
+        "rosy brown",
+        "seafoam green",
+        "salmon",
+        "tan",
+        "turquoise"
+      ],
       buildingTypes: [
         { key: "Multi Family", text: "Multi Family", value: "Multi Family" },
         { key: "Single Family", text: "Single Family", value: "Single Family" },
@@ -397,13 +428,85 @@ export default {
     }
   },
   methods: {
+    downloadExcel() {
+      const workbook = XLSX.utils.book_new();
+      /* make first worksheet */
+      const firstSheetRows = Object.keys(this.customPropertyLists).map(key => {
+        return {
+          List: key,
+          Name1: "",
+          "(1) can 1:1? y/n, how many?": "",
+          Name2: "",
+          "(2) can 1:1? y/n, how many?": ""
+        };
+      });
+      let worksheet = XLSX.utils.json_to_sheet(firstSheetRows);
+      const maxValues = firstSheetRows.reduce((acc, obj) => {
+        Object.keys(obj).forEach(key => {
+          const valueLength = obj[key].toString().length + 3;
+          const keyLength = key.toString().length + 3;
+          acc[key] = Math.max(acc[key] || 0, valueLength, keyLength);
+        });
+        return acc;
+      }, {});
+
+      let maxWidths = Object.keys(maxValues).map(key => ({
+        wch: maxValues[key]
+      }));
+      worksheet["!cols"] = maxWidths;
+      XLSX.utils.book_append_sheet(workbook, worksheet, "List Assignments");
+
+      Object.entries(this.customPropertyLists).map(function([key, rows]) {
+        /* */
+
+        const rowsForSheets = rows.map(item => {
+          return {
+            Address: item.location,
+            Unit: item.unit,
+            Owner: item.owner_most_ownership,
+            Name: "",
+            Phone: "",
+            Email: "",
+            "Notes (agitation, knows neighbors, story, commit to canvass?)\nIf vacant, not a house, do not knock, etc., note here.":
+              "",
+            "1:1 priority (H, M, L)": ""
+          };
+        });
+        let worksheet = XLSX.utils.json_to_sheet(rowsForSheets);
+
+        const maxValues = rowsForSheets.reduce((acc, obj) => {
+          Object.keys(obj).forEach(key => {
+            const valueLength = obj[key].toString().length + 3;
+            const keyLength = key.toString().length + 3;
+            acc[key] = Math.max(acc[key] || 0, valueLength, keyLength);
+          });
+          return acc;
+        }, {});
+
+        let maxWidths = Object.keys(maxValues).map(key => ({
+          wch: maxValues[key]
+        }));
+
+        worksheet["!cols"] = maxWidths;
+        XLSX.utils.book_append_sheet(workbook, worksheet, key);
+      });
+
+      /* create an XLSX file and try to save */
+      const today = new Date();
+      const month = today.getMonth() + 1; // Add 1 to the month since getMonth() returns a zero-based index
+      const day = today.getDate();
+
+      const formattedDate = `${month}.${day}`;
+      XLSX.writeFile(workbook, `Walksheets ${formattedDate}.xlsx`, {
+        compression: true
+      });
+    },
     startingAddressSelected(selection) {
       this.startingAddressSelectionTitle = selection["title"];
       const selectionIndex = selection["url"];
       let selectedResult = this.$store.state.searchResults[selectionIndex];
       this.startingAddressLatitude = selectedResult.lat;
       this.startingAddressLongitude = selectedResult.lng;
-      console.log(selectedResult);
       this.mapCenter = [selectedResult.lat, selectedResult.lng];
       // required otherwise it zooms to the old center
       new Promise(r => setTimeout(r, 200)).then(() => (this.mapZoom = 16));
@@ -438,6 +541,20 @@ export default {
     getPropertyListCountAndColor(name) {
       return `(${this.customPropertyLists[name].length}) (${this.customPropertyListColors[name]})`;
     },
+    clearPropertyList() {
+      if (Object.keys(this.$route.query).length) {
+        this.$router.replace({ query: {} });
+      }
+      this.customPropertyLists = {};
+      this.customPropertyListColors = {};
+      this.rows = [];
+      this.columns = [];
+      this.rawSearchResultProperties = [];
+      this.errorMessage = "";
+      let testList = {};
+      testList[new Date()] = [];
+      this.lastUpdated = new Date();
+    },
     updatePropertyList() {
       this.loading = true;
       getNeighborhoodsPageInfo(
@@ -456,6 +573,13 @@ export default {
         this.selectedRentalBuildingTypes
       ).then(
         function(results) {
+          if (results.status === "error") {
+            this.loading = false;
+            this.errorMessage = "Error During Search";
+            return;
+          } else {
+            this.errorMessage = "";
+          }
           this.rawSearchResultProperties = results.searched_properties;
           Object.keys(results.walk_lists).forEach(walkListName => {
             this.saveNewCustomPropertyList(walkListName);
@@ -466,6 +590,7 @@ export default {
               );
             });
           });
+          this.lastUpdated = new Date();
           this.loading = false;
         }.bind(this)
       );

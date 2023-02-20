@@ -144,7 +144,13 @@ export default {
         latLng: latLng(latLngTuple.lat, latLngTuple.lng),
         color: this.colorOverride || latLngTuple.color,
         popUp:
-          latLngTuple.location + " (" + latLngTuple.num_units + " unit(s))",
+          latLngTuple.location +
+          " (" +
+          latLngTuple.color +
+          ")" +
+          " (" +
+          latLngTuple.num_units +
+          " unit(s))",
         radius: Math.pow(latLngTuple.num_units, 0.5),
         parcelNumber: latLngTuple.parcel_number
       }));

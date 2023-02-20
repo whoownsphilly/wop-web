@@ -3,6 +3,7 @@ name = "phillydb-web"
 version = "0.1.0"
 description = ""
 authors = ["Your Name <you@example.com>"]
+[tool.poetry.dependencies]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

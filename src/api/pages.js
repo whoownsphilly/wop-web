@@ -108,7 +108,11 @@ export const getNeighborhoodsPageInfo = (
   return fetch(url, {
     method: "GET"
   }).then(response => {
-    return response.json();
+    if (response.ok === false) {
+      return { status: "error" };
+    } else {
+      return response.json();
+    }
   });
 };
 

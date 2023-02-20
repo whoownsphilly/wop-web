@@ -1,4 +1,6 @@
 import numpy as np
+from sklearn.cluster import KMeans, DBSCAN
+import haversine
 import pandas as pd
 
 from backend.queries.queries import (
@@ -49,20 +51,202 @@ async def properties_by_organizability_results(
         starting_latitude = starting_latitude
         starting_longitude = starting_longitude
     else:
-        starting_latitude = df.iloc[0]["lat"]
-        starting_longitude = df.iloc[0]["lng"]
+        starting_latitude = df_orig.iloc[0]["lat"]
+        starting_longitude = df_orig.iloc[0]["lng"]
+    df_orig["num_units"] = df_orig["num_units"].apply(lambda x: np.ones(x))
     # remove duplicates by sorting by first rental license and removing duplicate by lat/lng
     df_orig = df_orig.sort_values("type").drop_duplicates(["lat", "lng"])
+    df_orig = df_orig.explode(column="num_units")
 
-    df_orig = get_walk_list_order(
-        df_orig, starting_lat=starting_latitude, starting_lng=starting_longitude
-    )
     # Cluster
+    def haversine_distance(lat_lng1, lat_lng2):
+        lat1, lng1, street_code1 = lat_lng1
+        lat2, lng2, street_code2 = lat_lng2
+        return haversine.haversine((lat1, lng1), (lat2, lng2))
 
-    # Split
-    dfs = np.array_split(df_orig, num_lists)
+    from passyunk.parser import PassyunkParser
+
+    pyk = PassyunkParser()
+    df_orig["street_code"] = (
+        df_orig["location"]
+        .apply(lambda x: pyk.parse(x)["components"]["street"]["street_code"])
+        .astype(int)
+    )
+    df_orig["street"] = df_orig["location"].apply(
+        lambda x: pyk.parse(x)["components"]["street"]["full"]
+    )
+    df_orig["segment"] = (
+        df_orig["location"]
+        .apply(lambda x: pyk.parse(x)["components"]["cl_seg_id"])
+        .astype(int)
+    )
+    num_clusters = num_lists
+
+    """
+    coords = df_orig[["lat", "lng", "street_code"]].values
+    # coords = df_orig[["street_code"]].values
+
+    # Fit the DBSCAN model using the Haversine distance
+    # kmeans = KMeans(n_clusters=num_lists)
+    # df_orig["category"] = kmeans.fit(coords).labels_
+    dbscan = DBSCAN(metric=haversine_distance, eps=0.01)
+    df_orig["category"] = dbscan.fit(coords).labels_
+    from scipy.spatial.distance import pdist, squareform
+    from sklearn.cluster import AgglomerativeClustering
+
+    # Define the custom distance function
+    def weighted_distance(x, y):
+        lat1, lng1, street_code1 = x
+        lat2, lng2, street_code2 = y
+        # Compute the Haversine distance
+        distance = haversine.haversine((lat1, lng1), (lat2, lng2))
+        # Compute the weight based on street codes
+        weight = 1 if street_code1 == street_code2 else 10
+        # Return the weighted distance
+        return distance * weight
+
+    # Compute pairwise distances with the custom distance function
+    coords = df_orig[["lat", "lng", "street_code"]].values
+    distances = pdist(coords, metric=weighted_distance)
+
+    # Perform clustering using Agglomerative Clustering
+
+    # Convert the pairwise distances array to a distance matrix
+    dist_matrix = squareform(distances)
+
+    # Perform clustering using Agglomerative Clustering
+    clustering = AgglomerativeClustering(
+        n_clusters=num_clusters, affinity="precomputed", linkage="average"
+    )
+    labels = clustering.fit_predict(dist_matrix)
+    # Assign cluster labels to the original dataframe
+    df_orig["category"] = labels
+    """
+
+    """
+    # lat_avg
+    df_orig = pd.merge(
+        df_orig,
+        df_orig.groupby("street_code")[["lat"]]
+        .mean()
+        .rename(columns={"lat": "lat_avg"}),
+        on="street_code",
+    )
+    df_orig = pd.merge(
+        df_orig,
+        df_orig.groupby("street_code")[["lng"]]
+        .mean()
+        .rename(columns={"lng": "lng_avg"}),
+        on="street_code",
+    )
+
+    coords = df_orig[["lat_avg", "lng_avg"]].values
+    # coords = df_orig[["street_code"]].values
+
+    # Fit the DBSCAN model using the Haversine distance
+    kmeans = KMeans(n_clusters=num_lists, n_init=50, max_iter=1000, init="k-means++")
+    df_orig["category"] = kmeans.fit(coords).labels_
+    """
+
+    import pandas as pd
+    from sklearn.cluster import KMeans
+    from sklearn.metrics.pairwise import pairwise_distances_argmin_min
+    import haversine
+
+    # Fit K-Means with the desired number of clusters
+    num_clusters = num_lists
+    kmeans = KMeans(n_clusters=num_clusters, random_state=0).fit(
+        df_orig[["lat", "lng"]]
+    )
+    # Assign cluster labels to the original dataframe
+    df_orig["category"] = kmeans.labels_
+
+    # Define the custom distance function
+    def weighted_distance(x, y):
+        lat1, lng1, street_code1 = x
+        lat2, lng2, street_code2 = y
+        # Compute the Haversine distance
+        distance = haversine.haversine((lat1, lng1), (lat2, lng2))
+        # Compute the weight based on street codes
+        weight = 1 if street_code1 == street_code2 else 10
+        # Return the weighted distance
+        return distance * weight
+
+    """
+    # THIS WORKS
+
+    from scipy.spatial.distance import cdist
+
+    distances = cdist(df_orig[["lat", "lng"]], kmeans.cluster_centers_)
+
+    closest_idx = np.argmin(distances, axis=1)
+    df_orig["category"] = closest_idx
+    ### END OF THIS WORKS
+    """
+    df_orig.reset_index(drop=True, inplace=True)
+
+    from scipy.spatial.distance import cdist
+
+    distances = cdist(df_orig[["lat", "lng"]], kmeans.cluster_centers_)
+
+    distance_to_center = pd.DataFrame(distances).T
+    df_orig["category"] = distance_to_center.idxmin().values
+    df_orig["distance_to_center"] = distance_to_center.min().values
+
+    # some might have too many properties in a category, so lets re-assign.
+
+    def reassign_properties(df_orig):
+        # First remove from overloaded categories for re-assignment
+        df_orig = df_orig.sort_values("distance_to_center")
+        df_orig_cat_counts = df_orig.category.value_counts()
+        overly_assigned_categories = df_orig_cat_counts[
+            df_orig_cat_counts > num_units_per_list
+        ].index
+        underassigned_categories = df_orig_cat_counts[
+            df_orig_cat_counts < num_units_per_list
+        ].index
+        for category in overly_assigned_categories:
+            df_filtered = (
+                df_orig.loc[df_orig.category == category]
+                .sort_values("distance_to_center")
+                .copy()
+            )
+            df_filtered = df_filtered[num_units_per_list:]
+            df_orig.loc[df_filtered.index, "category"] = -1
+
+        if len(underassigned_categories) == 0:
+            # return the assigned values
+            return df_orig[df_orig.category != -1]
+
+        # Now find the ones that need reassignment
+        df_orig_remaining = df_orig[df_orig.category == -1].copy()
+
+        next_best_distances = cdist(
+            df_orig_remaining[["lat", "lng"]],
+            kmeans.cluster_centers_[underassigned_categories],
+        )
+        distance_to_center = pd.DataFrame(next_best_distances).T.set_index(
+            underassigned_categories
+        )
+        df_orig.loc[
+            df_orig.index.isin(df_orig_remaining.index), "distance_to_center"
+        ] = distance_to_center.min().values
+        df_orig.loc[
+            df_orig.index.isin(df_orig_remaining.index), "category"
+        ] = distance_to_center.idxmin().values
+        return df_orig.copy()
+
+    df_orig = reassign_properties(df_orig)
+    df_orig = reassign_properties(df_orig)
+
+    # now that i have the clusters, i want to assi
+
     results = {}
-    for df in dfs:
+    for category in df_orig.category.unique():
+        df = df_orig[df_orig["category"] == category].copy()
+        df = get_walk_list_order(
+            df, starting_lat=starting_latitude, starting_lng=starting_longitude
+        )
         name = df.location.iloc[0]
         results[name] = df.to_dict("records")
 
@@ -161,7 +345,6 @@ async def get_results(
     dfs = await asyncio.gather(*[carto_request(query) for query in queries_to_run])
     df = pd.concat(dfs).replace({np.nan: None})
 
-    # df = df[df["num_units"].cumsum() <= float(num_total_units)]
     return df
 
 
@@ -239,7 +422,7 @@ class NeighborhoodPropertyQuery(NeighborhoodQuery):
                 from
                   opa_properties_public
                 group by
-                  the_geom
+                  the_geom, unit
               ) col
             where
                 {self.in_a_condo_str}

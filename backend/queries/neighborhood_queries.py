@@ -1,6 +1,9 @@
 import numpy as np
+from scipy.spatial.distance import cdist
+from sklearn.cluster import KMeans
+from sklearn.metrics.pairwise import pairwise_distances_argmin_min
 from sklearn.cluster import KMeans, DBSCAN
-import haversine
+from haversine import haversine
 import pandas as pd
 
 from backend.queries.queries import (
@@ -37,7 +40,7 @@ async def properties_by_organizability_results(
     num_units_per_list = int(num_units_per_list)
     df_orig = await get_results(
         *args,
-        num_total_units=num_units_per_list * num_lists,
+        num_total_units=num_units_per_list * num_lists * 3,
         starting_latitude=starting_latitude,
         starting_longitude=starting_longitude,
         **kwargs,
@@ -48,28 +51,22 @@ async def properties_by_organizability_results(
         and starting_latitude != "null"
         and starting_longitude != "null"
     ):
-        starting_latitude = starting_latitude
-        starting_longitude = starting_longitude
+        starting_latitude = float(starting_latitude)
+        starting_longitude = float(starting_longitude)
     else:
-        starting_latitude = df_orig.iloc[0]["lat"]
-        starting_longitude = df_orig.iloc[0]["lng"]
+        starting_latitude = float(df_orig.iloc[0]["lat"])
+        starting_longitude = float(df_orig.iloc[0]["lng"])
     df_orig["num_units"] = df_orig["num_units"].apply(lambda x: np.ones(x))
     # remove duplicates by sorting by first rental license and removing duplicate by lat/lng
     df_orig = df_orig.sort_values("type").drop_duplicates(["lat", "lng"])
     df_orig = df_orig.explode(column="num_units")
-
-    # Cluster
-    def haversine_distance(lat_lng1, lat_lng2):
-        lat1, lng1, street_code1 = lat_lng1
-        lat2, lng2, street_code2 = lat_lng2
-        return haversine.haversine((lat1, lng1), (lat2, lng2))
 
     from passyunk.parser import PassyunkParser
 
     pyk = PassyunkParser()
     df_orig["street_code"] = (
         df_orig["location"]
-        .apply(lambda x: pyk.parse(x)["components"]["street"]["street_code"])
+        .apply(lambda x: pyk.parse(x)["components"]["street"]["street_code"] or "0")
         .astype(int)
     )
     df_orig["street"] = df_orig["location"].apply(
@@ -79,6 +76,30 @@ async def properties_by_organizability_results(
         df_orig["location"]
         .apply(lambda x: pyk.parse(x)["components"]["cl_seg_id"])
         .astype(int)
+    )
+    df_orig["distance_to_start"] = df_orig[["lat", "lng"]].apply(
+        lambda x: haversine(
+            (x["lat"], x["lng"]), (starting_latitude, starting_longitude)
+        ),
+        axis=1,
+    )
+    df_orig = pd.merge(
+        df_orig,
+        df_orig.groupby("street_code")[["lat"]]
+        .mean()
+        .rename(columns={"lat": "lat_avg"}),
+        on="street_code",
+    )
+    df_orig = pd.merge(
+        df_orig,
+        df_orig.groupby("segment")[["lng"]].mean().rename(columns={"lng": "lng_avg"}),
+        on="segment",
+    )
+    df_orig["street_distance_to_start"] = df_orig[["lat_avg", "lng_avg"]].apply(
+        lambda x: haversine(
+            (x["lat_avg"], x["lng_avg"]), (starting_latitude, starting_longitude)
+        ),
+        axis=1,
     )
     num_clusters = num_lists
 
@@ -125,20 +146,6 @@ async def properties_by_organizability_results(
 
     """
     # lat_avg
-    df_orig = pd.merge(
-        df_orig,
-        df_orig.groupby("street_code")[["lat"]]
-        .mean()
-        .rename(columns={"lat": "lat_avg"}),
-        on="street_code",
-    )
-    df_orig = pd.merge(
-        df_orig,
-        df_orig.groupby("street_code")[["lng"]]
-        .mean()
-        .rename(columns={"lng": "lng_avg"}),
-        on="street_code",
-    )
 
     coords = df_orig[["lat_avg", "lng_avg"]].values
     # coords = df_orig[["street_code"]].values
@@ -148,109 +155,89 @@ async def properties_by_organizability_results(
     df_orig["category"] = kmeans.fit(coords).labels_
     """
 
-    import pandas as pd
-    from sklearn.cluster import KMeans
-    from sklearn.metrics.pairwise import pairwise_distances_argmin_min
-    import haversine
-
     # Fit K-Means with the desired number of clusters
     num_clusters = num_lists
-    kmeans = KMeans(n_clusters=num_clusters, random_state=0).fit(
-        df_orig[["lat", "lng"]]
-    )
+    cluster_cols = ["lat", "lng"]
+    kmeans = KMeans(n_clusters=num_clusters, random_state=0).fit(df_orig[cluster_cols])
     # Assign cluster labels to the original dataframe
     df_orig["category"] = kmeans.labels_
-
-    # Define the custom distance function
-    def weighted_distance(x, y):
-        lat1, lng1, street_code1 = x
-        lat2, lng2, street_code2 = y
-        # Compute the Haversine distance
-        distance = haversine.haversine((lat1, lng1), (lat2, lng2))
-        # Compute the weight based on street codes
-        weight = 1 if street_code1 == street_code2 else 10
-        # Return the weighted distance
-        return distance * weight
-
-    """
-    # THIS WORKS
-
-    from scipy.spatial.distance import cdist
-
-    distances = cdist(df_orig[["lat", "lng"]], kmeans.cluster_centers_)
-
-    closest_idx = np.argmin(distances, axis=1)
-    df_orig["category"] = closest_idx
-    ### END OF THIS WORKS
-    """
     df_orig.reset_index(drop=True, inplace=True)
 
-    from scipy.spatial.distance import cdist
-
-    distances = cdist(df_orig[["lat", "lng"]], kmeans.cluster_centers_)
+    distances = cdist(df_orig[cluster_cols], kmeans.cluster_centers_)
 
     distance_to_center = pd.DataFrame(distances).T
     df_orig["category"] = distance_to_center.idxmin().values
     df_orig["distance_to_center"] = distance_to_center.min().values
 
-    # some might have too many properties in a category, so lets re-assign.
+    df_orig_cat_counts = df_orig.category.value_counts()
+    overly_assigned_categories = df_orig_cat_counts[
+        df_orig_cat_counts > num_units_per_list
+    ].index
+    underassigned_categories = df_orig_cat_counts[
+        df_orig_cat_counts < num_units_per_list
+    ].index
 
-    def reassign_properties(df_orig):
-        # First remove from overloaded categories for re-assignment
-        df_orig = df_orig.sort_values("distance_to_center")
-        df_orig_cat_counts = df_orig.category.value_counts()
-        overly_assigned_categories = df_orig_cat_counts[
-            df_orig_cat_counts > num_units_per_list
-        ].index
-        underassigned_categories = df_orig_cat_counts[
-            df_orig_cat_counts < num_units_per_list
-        ].index
-        for category in overly_assigned_categories:
-            df_filtered = (
-                df_orig.loc[df_orig.category == category]
-                .sort_values("distance_to_center")
-                .copy()
-            )
-            df_filtered = df_filtered[num_units_per_list:]
-            df_orig.loc[df_filtered.index, "category"] = -1
-
-        if len(underassigned_categories) == 0:
-            # return the assigned values
-            return df_orig[df_orig.category != -1]
-
-        # Now find the ones that need reassignment
-        df_orig_remaining = df_orig[df_orig.category == -1].copy()
-
-        next_best_distances = cdist(
-            df_orig_remaining[["lat", "lng"]],
-            kmeans.cluster_centers_[underassigned_categories],
+    for category in overly_assigned_categories:
+        df_filtered = (
+            df_orig.loc[df_orig.category == category]
+            .sort_values(["distance_to_start"])
+            .copy()
         )
-        distance_to_center = pd.DataFrame(next_best_distances).T.set_index(
-            underassigned_categories
+        df_filtered = df_filtered[num_units_per_list:]
+        df_orig.loc[df_filtered.index, "category"] = -1
+    if len(underassigned_categories) == 0:
+        # return the assigned values
+        df_orig = df_orig[df_orig.category != -1]
+    else:
+        # This is unlikely since we are requesting so many properties
+        df_remaining = df_orig[
+            (df_orig.category == -1) | (df_orig.category.isin(underassigned_categories))
+        ].copy()
+        kmeans = KMeans(n_clusters=len(underassigned_categories), random_state=0).fit(
+            df_remaining[["lat", "lng", "segment"]]
         )
-        df_orig.loc[
-            df_orig.index.isin(df_orig_remaining.index), "distance_to_center"
-        ] = distance_to_center.min().values
-        df_orig.loc[
-            df_orig.index.isin(df_orig_remaining.index), "category"
-        ] = distance_to_center.idxmin().values
-        return df_orig.copy()
-
-    df_orig = reassign_properties(df_orig)
-    df_orig = reassign_properties(df_orig)
+        # Assign cluster labels to the original dataframe
+        df_orig.loc[df_remaining.index, "category"] = [
+            underassigned_categories[i] for i in kmeans.labels_
+        ]
+    for category in underassigned_categories:
+        df_filtered = (
+            df_orig.loc[df_orig.category == category]
+            .sort_values(["distance_to_start"])
+            .copy()
+        )
+        df_filtered = df_filtered[num_units_per_list:]
+        df_orig.loc[df_filtered.index, "category"] = -1
+    df_orig = df_orig[df_orig.category != -1]
 
     # now that i have the clusters, i want to assi
 
+    cols = [
+        "type",
+        "category_code_description",
+        "location",
+        "unit",
+        "owner_most_ownership",
+        "num_units",
+        "other_info",
+        "likely_owner_occupied",
+        "parcel_number",
+        "lat",
+        "lng",
+        "walk_order",
+    ]
     results = {}
+    all_results = []
     for category in df_orig.category.unique():
         df = df_orig[df_orig["category"] == category].copy()
         df = get_walk_list_order(
             df, starting_lat=starting_latitude, starting_lng=starting_longitude
         )
         name = df.location.iloc[0]
-        results[name] = df.to_dict("records")
+        results[name] = df[["parcel_number"]].to_dict("records")
+        all_results.extend(df[cols].to_dict("records"))
 
-    return {"searched_properties": df_orig.to_dict("records"), "walk_lists": results}
+    return {"searched_properties": all_results, "walk_lists": results}
 
 
 async def get_results(
@@ -306,7 +293,12 @@ async def get_results(
         """
     elif search_by == "zipCode":
         where_str = f" zip_code = '{zip_code}'"
-    elif search_by == "address" and address_distance:
+    elif (
+        search_by == "address"
+        and address_distance
+        and starting_latitude
+        and starting_longitude
+    ):
         # 1 city block is ~80? meters
         where_str = f"""
             ST_DWithin(
@@ -497,6 +489,52 @@ class NeighborhoodRentalLicenseQuery(NeighborhoodQuery):
         """
 
 
+def get_walk_list_order2(df, starting_lat, starting_lng):
+    import requests
+    import json
+
+    # Define API endpoint
+    endpoint = "http://router.project-osrm.org/trip/v1/walking/"
+
+    # Define locations (latitude, longitude)
+    locations = [
+        (39.9512, -75.1638),  # City Hall
+        (39.9526, -75.1652),  # Love Park
+        (39.9562, -75.1655),  # The Franklin Institute
+        (39.9469, -75.1421),  # Liberty Bell
+        (39.9484, -75.1669),  # Reading Terminal Market
+        (39.9654, -75.1888),  # Philadelphia Zoo
+        (39.9522, -75.1472),  # South Street
+        (39.9809, -75.1527),  # Eastern State Penitentiary
+        (39.9647, -75.1383),  # Independence Hall
+        (39.9376, -75.1567),  # Geno's Steaks
+    ]
+    locations = [[starting_lat, starting_lng]]
+    locations.extend(df[["lat", "lng"]].values)
+
+    # Define the order of the locations
+    waypoints = ";".join([f"{loc[1]},{loc[0]}" for loc in locations])
+
+    params = {
+        "steps": "false",
+        "annotations": "false",
+        "source": "first",
+        "destination": "any",
+    }
+
+    # Define the request URL
+    url = f"{endpoint}{waypoints}"
+
+    # Send the request
+    response = requests.get(url, params=params)
+
+    # Parse the response
+    data = json.loads(response.content)
+    route = data["waypoints"]
+    indices = [w["waypoint_index"] for w in data["waypoints"]]
+    indices = [i - 1 for i in indices[1:]]
+
+
 def get_walk_list_order(df, starting_lat, starting_lng):
     def populate(lat_lis, lon_lis, r=3958.75):
         lat_mtx = np.array([lat_lis]).T * np.pi / 180
@@ -532,19 +570,61 @@ def get_walk_list_order(df, starting_lat, starting_lng):
     df_dist.columns = ["start", "end", "distance"]
 
     walk_list = []
+
+    df_dist = (
+        df_dist.set_index("start")
+        .join(df.set_index("location")[["segment"]])
+        .reset_index()
+        .rename(columns={"segment": "segment_start", "index": "start"})
+    )
+    df_dist = (
+        df_dist.set_index("end")
+        .join(df.set_index("location")[["segment"]])
+        .reset_index()
+        .rename(columns={"segment": "segment_end", "index": "end"})
+    )
+
     remaining_df = df_dist.copy()
+    # TODO add limit to remaining df based on matching segment
 
     next_stop = "starting_place"
+    current_street_segment = None
     remaining_df = remaining_df[remaining_df.end != next_stop]
     while len(remaining_df) > 0:
-        next_stop_index = remaining_df[
-            remaining_df["start"] == next_stop
-        ].distance.idxmin()
-        next_stop = remaining_df.loc[next_stop_index].end
+        possible_next_stops = remaining_df[
+            (remaining_df["start"] == next_stop)
+            & (remaining_df["segment_end"] == current_street_segment)
+        ]
+        possible_next_stop = possible_next_stops[
+            possible_next_stops.end > next_stop
+        ].end.min()
+        if pd.notnull(possible_next_stop):
+            possible_next_stop_index = possible_next_stops[
+                possible_next_stops.end == possible_next_stop
+            ].index[0]
+        else:
+            possible_next_stop = possible_next_stops[
+                possible_next_stops.end < next_stop
+            ].end.max()
+            if pd.notnull(possible_next_stop):
+                possible_next_stop_index = possible_next_stops[
+                    possible_next_stops.end == possible_next_stop
+                ].index[0]
+        if pd.isnull(possible_next_stop):
+            # Then you must switch streets
+            possible_next_stops = remaining_df[remaining_df["start"] == next_stop]
+            next_stop_index = possible_next_stops.distance.idxmin()
+            next_stop = remaining_df.loc[next_stop_index].end
+        else:
+            next_stop = possible_next_stop
+            next_stop_index = possible_next_stop_index
+
         walk_list.append(next_stop)
+        current_street_segment = remaining_df.loc[next_stop_index].segment_end
         remaining_df = remaining_df[remaining_df.end != next_stop]
 
-    walk_list_df = df.set_index("location").loc[walk_list].reset_index()
+    walk_list_df = df.set_index("location").loc[walk_list]
+    walk_list_df.reset_index(inplace=True)
     walk_list_df.index.name = "walk_order"
     walk_list_df = walk_list_df.reset_index()
     return walk_list_df

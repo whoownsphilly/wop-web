@@ -413,11 +413,13 @@ async def properties_by_property_autocomplete_results(
             (
                 cast(address_low as int) >= {address_low}
                 AND cast(address_low as int) <= {address_ceil}
+                AND (MOD(ADDRESS_LOW,2) = MOD({address_low},2))
             )
             OR (
                 cast(address_low as int)>= {address_floor}
                 AND cast(address_low as int) <= {address_ceil}
                 AND cast(address_high as int) >= {address_remainder}
+                AND (MOD(ADDRESS_LOW,2) = MOD({address_low},2))
             )
         )
         AND STREET_NAME LIKE '%{street_name}%'

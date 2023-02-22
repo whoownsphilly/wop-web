@@ -17,6 +17,22 @@
         :geojson="overlayMapGeojson"
         :options="overlayMapOptions"
       ></l-geo-json>
+      <div v-if="highlightedMapMarker">
+        <l-circle-marker
+          :lat-lng="highlightedMapMarker.latLng"
+          zIndexOffset="0"
+          color="black"
+          fillColor="black"
+        >
+          <l-popup> {{ highlightedMapMarker.popUp }}<br /> </l-popup>
+        </l-circle-marker>
+      </div>
+      <l-polyline
+        v-for="(markers, color) in mapMarkersForLine"
+        :key="color"
+        :lat-lngs="markers"
+        :color="color"
+      ></l-polyline>
       <l-circle-marker
         :lat-lng="marker.latLng"
         v-for="(marker, index) in mapMarkers"
@@ -61,6 +77,7 @@ import LDrawToolbar from "vue2-leaflet-draw-toolbar";
 import {
   LMap,
   LTileLayer,
+  LPolyline,
   LCircleMarker,
   LPopup,
   LGeoJson
@@ -72,6 +89,7 @@ export default {
     LMap,
     LTileLayer,
     LPopup,
+    LPolyline,
     LCircleMarker,
     LGeoJson,
     LDrawToolbar
@@ -126,6 +144,17 @@ export default {
     };
   },
   computed: {
+    highlightedMapMarker() {
+      if (this.center) {
+        return {
+          latLng: latLng(this.center[0], this.center[1]),
+          color: "black",
+          popUp: "Starting Location"
+        };
+      } else {
+        return null;
+      }
+    },
     layers() {
       let layers = [];
       this.$refs.map.mapObject.eachLayer(function(layer) {
@@ -139,6 +168,16 @@ export default {
         value: x
       }));
     },
+    mapMarkersForLine() {
+      return this.mapMarkers.reduce((acc, obj) => {
+        if (!acc[obj.color]) {
+          acc[obj.color] = [];
+        }
+        acc[obj.color].push([obj.latLng.lat, obj.latLng.lng]);
+        return acc;
+      }, {});
+      return;
+    },
     mapMarkers() {
       return this.latLngs.map(latLngTuple => ({
         latLng: latLng(latLngTuple.lat, latLngTuple.lng),
@@ -147,6 +186,9 @@ export default {
           latLngTuple.location +
           " (" +
           latLngTuple.color +
+          ")" +
+          " (" +
+          latLngTuple.walk_order +
           ")" +
           " (" +
           latLngTuple.num_units +
@@ -174,7 +216,6 @@ export default {
     fetch(`${this.overlayUrl}/0/query?outFields=*&where=1%3D1&f=pgeojson`).then(
       response => {
         response.json().then(result => {
-          console.log(result);
           this.overlayMapGeojson = result;
         });
       }

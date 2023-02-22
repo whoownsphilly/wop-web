@@ -141,7 +141,7 @@
                     radio
                     name="licenseFilter"
                     label="both with and without license"
-                    value=""
+                    value="null"
                     v-model="licenseFilter"
                   />
                 </sui-form-field>
@@ -173,13 +173,15 @@
                     radio
                     name="condoFilter"
                     label="both in and not in condo buildings"
-                    value=""
+                    value="null"
                     v-model="condoFilter"
                   />
                 </sui-form-field>
               </sui-form-fields>
             </sui-form>
-            <label for="condoFilter">Is Likely Owner Occupied</label>
+            <label for="ownerOccupiedFilterFilter"
+              >Is Likely Owner Occupied</label
+            >
             <sui-form>
               <sui-form-fields grouped>
                 <sui-form-field>
@@ -205,7 +207,7 @@
                     radio
                     name="ownerOccupiedFilter"
                     label="license can say either, property may or may not have exemption"
-                    value=""
+                    value="null"
                     v-model="ownerOccupiedFilter"
                   />
                 </sui-form-field>
@@ -311,11 +313,11 @@ export default {
       searchBy: "mapBoundary",
       searchByZipCode: null,
       searchByStartingAddressDistance: null,
-      licenseFilter: "",
-      condoFilter: "",
-      ownerOccupiedFilter: "",
-      numUnitsPerList: 100,
-      numLists: 1,
+      licenseFilter: "null",
+      condoFilter: "false",
+      ownerOccupiedFilter: "false",
+      numUnitsPerList: 50,
+      numLists: 10,
       mapZoom: 6,
       mapBounds: {},
       mapCenter: null,

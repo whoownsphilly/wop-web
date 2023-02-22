@@ -176,7 +176,6 @@ export default {
         acc[obj.color].push([obj.latLng.lat, obj.latLng.lng]);
         return acc;
       }, {});
-      return;
     },
     mapMarkers() {
       return this.latLngs.map(latLngTuple => ({

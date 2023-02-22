@@ -11,4 +11,3 @@ RUN npm run build
 # Here we're switching to a non-root user in the container to remove some categories
 # of container-escape attack.
 USER 1000:1000
-CMD [ "/render/process/web" ]

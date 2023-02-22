@@ -6,10 +6,10 @@ services:
     name: phillydb-web
     env: docker # valid values: https://render.com/docs/yaml-spec#environment
     dockerfilePath: Dockerfile
-    plan: free # optional; defaults to starter
+    runCommand: docker-compose up web
     numInstances: 1
     domains: # custom domains
-      - 'www.whoownsphilly.org'
+      - "www.whoownsphilly.org"
     envVars:
       - key: BIOS_URL # Imported from Heroku app
         value: https://api.airtable.com/v0/appWtLiq9Ezlbp7s1/Visible%20On%20Website%20-%20By%20Mailing%20Address?api_key&#x3D;keyygo7ozRiqZGwWa
@@ -24,6 +24,6 @@ services:
       #     name: postgresql-elliptical-37496
       #     property: connectionString
 
-databases: # Render PostgreSQL database
+databases:# Render PostgreSQL database
   # - name: postgresql-elliptical-37496
   #   ipAllowList: [] # only allow internal connections

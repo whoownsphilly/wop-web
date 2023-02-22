@@ -1,4 +1,4 @@
-FROM nikolaik/python-nodejs:python3.10-nodejs17
+FROM combos/python_node:3.10_16
 RUN apt update && apt install -y libmemcached-dev zlib1g-dev
 COPY requirements.txt ./
 RUN pip install -r requirements.txt

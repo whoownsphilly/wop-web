@@ -489,7 +489,7 @@ class NeighborhoodRentalLicenseQuery(NeighborhoodQuery):
         """
 
 
-def get_walk_list_order2(df, starting_lat, starting_lng):
+def get_walk_list_order_not_working(df, starting_lat, starting_lng):
     import requests
     import json
 
@@ -529,10 +529,19 @@ def get_walk_list_order2(df, starting_lat, starting_lng):
     response = requests.get(url, params=params)
 
     # Parse the response
-    data = json.loads(response.content)
+    try:
+        data = json.loads(response.content)
+    except:
+        breakpoint()
     route = data["waypoints"]
     indices = [w["waypoint_index"] for w in data["waypoints"]]
     indices = [i - 1 for i in indices[1:]]
+    return (
+        df.iloc[indices]
+        .reset_index(drop=True)
+        .reset_index()
+        .rename(columns={"index": "walk_order"})
+    )
 
 
 def get_walk_list_order(df, starting_lat, starting_lng):

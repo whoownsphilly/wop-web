@@ -627,12 +627,14 @@ export default {
         );
         return customPropertyParcelNumberDict;
       });
+      /*
       this.$router.replace({
         name: "Neighborhoods",
         query: {
           ...customPropertyParcelNumberDict
         }
       });
+        */
     }
   },
   created() {

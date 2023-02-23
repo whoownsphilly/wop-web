@@ -5,7 +5,7 @@ services:
   - type: web # valid values: https://render.com/docs/yaml-spec#type
     name: phillydb-web
     env: python
-    buildCommand: "pip install -r requirements.txt"
+    buildCommand: "apt-get install gfortran; pip install -r requirements.txt"
     startCommand: "gunicorn mysite.wsgi:application"
     domains: # custom domains
       - "www.whoownsphilly.org"

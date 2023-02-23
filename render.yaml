@@ -22,7 +22,3 @@ services:
       #   fromDatabase:
       #     name: postgresql-elliptical-37496
       #     property: connectionString
-
-databases:# Render PostgreSQL database
-  # - name: postgresql-elliptical-37496
-  #   ipAllowList: [] # only allow internal connections

@@ -28,7 +28,7 @@ SECRET_KEY = os.environ.get(
 debug_str = os.environ.get("DJANGO_DEBUG", "true")
 DEBUG = True if debug_str.lower() == "true" else False
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "www.whoownsphilly.org"]
 
 
 # Application definition

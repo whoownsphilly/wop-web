@@ -4,7 +4,7 @@ services:
     #env: docker # valid values: https://render.com/docs/yaml-spec#environment
     #dockerfilePath: Dockerfile
     env: python
-    buildCommand: "poetry install"
+    buildCommand: "pip install -r requirements.txt"
     startCommand: "gunicorn backend.wsgi"
     domains: # custom domains
       - "www.whoownsphilly.org"

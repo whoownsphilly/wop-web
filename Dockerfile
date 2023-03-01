@@ -14,5 +14,4 @@ USER 1000:1000
 EXPOSE 8000
 
 # runs the production server
-ENTRYPOINT ["python", "manage.py"]
-CMD ["runserver", "--nostatic", "0.0.0.0:8000"]
+CMD ["gunicorn", "backend.wsgi" ,"--log-file","-"]

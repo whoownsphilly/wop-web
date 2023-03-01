@@ -1,8 +1,8 @@
 services:
   - type: web # valid values: https://render.com/docs/yaml-spec#type
     name: phillydb-web
-    env: docker # valid values: https://render.com/docs/yaml-spec#environment	    env: python
-    dockerfilePath: Dockerfile	
+    env: docker # valid values: https://render.com/docs/yaml-spec#environment
+    dockerfilePath: Dockerfile
     domains: # custom domains
       - "www.whoownsphilly.org"
     envVars:

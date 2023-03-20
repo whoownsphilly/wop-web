@@ -1,41 +1,32 @@
 version: '3'
 services:
-  shell:
-    build: 
-      context: .
-      args:
-        YARN_PORT: ${YARN_PORT:-8080}
-        DJANGO_PORT: ${DJANGO_PORT:-8000}
-    image: phillydb_web_shell
-    stdin_open: true
-    tty: true
-    entrypoint: /bin/sh
-    volumes:
-      - .:/app
-      - /app/tests/__pycache__/
-
   django:
-    image: phillydb_web_shell
+    build:
+      context: .
+      dockerfile: Dockerfile
     command: python manage.py runserver 0.0.0.0:${DJANGO_PORT:-8000}
     ports:
-      - "${DJANGO_PORT:-8000}:${DJANGO_PORT:-8000}"
+      - "127.0.0.1:${DJANGO_PORT:-8000}:${DJANGO_PORT:-8000}"
+    volumes:
+      - .:/app
+    working_dir: /app
   web:
-    image: phillydb_web_shell
-    entrypoint: yarn serve --port ${YARN_PORT:-8080}
+    build:
+      context: .empty/
+      dockerfile: Dockerfile
+    entrypoint: sh -c "npm run serve"
     stdin_open: true
     tty: true
+    working_dir: /app
     volumes:
-      - .:/app
-      - /app/tests/__pycache__/
+      - ./:/app
     environment:
+      - YARN_PORT=${YARN_PORT:-8081}
       - DJANGO_PORT=${DJANGO_PORT:-8000}
       - DJANGO_HOSTNAME=django
+      - PATH=/app/node_modules/.bin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
     ports:
-      - "${YARN_PORT:-8080}:${YARN_PORT:-8080}"
+      - "127.0.0.1:${YARN_PORT:-8081}:${YARN_PORT:-8081}"
     depends_on:
       - django
-  test:
-    image: phillydb_web_shell
-    entrypoint: py.test
-    volumes:
-      - .:/app
+

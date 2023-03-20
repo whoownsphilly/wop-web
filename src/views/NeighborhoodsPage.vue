@@ -459,7 +459,6 @@ export default {
       XLSX.utils.book_append_sheet(workbook, worksheet, "List Assignments");
 
       Object.entries(this.customPropertyLists).map(function([key, rows]) {
-        /* */
 
         const rowsForSheets = rows.map(item => {
           return {
@@ -478,7 +477,8 @@ export default {
 
         const maxValues = rowsForSheets.reduce((acc, obj) => {
           Object.keys(obj).forEach(key => {
-            const valueLength = obj[key].toString().length + 3;
+            const thisValue = obj[key] || ""
+            const valueLength = thisValue.toString().length + 3;
             const keyLength = key.toString().length + 3;
             acc[key] = Math.max(acc[key] || 0, valueLength, keyLength);
           });

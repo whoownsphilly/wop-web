@@ -28,7 +28,8 @@ SECRET_KEY = os.environ.get(
 debug_str = os.environ.get("DJANGO_DEBUG", "true")
 DEBUG = True if debug_str.lower() == "true" else False
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1 localhost").split(" ")
+# ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(" ")
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "[::1]", "0.0.0.0", "django"]
 
 
 # Application definition
@@ -143,7 +144,7 @@ TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
 
 NOSE_ARGS = ["--with-coverage", "--cover-package=backend"]
 
-YARN_PORT = os.environ.get("YARN_PORT", "8080")
+YARN_PORT = os.environ.get("YARN_PORT", "8081")
 CORS_ALLOWED_ORIGINS = [
     f"http://localhost:{YARN_PORT}",
     "http://localhost:8081",

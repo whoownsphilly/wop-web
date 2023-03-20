@@ -29,7 +29,14 @@ debug_str = os.environ.get("DJANGO_DEBUG", "true")
 DEBUG = True if debug_str.lower() == "true" else False
 
 # ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(" ")
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "[::1]", "0.0.0.0", "django"]
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "[::1]",
+    "0.0.0.0",
+    "django",
+    "www.whoownsphilly.org",
+]
 
 
 # Application definition

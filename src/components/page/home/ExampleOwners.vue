@@ -5,7 +5,7 @@
         <a href="/#/property/032022200">
           <sui-card-header>Odin Properties</sui-card-header>
         </a>
-        <sui-card-meta>1200 Callowhill St Suite 300</sui-card-meta>
+        <sui-card-meta>1200 Callowhill St Suite 403</sui-card-meta>
         <sui-card-description>
           Odin Properties was founded in 2009 by real estate investor Philip
           Balderston. Balderston left Tower Investments (Bart Blatstein) after

@@ -6,7 +6,7 @@
   },
   "private": true,
   "scripts": {
-    "serve": "export VUE_APP_DJANGO_PORT=${DJANGO_PORT:-8000}; export VUE_APP_DJANGO_URL=${DJANGO_HOSTNAME:-localhost}; vue-cli-service serve --port ${YARN_PORT:-8081}",
+    "serve": "export VUE_APP_DJANGO_PORT=${DJANGO_PORT:-8000}; export VUE_APP_DJANGO_URL=${DJANGO_HOSTNAME:-localhost}; export NODE_OPTIONS=--openssl-legacy-provider && vue-cli-service serve --port ${YARN_PORT:-8081}",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },

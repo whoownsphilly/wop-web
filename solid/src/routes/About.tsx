@@ -1,0 +1,198 @@
+import {Component} from "solid-js";
+
+const About: Component = () => {
+    return (<main class="flex flex-col justify-center">
+        <p>
+            Over the last several years, cities have begun open sourcing a variety of
+            previously difficult to access data, including property, deed, violations,
+            evictions, and other information related to housing. This has allowed
+            community members to build tools on top of the data for a variety of
+            purposes.
+        </p>
+
+        <p>
+            Recently, in many cities, one of the purposes that has arisen is allowing
+            people to look up who actually owns which rental properties. This
+            information is both extremely valuable and fairly difficult to organize.
+        </p>
+
+        <p>This information is valuable for several reasons:</p>
+        <sui-list>
+            <sui-list-item
+            ><b>Legal:</b> it can be used for legal purposes for tenants and their
+                advocates</sui-list-item
+            >
+            <sui-list-item
+            ><b>Organizing:</b> it can be used to see what other properties a
+                landlord owns and what other violations may be on their
+                record</sui-list-item
+            >
+            <sui-list-item
+            ><b>Enforcement:</b> government officials can use this information to
+                track bad landlords, better enforce laws, and escalate
+                violations</sui-list-item
+            >
+            <sui-list-item
+            ><b>Policy:</b> journalists and academics can use this information in
+                different ways: which neighborhoods are being preyed on, which landlords
+                are under investigation for other citations, etc.</sui-list-item
+            >
+        </sui-list>
+
+        <p>This information is difficult to organize for several reasons:</p>
+        <sui-list>
+            <sui-list-item
+            ><b>Multiple sources:</b> There are different datasets for different
+                types of data, and the link between these datasets is not always
+                documented or easily discoverable.</sui-list-item
+            >
+            <sui-list-item
+            ><b>Messy/incomplete data:</b> Either due to incompetence or nefarious
+                reasons, there are many examples of data that are incomplete or straight
+                up wrong (data in the wrong field, truncated names, misspellings that
+                make it difficult to group data together).</sui-list-item
+            >
+            <sui-list-item
+            ><b>Difficult/misapplied interface:</b> While cities do make this data
+                available, and even build websites to search through the data, the
+                interfaces are not structured for the purposes above, and sometimes
+                become overly restrictive when the city learns about some of the
+                previously described use cases (for example Philly now prevents direct
+                “search by owner”).</sui-list-item
+            >
+            <sui-list-item
+            ><b>Purposely hidden identities:</b> Landlords who own properties
+                typically use shell companies, LLCs, and other business structures to
+                hide their true identity. This makes it difficult to get a full picture
+                of a landlord’s housing portfolio.</sui-list-item
+            >
+        </sui-list>
+        <p>
+            This website contains up-to-date open data from the City of Philadelphia.
+            The data comes from the following sources. Each of these sources can be
+            accessed through Postgres-style SQL-queries as parameters of RESTful
+            calls. In order to make it easier to access these tables, this
+            <router-link to="/explore">page</router-link> was created so that you can
+            simply type SQL and get results.
+        </p>
+        <ul>
+            <li>
+                <a
+                    target="_blank"
+                    href="https://www.opendataphilly.org/dataset/opa-property-assessments"
+                >opa-property-assessments</a
+                >
+                (<a
+                target="_blank"
+                href="https://cityofphiladelphia.github.io/carto-api-explorer/#opa_properties_public"
+            >CartoDB</a
+            >)
+            </li>
+            <li>
+                <a
+                    target="_blank"
+                    href="https://www.opendataphilly.org/dataset/licenses-and-inspections-violations"
+                >licenses-and-inspections-violations</a
+                >
+                (<a
+                target="_blank"
+                href="https://cityofphiladelphia.github.io/carto-api-explorer/#violations"
+            >CartoDB</a
+            >)
+            </li>
+            <li>
+                <a
+                    target="_blank"
+                    href="https://www.opendataphilly.org/dataset/licenses-and-inspections-business-licenses"
+                >licenses-and-inspections-business-licenses</a
+                >
+                (<a
+                target="_blank"
+                href="https://cityofphiladelphia.github.io/carto-api-explorer/#business_licenses"
+            >CartoDB</a
+            >)
+            </li>
+            <li>
+                <a
+                    target="_blank"
+                    href="https://www.opendataphilly.org/dataset/licenses-and-inspections-building-permits"
+                >licenses-and-inspections-building-permits</a
+                >
+                (<a
+                target="_blank"
+                href="https://cityofphiladelphia.github.io/carto-api-explorer/#permits"
+            >CartoDB</a
+            >)
+            </li>
+            <li>
+                <a
+                    target="_blank"
+                    href="https://www.opendataphilly.org/dataset/license-and-inspections-appeals"
+                >license-and-inspections-appeals</a
+                >
+                (<a
+                target="_blank"
+                href="https://cityofphiladelphia.github.io/carto-api-explorer/#appeals"
+            >CartoDB</a
+            >)
+            </li>
+            <li>
+                <a
+                    target="_blank"
+                    href="https://www.opendataphilly.org/dataset/licenses-and-inspections-service-requests"
+                >licenses-and-inspections-service-requests</a
+                >
+                (<a
+                target="_blank"
+                href="https://cityofphiladelphia.github.io/carto-api-explorer/#complaints"
+            >CartoDB</a
+            >)
+            </li>
+            <li>
+                <a
+                    target="_blank"
+                    href="https://www.opendataphilly.org/dataset/real-estate-transfers"
+                >real-estate-transfers</a
+                >
+                (<a
+                target="_blank"
+                href="https://cityofphiladelphia.github.io/carto-api-explorer/#RTT_SUMMARY"
+            >CartoDB</a
+            >)
+            </li>
+            <li>
+                <a
+                    target="_blank"
+                    href="https://www.opendataphilly.org/dataset/property-tax-delinquencies"
+                >property-tax-delinquencies</a
+                >
+                (<a
+                target="_blank"
+                href="https://cityofphiladelphia.github.io/carto-api-explorer/#real_estate_tax_delinquencies"
+            >CartoDB</a
+            >)
+            </li>
+            <li>
+                <a
+                    target="_blank"
+                    href="https://www.opendataphilly.org/dataset/licenses-and-inspections-inspections"
+                >licenses-and-inspections-inspections</a
+                >
+                (<a
+                target="_blank"
+                href="https://cityofphiladelphia.github.io/carto-api-explorer/#case_investigations"
+            >CartoDB</a
+            >)
+            </li>
+            <li>
+                Condominiums (<a
+                target="_blank"
+                href="https://cityofphiladelphia.github.io/carto-api-explorer/#condominium"
+            >CartoDB</a
+            >)
+            </li>
+        </ul>
+    </main>)
+}
+
+export default About;

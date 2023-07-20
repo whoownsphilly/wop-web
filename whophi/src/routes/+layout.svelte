@@ -2,12 +2,12 @@
     import "../app.css";
 </script>
 <header class="flex justify-between p-4">
-    <div class="flex gap-4">
-        <a href="/">Home</a>
-        <a href="/neighborhoods">Neighborhoods</a>
+    <div class="flex gap-4 items-center">
+        <a class="px-4 py-2" href="/">Home</a>
+        <a class="px-4 py-2" href="/neighborhoods">Neighborhoods</a>
     </div>
-    <div class="flex gap-4">
-        <a href="/take-action">Take Action</a>
+    <div class="flex gap-4 items-center">
+        <a class="px-4 py-2 bg-emerald-700 rounded-lg text-white font-bold" href="/take-action">Take Action</a>
         <a href="/about">About</a>
     </div>
 </header>

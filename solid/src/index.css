@@ -15,3 +15,11 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.nav-button {
+  @apply px-6 py-2 rounded-lg bg-gray-100 border border-white;
+}
+
+.nav-button:hover {
+  @apply border-gray-300;
+}

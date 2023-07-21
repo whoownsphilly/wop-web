@@ -7,6 +7,7 @@ import {useNavigate} from "@solidjs/router";
 const domain = "http://localhost:8081/"
 
 const AddressSearch: Component = () => {
+    const navigate = useNavigate();
     const [filteredItems, setFilteredItems] = createSignal([]);
     const filterItems = async (event) => {
         const inputValue = event.target.value
@@ -18,9 +19,10 @@ const AddressSearch: Component = () => {
     }
 
     const selectItem = (item) => {
-        const navigate = useNavigate();
+
         let propertyId = item["opa_account_num"];
-        navigate(`/property/${propertyId}`, { replace: true })
+        console.log(propertyId)
+        navigate(`/properties/${propertyId}`, { replace: true })
     }
     return (
         <>
@@ -28,7 +30,6 @@ const AddressSearch: Component = () => {
                    type="text"
                    onInput={filterItems}
                    placeholder="Search address or owner..."/>
-            {filteredItems.length}
         <Show when={filteredItems().length > 0} >
             <ul class="relative mt-2 w-full border divide-y shadow-md rounded-lg">
                 <For each={filteredItems()}>

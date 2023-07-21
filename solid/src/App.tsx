@@ -23,12 +23,11 @@ const routes = [
     },
     {
         path: "/properties/:id",
-        component: lazy(() => import("./routes/properties/Summary")),
         children: [
-            // { path: "/", component: lazy(() => import("/pages/users/[id]/index.js")) },
-            // { path: "/details", component: lazy(() => import("/pages/users/[id]/settings.js")) },
-            // { path: "/owner", component: lazy(() => import("/pages/users/[id]/[...all].js")) },
-            // { path: "/crowd", component: lazy(() => import("/pages/users/[id]/[...all].js")) },
+            { path: "/", component: lazy(() => import("./routes/properties/Summary")), },
+            { path: "/details", component: lazy(() => import("./routes/properties/Summary")), },
+            { path: "/owner", component: lazy(() => import("./routes/properties/Summary")) },
+            { path: "/crowd", component: lazy(() => import("./routes/properties/Summary")) },
         ]
     },
 ];

@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@solidjs/router": "^0.8.2",
+    "apexcharts": "^3.41.1",
     "axios": "^1.4.0",
     "init": "^0.1.2",
     "solid-js": "^1.7.6"

@@ -2,7 +2,7 @@ import {Component} from "solid-js";
 
 const Header: Component = () => {
 return (
-    <header class="flex justify-between p-4">
+    <header class="flex justify-between p-4 text-xs md:text-sm lg:text-base">
         <div class="flex gap-4 items-center">
             <a class="px-4 py-2" href="/">Home</a>
             <a class="px-4 py-2" href="/neighborhoods">Neighborhoods</a>

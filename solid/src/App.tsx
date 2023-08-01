@@ -24,10 +24,10 @@ const routes = [
     {
         path: "/properties/:id",
         children: [
-            { path: "/", component: lazy(() => import("./routes/properties/Summary")), },
-            { path: "/details", component: lazy(() => import("./routes/properties/Summary")), },
-            { path: "/owner", component: lazy(() => import("./routes/properties/Summary")) },
-            { path: "/crowd", component: lazy(() => import("./routes/properties/Summary")) },
+            { path: "/", component: lazy(() => import("./routes/properties/PropertySummary")), },
+            { path: "/details", component: lazy(() => import("./routes/properties/PropertyDetails")), },
+            { path: "/owner", component: lazy(() => import("./routes/properties/PropertyOwner")) },
+            { path: "/crowd", component: lazy(() => import("./routes/properties/PropertyCrowd")) },
         ]
     },
 ];

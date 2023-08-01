@@ -26,7 +26,7 @@ const AddressSearch: Component = () => {
     }
     return (
         <>
-            <input class="py-4 px-8 w-full rounded-full border text-xl"
+            <input class="py-4 px-8 w-full rounded-full border text-xl hover:shadow-md focus:shadow-md focus:outline-none"
                    type="text"
                    onInput={filterItems}
                    placeholder="Search address or owner..."/>

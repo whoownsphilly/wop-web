@@ -4,7 +4,7 @@ import ApexCharts from 'apexcharts'
 import {getPropertyDetailsPageInfo} from "../../services/apiFetcher";
 import {useParams} from "@solidjs/router";
 
-const PropertyDetails: Component = () => {
+const PropertyTimeline: Component = () => {
 
     const params = useParams()
     createEffect(() => {
@@ -89,4 +89,4 @@ const PropertyDetails: Component = () => {
     </>)
 }
 
-export default PropertyDetails
+export default PropertyTimeline

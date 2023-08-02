@@ -25,13 +25,15 @@ const routes = [
         path: "/properties/:id",
         children: [
             { path: "/", component: lazy(() => import("./routes/properties/PropertySummary")), },
-            { path: "/details", component: lazy(() => import("./routes/properties/PropertyDetails")), },
+            { path: "/timeline", component: lazy(() => import("./routes/properties/PropertyTimeline")), },
             { path: "/owner", component: lazy(() => import("./routes/properties/PropertyOwner")) },
-            { path: "/crowd", component: lazy(() => import("./routes/properties/PropertyCrowd")) },
+            // { path: "/crowd", component: lazy(() => import("./routes/properties/PropertyCrowd")) },
         ]
     },
 ];
 
+// Justfix
+// evictorbook
 const App: Component = () => {
 const Routes = useRoutes(routes);
   return (

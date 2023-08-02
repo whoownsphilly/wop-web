@@ -8,6 +8,7 @@ import PropertyBase from "./PropertyBase";
 const PropertySummary: Component = () => {
     const params = useParams();
     const [property, setProperty] = createSignal(new Property())
+    const [owner, setOwner] = createSignal({})
     const [link, setLink] = createSignal()
     const [violationDate, setViolationDate] = createSignal(new Date(2006, 6, 1))
     createEffect(async () => {
@@ -15,6 +16,7 @@ const PropertySummary: Component = () => {
         setProperty(Property.toProperty(result))
         const result2 = await getPropertyLatestOwnerDetailsInfo(params.id, violationDate())
         setLink(result2.street_view_link)
+        setOwner(result2)
     });
 
     const getLicenseInspectionsLink = (address: string) => {
@@ -26,46 +28,75 @@ const PropertySummary: Component = () => {
                 <iframe class="h-[600px] w-full" src={link()}></iframe>
             </div>
             <div class="w-full lg:w-1/2">
-                <div class="flex justify-between gap-4">
-                    <div class="w-1/2 text-right">
-                        (<a href={getLicenseInspectionsLink(property().location)} target="_blank">Link to L&I</a>)
-                        Rental License
+                <div class="text-xl">BUILDING: {property().location}</div>
+                <div class="text-xl">LIKELY OWNER: {owner().latest_owner}</div>
+                <div class="flex w-full border border-black divide-x divide-black">
+                    <div class="divide-y divide-black">
+                        <div class="bg-gray-200 px-2 text-center">Owner Status</div>
+                        <div class="p-2">{property().hasActiveRentalLicense ? "Active Rental" : "Not Active Rental"}</div>
                     </div>
-                    <div class="w-1/2 text-left">{property().hasActiveRentalLicense ? "Active" : "None"} : Expires { new Date(property().rentalLicenseExpiration).toLocaleString('en-us', { year:"numeric", month:"short", day:"numeric"})}</div>
-                </div>
-                <div class="flex justify-between gap-4">
-                    <div class="w-1/2 text-right">Year Built</div>
-                    <div class="w-1/2 text-left">{property().yearBuilt}</div>
-                </div>
-                <div class="flex justify-between gap-4">
-                    <div class="w-1/2 text-right">Property Type</div>
-                    <div class="w-1/2 text-left">
-                        <div class="font-bold">{property().categoryCodeDescription}</div>
-                        <div>{ property().buildingCodeDescription }</div>
+                    <div class="grow divide-y divide-black">
+                        <div class="bg-gray-200 px-2">Rental License    (<a class="text-blue-500" href={getLicenseInspectionsLink(property().location)} target="_blank">Link to L&I</a>)</div>
+                        <div class="p-2">{property().hasActiveRentalLicense ? "Active" : "None"} : Expires { new Date(property().rentalLicenseExpiration).toLocaleString('en-us', { year:"numeric", month:"short", day:"numeric"})}</div>
                     </div>
+
                 </div>
-                <div class="flex justify-between gap-4">
-                    <div class="w-1/2 text-right">Property Estimate</div>
-                    <div class="w-1/2 text-left">{property().latestAssessmentMarketValue}</div>
-                </div>
-                <div class="mt-8">
-                    <h2 class="text-left border-b pl-4">Violations</h2>
-                    <div class="flex justify-between gap-4">
-                        <div class="w-1/2 text-right">Currently Open Violations</div>
-                        <div class="w-1/2 text-left">  { property().nViolationsOpen }</div>
+                <div class="flex w-full border-l border-r border-b border-emerald-800 divide-x divide-emerald-800">
+                    <div class="divide-y divide-black">
+                        <div class="bg-gray-200 px-2 text-center">Property Type</div>
+                        <div class="p-2">{property().categoryCodeDescription}</div>
                     </div>
-                </div>
-                <div class="mt-4">
-                    <h2 class="text-left border-b pl-4">Since {new Date(violationDate()).toLocaleString('en-us', { year:"numeric", month:"short", day:"numeric"})}</h2>
-                    <div class="flex justify-between gap-4">
-                        <div class="w-1/2 text-right">Closed Violations</div>
-                        <div class="w-1/2 text-left">{ property().nViolationsClosedSince } </div>
+                    <div class="grow divide-y divide-black">
+                        <div class="bg-gray-200 px-2 text-center">Description</div>
+                        <div class="p-2">{property().buildingCodeDescription}</div>
                     </div>
-                    <div class="flex justify-between gap-4">
-                        <div class="w-1/2 text-right">Complaints to 311</div>
-                        <div class="w-1/2 text-left">{ property().nComplaintsSince }</div>
+                    <div class="divide-y divide-black">
+                        <div class="bg-gray-200 px-2 text-center">Year Built</div>
+                        <div class="p-2">{property().yearBuilt}</div>
+                    </div>
+                    <div class="divide-y divide-black">
+                        <div class="bg-gray-200 px-2 text-center">Estimate</div>
+                        <div class="p-2">{property().latestAssessmentMarketValue}</div>
                     </div>
                 </div>
+                <div class="mt-4 flex w-full border border-black">
+                    <div class="divide-y divide-black">
+                        <div class="bg-gray-200 px-2 text-center">Open Violations</div>
+                        <div class="text-2xl text-center pt-4"> { property().nViolationsOpen }</div>
+                    </div>
+                    <div class="grow border-l border-black">
+                        <div class="bg-gray-200 text-center">Since {new Date(violationDate()).toLocaleString('en-us', { year:"numeric", month:"short", day:"numeric"})}</div>
+                        <div class="flex w-full">
+                            <div class="w-1/2 bg-gray-200 px-2 text-center">Closed Violations</div>
+                            <div class="w-1/2 bg-gray-200 px-2 text-center">Complaints to 311</div>
+                        </div>
+                        <div class="border-t border-black divide-x divide-black flex">
+                            <div class="w-1/2 text-center p-2 text-xl">{ property().nViolationsClosedSince } </div>
+                            <div class="w-1/2 text-center p-2 text-xl">{ property().nComplaintsSince }</div>
+                        </div>
+                    </div>
+
+                </div>
+
+                {/*<div class="mt-8">*/}
+                {/*    <h2 class="text-left border-b pl-4">Violations</h2>*/}
+                {/*    <div class="flex justify-between gap-4">*/}
+                {/*        <div class="w-1/2 text-right">Currently Open Violations</div>*/}
+                {/*        <div class="w-1/2 text-left">  { property().nViolationsOpen }</div>*/}
+                {/*    </div>*/}
+                {/*</div>*/}
+
+                {/*<div class="mt-4">*/}
+                {/*    <h2 class="text-left border-b pl-4">Since {new Date(violationDate()).toLocaleString('en-us', { year:"numeric", month:"short", day:"numeric"})}</h2>*/}
+                {/*    <div class="flex justify-between gap-4">*/}
+                {/*        <div class="w-1/2 text-right">Closed Violations</div>*/}
+                {/*        <div class="w-1/2 text-left">{ property().nViolationsClosedSince } </div>*/}
+                {/*    </div>*/}
+                {/*    <div class="flex justify-between gap-4">*/}
+                {/*        <div class="w-1/2 text-right">Complaints to 311</div>*/}
+                {/*        <div class="w-1/2 text-left">{ property().nComplaintsSince }</div>*/}
+                {/*    </div>*/}
+                {/*</div>*/}
             </div>
         </PropertyBase>)
 }

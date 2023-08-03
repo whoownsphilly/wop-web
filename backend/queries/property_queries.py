@@ -365,6 +365,9 @@ async def properties_by_property_autocomplete_results(
     for i, maybe_unit_str in enumerate(search):
         if "UNIT" in maybe_unit_str and len(search) > i:
             unit = search[i + 1]
+    search_location = (
+        search_to_match.split("UNIT")[0].strip() if unit else search_to_match
+    )
 
     address_floor = address_low - (address_low % 100)
     address_remainder = address_low - address_floor
@@ -374,7 +377,7 @@ async def properties_by_property_autocomplete_results(
         if address_low_suffix
         else ""
     )
-    unit_str = f"AND unit_num LIKE '%{unit}%'" if unit else ""
+    unit_str = f"AND unit_num LIKE '{unit}%'" if unit else ""
     street_dir_str = (
         f"AND (street_predir LIKE '%{search[1]}%' OR street_postdir LIKE '%{search[1]}%')"
         if includes_dir
@@ -440,7 +443,7 @@ async def properties_by_property_autocomplete_results(
     location as computed_location,
     CASE WHEN unit is null THEN location ELSE concat(location, ' UNIT ',unit) END as location_unit,
     2 as grantees_source_priority
-    FROM opa_properties_public WHERE location like '{search_to_match}%' 
+    FROM opa_properties_public WHERE location like '{search_location}%' and UNIT like '{unit}%' 
     """
     df = await carto_request(query)
     # Sort by similarity of computed location to the search you are looking for

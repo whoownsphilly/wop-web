@@ -394,7 +394,7 @@ async def properties_by_owner_name_results(parcel_number):
         LEFT JOIN (
             SELECT * FROM rtt_summary  WHERE ({DEEDS_WHERE_CLAUSE})
         ) rtt_summary
-        ON rtt_summary.recording_date =  opa.recording_date
+        ON cast(rtt_summary.recording_date as date) =  opa.recording_date
         AND rtt_summary.opa_account_num = opa.parcel_number
         -- get when it was sold by joining the grantee to the grantor
         LEFT JOIN (
@@ -468,7 +468,6 @@ async def properties_by_owner_name_results(parcel_number):
         owner_property_timeline_df = property_timeline_df[
             property_timeline_df.likely_owner.isin(distinct_owner_names["names"].values)
         ]
-
     # Manipulations on the owner df
 
     # TODO Better handling of properties with multiple addresses

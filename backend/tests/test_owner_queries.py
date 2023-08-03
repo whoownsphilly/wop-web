@@ -41,8 +41,8 @@ async def test_properties_by_mailing_address_results():
 
 async def test_autocomplete():
     properties_to_test = [
+        {"address_str": "614 South washington square 1914", "top_result": "888050916"},
         {"address_str": "135 S 23rd Street", "top_result": "881028600"},
-        {"address_str": "614 South washington square 912", "top_result": "888050735"},
         {"address_str": "20 S 16TH ST", "top_result": "883422300"},
         {"address_str": "135 S 23rd Street", "top_result": "881028600"},
         {"address_str": "4604 Whitaker Ave", "top_result": "871564840"},
@@ -50,7 +50,7 @@ async def test_autocomplete():
     ]
     for test_property in properties_to_test:
         results = await properties_by_property_autocomplete_results(
-            test_property["address_str"], n_results=1
+            test_property["address_str"], n_results=1, include_aka_string=True
         )
         assert results["results"][0]["opa_account_num"] == test_property["top_result"]
 
@@ -75,6 +75,8 @@ async def test_properties_by_owner_name_results():
     parcel_number = "871288650"  # domb
     # parcel_number = "881137200"  # broken
     parcel_number = "011156500"  # doesnt return any properties
+    parcel_number = "881028600"
     results = await properties_by_owner_name_results(parcel_number)
+    breakpoint()
     # This is pretty good, just needs to get synced into the front-end
     assert results

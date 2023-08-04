@@ -1,7 +1,7 @@
 import {Component} from "solid-js";
 
 const About: Component = () => {
-    return (<main class="flex flex-col justify-center">
+    return (<main class="flex flex-col justify-center m-8">
         <p>
             Over the last several years, cities have begun open sourcing a variety of
             previously difficult to access data, including property, deed, violations,
@@ -9,65 +9,62 @@ const About: Component = () => {
             community members to build tools on top of the data for a variety of
             purposes.
         </p>
-
-        <p>
+        <p class="mt-4">
             Recently, in many cities, one of the purposes that has arisen is allowing
             people to look up who actually owns which rental properties. This
             information is both extremely valuable and fairly difficult to organize.
         </p>
 
-        <p>This information is valuable for several reasons:</p>
-        <sui-list>
-            <sui-list-item
-            ><b>Legal:</b> it can be used for legal purposes for tenants and their
-                advocates</sui-list-item
-            >
-            <sui-list-item
+        <p class="mt-4">This information is valuable for several reasons:</p>
+        <ul>
+            <li><b>Legal:</b> it can be used for legal purposes for tenants and their
+                advocates</li>
+            <li
             ><b>Organizing:</b> it can be used to see what other properties a
                 landlord owns and what other violations may be on their
-                record</sui-list-item
+                record</li
             >
-            <sui-list-item
+            <li
             ><b>Enforcement:</b> government officials can use this information to
                 track bad landlords, better enforce laws, and escalate
-                violations</sui-list-item
+                violations</li
             >
-            <sui-list-item
+            <li
             ><b>Policy:</b> journalists and academics can use this information in
                 different ways: which neighborhoods are being preyed on, which landlords
-                are under investigation for other citations, etc.</sui-list-item
+                are under investigation for other citations, etc.</li
             >
-        </sui-list>
+        </ul>
 
-        <p>This information is difficult to organize for several reasons:</p>
-        <sui-list>
-            <sui-list-item
+        <p class="mt-4">This information is difficult to organize for several reasons:</p>
+        <ul class="mt-4">
+            <li
             ><b>Multiple sources:</b> There are different datasets for different
                 types of data, and the link between these datasets is not always
-                documented or easily discoverable.</sui-list-item
+                documented or easily discoverable.</li
             >
-            <sui-list-item
+            <li
             ><b>Messy/incomplete data:</b> Either due to incompetence or nefarious
                 reasons, there are many examples of data that are incomplete or straight
                 up wrong (data in the wrong field, truncated names, misspellings that
-                make it difficult to group data together).</sui-list-item
+                make it difficult to group data together).</li
             >
-            <sui-list-item
+            <li
             ><b>Difficult/misapplied interface:</b> While cities do make this data
                 available, and even build websites to search through the data, the
                 interfaces are not structured for the purposes above, and sometimes
                 become overly restrictive when the city learns about some of the
                 previously described use cases (for example Philly now prevents direct
-                “search by owner”).</sui-list-item
+                “search by owner”).</li
             >
-            <sui-list-item
+            <li
             ><b>Purposely hidden identities:</b> Landlords who own properties
                 typically use shell companies, LLCs, and other business structures to
                 hide their true identity. This makes it difficult to get a full picture
-                of a landlord’s housing portfolio.</sui-list-item
+                of a landlord’s housing portfolio.</li
             >
-        </sui-list>
-        <p>
+        </ul>
+        <p class="mt-4">
             This website contains up-to-date open data from the City of Philadelphia.
             The data comes from the following sources. Each of these sources can be
             accessed through Postgres-style SQL-queries as parameters of RESTful
@@ -75,7 +72,7 @@ const About: Component = () => {
             <router-link to="/explore">page</router-link> was created so that you can
             simply type SQL and get results.
         </p>
-        <ul>
+        <ul class="ml-4">
             <li>
                 <a
                     target="_blank"

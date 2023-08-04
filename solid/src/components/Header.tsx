@@ -1,6 +1,6 @@
 import {Component, createMemo, Show} from "solid-js";
 import {useLocation} from "@solidjs/router";
-import "./header.css";
+import "./header.module.css";
 const Header: Component = () => {
     const location = useLocation();
     const isHome = createMemo(() => location.pathname === "/");

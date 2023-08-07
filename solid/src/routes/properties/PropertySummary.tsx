@@ -75,28 +75,7 @@ const PropertySummary: Component = () => {
                             <div class="w-1/2 text-center p-2 text-xl">{ property().nComplaintsSince }</div>
                         </div>
                     </div>
-
                 </div>
-
-                {/*<div class="mt-8">*/}
-                {/*    <h2 class="text-left border-b pl-4">Violations</h2>*/}
-                {/*    <div class="flex justify-between gap-4">*/}
-                {/*        <div class="w-1/2 text-right">Currently Open Violations</div>*/}
-                {/*        <div class="w-1/2 text-left">  { property().nViolationsOpen }</div>*/}
-                {/*    </div>*/}
-                {/*</div>*/}
-
-                {/*<div class="mt-4">*/}
-                {/*    <h2 class="text-left border-b pl-4">Since {new Date(violationDate()).toLocaleString('en-us', { year:"numeric", month:"short", day:"numeric"})}</h2>*/}
-                {/*    <div class="flex justify-between gap-4">*/}
-                {/*        <div class="w-1/2 text-right">Closed Violations</div>*/}
-                {/*        <div class="w-1/2 text-left">{ property().nViolationsClosedSince } </div>*/}
-                {/*    </div>*/}
-                {/*    <div class="flex justify-between gap-4">*/}
-                {/*        <div class="w-1/2 text-right">Complaints to 311</div>*/}
-                {/*        <div class="w-1/2 text-left">{ property().nComplaintsSince }</div>*/}
-                {/*    </div>*/}
-                {/*</div>*/}
             </div>
         </PropertyBase>)
 }

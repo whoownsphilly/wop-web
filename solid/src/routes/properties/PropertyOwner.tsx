@@ -3,7 +3,6 @@ import PropertyBase from "./PropertyBase";
 import {
     getOwnerPageInfoByMailingAddress, getOwnerPageInfoByName,
 } from "../../services/apiFetcher";
-import {Property} from "../../models/property.model";
 import {useParams} from "@solidjs/router";
 import {CurrencyFormatter} from "../../services/utility.helper";
 
@@ -17,9 +16,6 @@ const PropertyOwner: Component = () => {
     const [properties, setProperties] = createSignal([])
     const [propertySummary, setPropertySummary ] = createSignal(0)
     createEffect(async () => {
-        //const mailingResults = await getOwnerPageInfoByMailingAddress(params.id, violationDate())
-        //const ownerResults = await getOwnerPageInfoByName(params.id, violationDate())
-
         const [mailingResults, ownerResults] = await Promise.all([
             getOwnerPageInfoByMailingAddress(params.id, violationDate()),
             getOwnerPageInfoByName(params.id, violationDate())])
@@ -67,44 +63,83 @@ const PropertyOwner: Component = () => {
     })
 
     return (<PropertyBase>
-        <div class="w-full lg:w-1/2">
+        <section class="flex flex-col w-full">
+        <div class="flex">
+            <div class="w-full lg:w-1/2">
 
-        </div>
-        <div class="w-full lg:w-1/2">
-            <div class="text-xl">MAILING ADDRESS: {mailingAddressInfo().mailingAddress}</div>
-            <Show when={mailingAddressInfo().mailingAddressBasedMailingCareOfNames}>
-                <div>MAILING CARE OF: {mailingAddressInfo().mailingAddressBasedMailingCareOfNames.join(", ")}</div>
-            </Show>
-            <div class="flex flex-col w-full border border-black divide-emerald-800">
-                <div class="bg-gray-200 text-center">Properties currently associated with owner</div>
-                <div class="flex w-full">
-                    <div class="w-1/2 bg-gray-200 px-2 text-center">Properties</div>
-                    <div class="w-1/2 bg-gray-200 px-2 text-center">Total Value</div>
-                </div>
-                <div class="border-t border-black divide-x divide-black flex">
-                    <div class="w-1/2 text-center p-2 text-xl">{ properties().length } </div>
-                    <div class="w-1/2 text-center p-2 text-xl">{ CurrencyFormatter.USDollar.format(propertySummary().value) }</div>
-                </div>
             </div>
-            <div class="mt-4 flex w-full border border-black">
-                <div class="divide-y divide-black">
-                    <div class="bg-gray-200 px-2 text-center">Open Violations</div>
-                    <div class="text-2xl text-center pt-4"> { propertySummary().open }</div>
-                </div>
-                <div class="grow border-l border-black">
-                    <div class="bg-gray-200 text-center">Since {new Date(violationDate()).toLocaleString('en-us', { year:"numeric", month:"short", day:"numeric"})}</div>
+            <div class="w-full lg:w-1/2">
+                <div class="text-xl">MAILING ADDRESS: {mailingAddressInfo().mailingAddress}</div>
+                <Show when={mailingAddressInfo().mailingAddressBasedMailingCareOfNames}>
+                    <div>MAILING CARE OF: {mailingAddressInfo().mailingAddressBasedMailingCareOfNames.join(", ")}</div>
+                </Show>
+                <div class="flex flex-col w-full border border-black divide-emerald-800">
+                    <div class="bg-gray-200 text-center">Properties currently associated with owner</div>
                     <div class="flex w-full">
-                        <div class="w-1/2 bg-gray-200 px-2 text-center">Closed Violations</div>
-                        <div class="w-1/2 bg-gray-200 px-2 text-center">Complaints</div>
+                        <div class="w-1/2 bg-gray-200 px-2 text-center">Properties</div>
+                        <div class="w-1/2 bg-gray-200 px-2 text-center">Total Value</div>
                     </div>
                     <div class="border-t border-black divide-x divide-black flex">
-                        <div class="w-1/2 text-center p-2 text-xl">{ propertySummary().closed } </div>
-                        <div class="w-1/2 text-center p-2 text-xl">{ propertySummary().complaints }</div>
+                        <div class="w-1/2 text-center p-2 text-xl">{ properties().length } </div>
+                        <div class="w-1/2 text-center p-2 text-xl">{ CurrencyFormatter.USDollar.format(propertySummary().value) }</div>
                     </div>
                 </div>
-
+                <div class="mt-4 flex w-full border border-black">
+                    <div class="divide-y divide-black">
+                        <div class="bg-gray-200 px-2 text-center">Open Violations</div>
+                        <div class="text-2xl text-center pt-4"> { propertySummary().open }</div>
+                    </div>
+                    <div class="grow border-l border-black">
+                        <div class="bg-gray-200 text-center">Since {new Date(violationDate()).toLocaleString('en-us', { year:"numeric", month:"short", day:"numeric"})}</div>
+                        <div class="flex w-full">
+                            <div class="w-1/2 bg-gray-200 px-2 text-center">Closed Violations</div>
+                            <div class="w-1/2 bg-gray-200 px-2 text-center">Complaints</div>
+                        </div>
+                        <div class="border-t border-black divide-x divide-black flex">
+                            <div class="w-1/2 text-center p-2 text-xl">{ propertySummary().closed } </div>
+                            <div class="w-1/2 text-center p-2 text-xl">{ propertySummary().complaints }</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+        <div class="max-w-6xl">
+            <table class="w-6xl">
+                <thead>
+                <tr>
+                    <th>color</th>
+                    <th>current_owner</th>
+                    <th>document_id</th>
+                    <th>lat</th>
+                    <th>likely_owner</th>
+                    <th>lng</th>
+                    <th>location</th>
+                    <th>location_unit</th>
+                    <th>mailing_address_1</th>
+                    <th>mailing_address_2</th>
+                    <th>mailing_care_of</th>
+                    <th>mailing_city_state</th>
+                    <th>mailing_street</th>
+                    <th>mailing_zip</th>
+                    <th>market_value</th>
+                    <th>complaints</th>
+                    <th>violations</th>
+                    <th>violations_closed</th>
+                    <th>violations_open</th>
+                    <th>opa_account_num</th>
+                    <th>opa_address</th>
+                    <th>opa_address_unit</th>
+                    <th>property_count</th>
+                    <th>sold_to</th>
+                    <th>source</th>
+                    <th>start_dt</th>
+                    <th>unit</th>
+                </tr>
+                </thead>
+
+            </table>
+        </div>
+        </section>
     </PropertyBase>)
 }
 

@@ -5,6 +5,7 @@ import {
 } from "../../services/apiFetcher";
 import {useParams} from "@solidjs/router";
 import {CurrencyFormatter} from "../../services/utility.helper";
+import PropertyOwnerMap from "./components/PropertyOwnerMap";
 
 const PropertyOwner: Component = () => {
 
@@ -64,9 +65,9 @@ const PropertyOwner: Component = () => {
 
     return (<PropertyBase>
         <section class="flex flex-col w-full">
-        <div class="flex">
-            <div class="w-full lg:w-1/2">
-
+        <div class="flex gap-4">
+            <div class="w-full lg:w-1/2 h-[50vh]">
+                <PropertyOwnerMap properties={properties()} />
             </div>
             <div class="w-full lg:w-1/2">
                 <div class="text-xl">MAILING ADDRESS: {mailingAddressInfo().mailingAddress}</div>

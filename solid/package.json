@@ -23,6 +23,8 @@
     "apexcharts": "^3.41.1",
     "axios": "^1.4.0",
     "init": "^0.1.2",
-    "solid-js": "^1.7.6"
+    "mapbox-gl": "^2.15.0",
+    "solid-js": "^1.7.6",
+    "solid-map-gl": "^1.9.2"
   }
 }

@@ -24,7 +24,7 @@ const Neighborhoods: Component = () => {
     const [zipCode, setZipCode] = createSignal("")
     const [blocksFromAddress, setBlocksFromAddress] = createSignal(0)
 
-    const [searchType, setSearchType] = createSignal("address")
+    const [searchType, setSearchType] = createSignal("mapBoundary")
     const [activeToggles, setActiveToggles] = createSignal(["rental", "no-rental", "no-condo", "no-owner"])
     const [activeBuildingTypes, setActiveBuildingTypes] = createSignal([buildingTypes[0], buildingTypes[1], buildingTypes[8]])
     const [properties, setProperties] = createSignal([])
@@ -209,9 +209,9 @@ const Neighborhoods: Component = () => {
             <div class="font-medium uppercase px-4 py-2 whitespace-nowrap">Search By</div>
             <div class="flex justify-between py-2 border-l w-full ">
                 <div class="flex">
-                    <select class="py-2 px-4 mx-2 pr-9 block w-full border-gray-200 rounded-md text-sm w-[200px]" name={searchType()}  onChange={(e) => {  setSearchType(e.target.value)}}>
-                        <option value="mapBoundary" >Map</option>
-                        <option selected value="address" >Address</option>
+                    <select class="py-2 px-4 mx-2 pr-9 block w-full border-gray-200 rounded-md text-sm w-[150px]" name={searchType()}  onChange={(e) => {  setSearchType(e.target.value)}}>
+                        <option selected value="mapBoundary" >Map</option>
+                        <option value="address" >Address</option>
                         <option value="zipCode" >Zip Code</option>
                     </select>
                     {/*<div class="flex mr-2">*/}
@@ -220,14 +220,17 @@ const Neighborhoods: Component = () => {
                     {/*    <button class={styles["search-toggle-button"]} classList={{'w-1/3': true, 'whitespace-nowrap': true, [active]: isSearchType('zipCode')}} onClick={toggleSearchType('zipCode')} >Zip Code</button>*/}
                     {/*</div>*/}
                     <Show when={isSearchType("address")}>
-                        <div class="flex items-center gap-2 grow mr-2">
-                            <div class="text-sm text-gray-400">Starting Address</div>
-                            <input type="text" class="border w-1/3 p-2 rounded-sm grow" value={startingAddress()} onChange={(e) => {setStartingAddress(e.target.value)}}/>
+                        <div class="flex">
+                            <div class="w-2/3 flex items-center gap-2 grow mr-2">
+                                <div class="text-sm text-gray-400">Starting Address</div>
+                                <input type="text" class="border w-1/3 p-2 rounded-sm grow" value={startingAddress()} onChange={(e) => {setStartingAddress(e.target.value)}}/>
+                            </div>
+                            <div class="w-1/3 flex items-center gap-2">
+                                <div class="text-sm whitespace-nowrap text-gray-400">Blocks from Address</div>
+                                <input type="text" class="border w-full p-2 w-10 text-right" value={blocksFromAddress()} onChange={(e) => {setBlocksFromAddress(e.target.value)}}/>
+                            </div>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <div class="text-sm whitespace-nowrap text-gray-400">Blocks from Address</div>
-                            <input type="text" class="border w-full p-2 w-10 text-right" value={blocksFromAddress()} onChange={(e) => {setBlocksFromAddress(e.target.value)}}/>
-                        </div>
+
                     </Show>
                     <Show when={isSearchType("zipCode")}>
                         <div class="flex items-center gap-2">

@@ -65,14 +65,20 @@ const PropertyOwner: Component = () => {
 
     return (<PropertyBase>
         <section class="flex flex-col w-full">
-        <div class="flex gap-4">
+        <div class="flex flex-col flex-col-reverse w-full lg:flex-row gap-4">
             <div class="w-full lg:w-1/2 h-[50vh]">
                 <PropertyOwnerMap properties={properties()} />
             </div>
             <div class="w-full lg:w-1/2">
-                <div class="text-xl">MAILING ADDRESS: {mailingAddressInfo().mailingAddress}</div>
+                <div>
+                    <div>Mailing Address</div>
+                    <span class="text-sm lg:text-xl"> {mailingAddressInfo().mailingAddress}</span>
+                </div>
                 <Show when={mailingAddressInfo().mailingAddressBasedMailingCareOfNames}>
-                    <div>MAILING CARE OF: {mailingAddressInfo().mailingAddressBasedMailingCareOfNames.join(", ")}</div>
+                    <div class="text-sm lg:text-base">
+                        <div class="border-t pt-2">Mailing Care Of</div>
+                        <span> {mailingAddressInfo().mailingAddressBasedMailingCareOfNames.join(", ")}</span>
+                    </div>
                 </Show>
                 <div class="flex flex-col w-full border border-black divide-emerald-800">
                     <div class="bg-neutral-300 text-center">Properties currently associated with owner</div>

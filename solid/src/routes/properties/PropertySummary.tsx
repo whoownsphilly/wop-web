@@ -24,10 +24,11 @@ const PropertySummary: Component = () => {
     }
     return (
         <PropertyBase>
+            <section class="flex flex-wrap flex-col flex-col-reverse lg:flex-row justify-between ">
             <div class="w-full lg:w-1/2 h-100">
                 <iframe class="h-[600px] w-full" src={link()}></iframe>
             </div>
-            <div class="w-full lg:w-1/2">
+            <div class="w-full lg:w-1/2 lg:pl-4 mb-4 lg:mb-0">
                 <div class="text-xl">BUILDING: {property().location}</div>
                 <div class="text-xl">LIKELY OWNER: {owner().latest_owner}</div>
                 <div class="flex w-full border border-black divide-x divide-black">
@@ -43,7 +44,7 @@ const PropertySummary: Component = () => {
                 </div>
                 <div class="flex w-full border-l border-r border-b border-emerald-800 divide-x divide-emerald-800">
                     <div class="divide-y divide-black">
-                        <div class="bg-gray-200 px-2 text-center">Property Type</div>
+                        <div class="bg-gray-200 px-2 text-center"><span class="hidden lg:block">Property</span> Type</div>
                         <div class="p-2">{property().categoryCodeDescription}</div>
                     </div>
                     <div class="grow divide-y divide-black">
@@ -51,7 +52,7 @@ const PropertySummary: Component = () => {
                         <div class="p-2">{property().buildingCodeDescription}</div>
                     </div>
                     <div class="divide-y divide-black">
-                        <div class="bg-gray-200 px-2 text-center">Year Built</div>
+                        <div class="bg-gray-200 px-2 text-center"><span class="hidden lg:block">Year</span> Built</div>
                         <div class="p-2">{property().yearBuilt}</div>
                     </div>
                     <div class="divide-y divide-black">
@@ -77,6 +78,7 @@ const PropertySummary: Component = () => {
                     </div>
                 </div>
             </div>
+            </section>
         </PropertyBase>)
 }
 

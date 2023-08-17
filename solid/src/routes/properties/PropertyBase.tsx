@@ -17,7 +17,7 @@ const PropertyBase: Component = (props) => {
                 <a class={styles["nav-button"]} classList={{ [active]: isActive("/timeline") }} href={"/properties/" + params.id + "/timeline" }>Timeline</a>
                 <a class={styles["nav-button"]} classList={{ [active]: isActive("/owner") }} href={"/properties/" + params.id + "/owner"}>Owner</a>
             </nav>
-            <section class="border-t rounded-sm p-4 flex justify-between gap-4">
+            <section class="border-t rounded-sm p-4">
             {props.children}
             </section>
     </main>)

@@ -18,12 +18,12 @@ const Neighborhoods: Component = () => {
         { key: "Hotel", text: "Hotel", value: "Hotel" }
     ]
 
+    const [visibleInstructions, setVisibleInstructions] = createSignal("")
     const [numUnitsPerList, setNumUnitsPerList] = createSignal(20)
     const [numLists, setNumLists] = createSignal(5)
     const [startingAddress, setStartingAddress] = createSignal("")
     const [zipCode, setZipCode] = createSignal("")
     const [blocksFromAddress, setBlocksFromAddress] = createSignal(0)
-
     const [searchType, setSearchType] = createSignal("mapBoundary")
     const [activeToggles, setActiveToggles] = createSignal(["rental", "no-rental", "no-condo", "no-owner"])
     const [activeBuildingTypes, setActiveBuildingTypes] = createSignal([buildingTypes[0], buildingTypes[1], buildingTypes[8]])
@@ -61,18 +61,14 @@ const Neighborhoods: Component = () => {
         }
     }
 
+    const toggleVisibleInstructions = (type: string) => () => {
+        console.log()
+        visibleInstructions() === type ? setVisibleInstructions("") : setVisibleInstructions(type)
+    }
+
     const isSearchType = (key: string) => {
         return searchType() === key
     }
-
-    // const toggleSearchType = (type: string) => {
-    //     setSearchType(type)
-    // }
-
-    // const toggleSearchType = (type: string) => () => {
-    //     console.log(type)
-    //     setSearchType(type)
-    // }
 
     const getActiveToggleFilterValues = (filter) =>{
         const isToggle =  activeToggles().indexOf(filter) > -1
@@ -143,36 +139,35 @@ const Neighborhoods: Component = () => {
             //     );
             // });
         });
-        // this.lastUpdated = new Date();
     }
 
     return (<main class="flex flex-col justify-between gap-1">
         <section class="w-full flex justify-between gap-2 py-2 px-4">
             <div class="flex flex-col gap-1 w-1/4 overflow-auto h-[150px]">
-                <h3 class="font-medium text-xl">Search</h3>
-                <h4 class="text-sm">Searching Properties</h4>
-                <Show when={false}>
-                    <div class="text-sm">
+                <h3 class="font-medium text-xl">Instructions</h3>
+                <h4 class="text-sm cursor-pointer p-1 hover:bg-neutral-200  hover:text-black" classList={{'bg-neutral-500 text-white': visibleInstructions() === "searching"}} onclick={toggleVisibleInstructions("searching")}>Searching Properties</h4>
+                <Show when={visibleInstructions() === "searching"}>
+                    <div class="text-sm pl-1 ">
                         Select a geographic area to find the 100 properties with the most violations in that area. These are properties that have an active rental license and violations are only counted if they occurred after 2018-01-01.
-
+                        <br/><br/>
                         Click "Search By: Zip Code" to enter a zip code as the geographic area of focus. Click "Search By: Map Boundary" to select your own geographic area of choice. You can do this either by zooming in on the map, or by clicking one of the shapes on the map legend and drawing a custom geographic area.
-
+                        <br/><br/>
                         Once you have selected a geographic area, click "Update Map", which will update the markers on the map to represent the 100 properties with the most violations within that area. The list below the map will also populate with this list.
                     </div>
                 </Show>
-                <h4 class="text-sm">Generating Lists</h4>
-                <Show when={false}>
-                <div>
+                <h4 class="text-sm cursor-pointer p-1 hover:bg-neutral-200" classList={{'bg-neutral-500 text-white': visibleInstructions() === "generating"}}  onclick={toggleVisibleInstructions("generating")}>Generating Lists</h4>
+                <Show when={visibleInstructions() === "generating"}>
+                <div class="text-sm p-1">
                     To generate custom lists, you first have to use the "+ Add List" tab to create a new list. Currently, each new list automatically gets assigned a different color. The system can reliably handle about 5 lists at a time, but this could be increased in the future. After creating a list, you can click on a property marker in the map, it's address will pop up along with a drop-down menu with the populated list names, and a button that says 'Add to List'. By clicking on the address, it will then add that property to your own personal list, which can be subsequently downloaded.
-
+                    <br/><br/>
                     You can also bulk add properties to the list by going to that list's tab, using the selector tool on the map legend, drawing a shape on the map, and then clicking the 'Add map bounds to list' button.
                 </div>
                 </Show>
-                <h4 class="text-sm">Sharing Lists</h4>
-                <Show when={false}>
-                <div>
+                <h4 class="text-sm cursor-pointer p-1 hover:bg-neutral-200" classList={{'bg-neutral-500 text-white': visibleInstructions() === "sharing"}} onclick={toggleVisibleInstructions("sharing")}>Sharing Lists</h4>
+                <Show when={visibleInstructions() === "sharing"}>
+                <div class="text-sm p-1">
                     After creating a list, you can share out 2 different types of links. There is a 'Link to read-only version of this List' which will link people directly to what is inside the Tab (a copy of the list and a map of just those selected properties). There is also a 'Link to walking directions' which will open up all of the selected properties in an external Google Maps page.
-
+                    <br/><br/>
                     If you are working on a list and are not completed with it, you can copy the URL (which changes whenever a property is added) and that URL should return you to the same list that you were working on.
                 </div>
                 </Show>
@@ -202,16 +197,11 @@ const Neighborhoods: Component = () => {
             <div class="font-medium uppercase px-4 py-2 whitespace-nowrap">Search By</div>
             <div class="flex justify-between py-2 border-l w-full ">
                 <div class="flex justify-start">
-                    <select class="py-2 px-4 mx-2 pr-9 block w-full border-gray-200 rounded-md text-sm w-[200px]" name={searchType()}  onChange={(e) => {  setSearchType(e.target.value)}}>
+                    <select class="py-2 px-4 mx-2 pr-9 block w-full border border-gray-200 rounded-md text-sm w-[200px]" name={searchType()}  onChange={(e) => {  setSearchType(e.target.value)}}>
                         <option selected value="mapBoundary" >Map</option>
                         <option value="address" >Address</option>
                         <option value="zipCode" >Zip Code</option>
                     </select>
-                    {/*<div class="flex mr-2">*/}
-                    {/*    <button class={styles["search-toggle-button"]} classList={{'w-1/3': true, [active]: isSearchType('mapBoundary')}} onClick={toggleSearchType('mapBoundary')} >Map</button>*/}
-                    {/*    <button class={styles["search-toggle-button"]} classList={{'w-1/3': true, [active]: isSearchType('address')}} onClick={toggleSearchType('address')} >Address</button>*/}
-                    {/*    <button class={styles["search-toggle-button"]} classList={{'w-1/3': true, 'whitespace-nowrap': true, [active]: isSearchType('zipCode')}} onClick={toggleSearchType('zipCode')} >Zip Code</button>*/}
-                    {/*</div>*/}
                     <Show when={isSearchType("address")}>
                         <div class="flex">
                             <div class="w-2/3 flex items-center gap-2 grow mr-2">
@@ -232,11 +222,10 @@ const Neighborhoods: Component = () => {
                 </div>
 
             </div>
-
         </section>
-
         <section class="w-full flex gap-4 h-[600px] px-4">
             <div>
+                <button class="bg-emerald-700 px-4 py-2 text-white rounded-sm mr-4 w-full my-2" onclick={update}>Update Map</button>
                 <div class="flex justify-between items-center gap-2">
                     <div class="text-sm">Units per list</div>
                     <input type="text" class="border w-1/3 text-right px-2 py-1 rounded-sm" value={numUnitsPerList()} onChange={(e) => {setNumUnitsPerList(e.target.value)}}/>
@@ -245,7 +234,7 @@ const Neighborhoods: Component = () => {
                     <div class="text-sm">Number of lists</div>
                     <input type="text" class="border w-1/3 text-right px-2 py-1 rounded-sm" value={numLists()} onChange={(e) => {setNumLists(e.target.value)}}/>
                 </div>
-                <button class="bg-emerald-700 px-4 py-2 text-white rounded-sm mr-4 w-full mt-2" onclick={update}>Update Map</button>
+
                 <h3 class="text-xl font-medium">Searched Properties</h3>
                 <For each={walkingLists()}>{(walkingList) =>
                     <div>L {walkingList.location}</div>

@@ -1,25 +1,27 @@
 import {Component, createEffect, mergeProps} from "solid-js";
 import "mapbox-gl/dist/mapbox-gl.css"
 import mapboxgl from "mapbox-gl";
-const PropertyOwnerMap: Component = (props) => {
+const NeighborhoodMap: Component = (props) => {
     props = mergeProps({}, props);
 
     createEffect( () =>{
         const propertyFeatures = props.properties.map(p => {
             return { "type": "Feature",
-                    properties: {
-                        address: p.opa_address,
-                        color: p.color
-                    },
-                    geometry: {
-                        type: "Point",
-                        coordinates: [p.lng, p.lat]
-                    },
-                }
+                properties: {
+                    address: p.opa_address,
+                    color: p.color
+                },
+                geometry: {
+                    type: "Point",
+                    coordinates: [p.lng, p.lat]
+                },
+            }
         })
+        console.log("neighborhood map")
+        console.log(propertyFeatures)
         mapboxgl.accessToken = "pk.eyJ1Ijoib3Jhbmdlbm90b3JhbmdlIiwiYSI6ImNsbDB4YWlldDF6ODUzZ3BycjM3eHlnbTUifQ.HciS95bDZaZlOb-pncOA1w";
         const map = new mapboxgl.Map({
-            container: "map", // container ID
+            container: "neighborhoodMap", // container ID
             style: "mapbox://styles/mapbox/light-v11", // style URL
             center: [-75.165222, 39.952583], // starting position [lng, lat]
             zoom: 12 // starting zoom
@@ -44,11 +46,11 @@ const PropertyOwnerMap: Component = (props) => {
                     source: "properties",
                     filter: ["has", "point_count"],
                     paint: {
-                    // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
-                    // with three steps to implement three types of circles:
-                    //   * Blue, 20px circles when point count is less than 100
-                    //   * Yellow, 30px circles when point count is between 100 and 750
-                    //   * Pink, 40px circles when point count is greater than or equal to 750
+                        // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
+                        // with three steps to implement three types of circles:
+                        //   * Blue, 20px circles when point count is less than 100
+                        //   * Yellow, 30px circles when point count is between 100 and 750
+                        //   * Pink, 40px circles when point count is greater than or equal to 750
                         "circle-color": [
                             "step",
                             ["get", "point_count"],
@@ -124,7 +126,7 @@ const PropertyOwnerMap: Component = (props) => {
 
     })
 
-    return(<div id="map" class="w-full h-full"></div>)
+    return(<div id="neighborhoodMap" class="w-full h-full"></div>)
 }
 
-export default PropertyOwnerMap
+export default NeighborhoodMap

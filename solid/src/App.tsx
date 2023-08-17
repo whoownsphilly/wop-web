@@ -19,7 +19,7 @@ const routes = [
     },
     {
         path: "/neighborhoods",
-        component: lazy(() => import("./routes/Neighborhoods")),
+        component: lazy(() => import("./routes/neighborhoods/Neighborhoods")),
     },
     {
         path: "/properties/:id",

@@ -75,10 +75,10 @@ const PropertyOwner: Component = () => {
                     <div>MAILING CARE OF: {mailingAddressInfo().mailingAddressBasedMailingCareOfNames.join(", ")}</div>
                 </Show>
                 <div class="flex flex-col w-full border border-black divide-emerald-800">
-                    <div class="bg-gray-200 text-center">Properties currently associated with owner</div>
+                    <div class="bg-neutral-300 text-center">Properties currently associated with owner</div>
                     <div class="flex w-full">
-                        <div class="w-1/2 bg-gray-200 px-2 text-center">Properties</div>
-                        <div class="w-1/2 bg-gray-200 px-2 text-center">Total Value</div>
+                        <div class="w-1/2 bg-neutral-300 px-2 text-center">Properties</div>
+                        <div class="w-1/2 bg-neutral-300 px-2 text-center">Total Value</div>
                     </div>
                     <div class="border-t border-black divide-x divide-black flex">
                         <div class="w-1/2 text-center p-2 text-xl">{ properties().length } </div>
@@ -87,14 +87,14 @@ const PropertyOwner: Component = () => {
                 </div>
                 <div class="mt-4 flex w-full border border-black">
                     <div class="divide-y divide-black">
-                        <div class="bg-gray-200 px-2 text-center">Open Violations</div>
+                        <div class="bg-neutral-300 px-2 text-center">Open Violations</div>
                         <div class="text-2xl text-center pt-4"> { propertySummary().open }</div>
                     </div>
                     <div class="grow border-l border-black">
-                        <div class="bg-gray-200 text-center">Since {new Date(violationDate()).toLocaleString('en-us', { year:"numeric", month:"short", day:"numeric"})}</div>
+                        <div class="bg-neutral-300 text-center">Since {new Date(violationDate()).toLocaleString('en-us', { year:"numeric", month:"short", day:"numeric"})}</div>
                         <div class="flex w-full">
-                            <div class="w-1/2 bg-gray-200 px-2 text-center">Closed Violations</div>
-                            <div class="w-1/2 bg-gray-200 px-2 text-center">Complaints</div>
+                            <div class="w-1/2 bg-neutral-300 px-2 text-center">Closed Violations</div>
+                            <div class="w-1/2 bg-neutral-300 px-2 text-center">Complaints</div>
                         </div>
                         <div class="border-t border-black divide-x divide-black flex">
                             <div class="w-1/2 text-center p-2 text-xl">{ propertySummary().closed } </div>

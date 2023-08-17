@@ -3,9 +3,9 @@
 }
 
 .nav-button:hover {
-    @apply border-gray-400;
+    @apply border-emerald-600
 }
 
 .active  {
-    @apply border-gray-400
+    @apply border-emerald-600
 }

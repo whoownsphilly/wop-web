@@ -12,7 +12,7 @@ return (
             <a class="px-4 py-2" href="/neighborhoods">Neighborhoods</a>
         </div>
         <Show when={!isHome()}>
-            <div class="text-xl text-bold text-emerald-800">Who owns Philly?</div>
+            <div class="text-2xl text-bold text-emerald-800">Who owns Philly?</div>
         </Show>
         <div class="flex gap-4 items-center">
             <a class="px-4 py-2 bg-emerald-700 rounded-lg text-white font-bold" href="/take-action">Take Action</a>

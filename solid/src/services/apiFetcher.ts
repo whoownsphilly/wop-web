@@ -78,7 +78,7 @@ export const getNeighborhoodsPageInfo = (
     rentalBuildingTypes
 ) => {
     const url =
-        "api/v1/neighborhoods/" +
+        `${domain}api/v1/neighborhoods/` +
         "?northeast_lat=" +
         bounds._northEast.lat +
         "&northeast_lng=" +
@@ -111,15 +111,23 @@ export const getNeighborhoodsPageInfo = (
         addressDistance +
         "&zip_code=" +
         zipCode;
+
     return fetch(url, {
         method: "GET"
     }).then(response => {
-        if (response.ok === false) {
-            return { status: "error" };
-        } else {
-            return response.json();
-        }
+        return response.json();
     });
+
+    // return fetch(url, {
+    //     method: "GET"
+    // }).then(response => {
+    //     console.log(response)
+    //     if (response.ok === false) {
+    //         return { status: "error" };
+    //     } else {
+    //         return response.json();
+    //     }
+    // });
 };
 
 export const getNeighborhoodsPageFromParcelNumbers = parcelList => {

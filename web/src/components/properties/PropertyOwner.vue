@@ -61,7 +61,7 @@
   <section class="flex flex-col w-full">
     <div class="flex flex-col flex-col-reverse w-full lg:flex-row gap-4">
       <div class="w-full lg:w-1/2 h-[50vh]">
-        <PropertyOwnerMap properties={properties()} />
+        <PropertyOwnerMap :properties=properties />
       </div>
       <div class="w-full lg:w-1/2">
         <div>

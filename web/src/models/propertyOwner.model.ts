@@ -4,8 +4,8 @@ export class PropertyOwner {
     yearBuiltIsEstimate: false
     hasHomesteadExemption: true
     location: ""
-    lat?: null
-    lng?: null
+    lat: null
+    lng: null
     owner1: ""
     owner2: ""
     mailingStreet: ""
@@ -33,8 +33,8 @@ export class PropertyOwner {
             yearBuiltIsEstimate: false
             hasHomesteadExemption: true
             location: ""
-            lat?: null
-            lng?: null
+            lat: 0
+            lng: 0
             owner1: ""
             owner2: ""
             mailingStreet: ""

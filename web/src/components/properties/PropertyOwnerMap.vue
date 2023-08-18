@@ -1,39 +1,83 @@
 
 <script setup lang="ts">
-import { map, latLng, tileLayer, MapOptions } from "leaflet";
-import { onMounted } from "vue";
+import L, {map, latLng, tileLayer, MapOptions, marker} from "leaflet";
+import "leaflet.markercluster";
+import {onMounted, watch} from "vue";
 
 const props = defineProps({
   properties: { type: Array, required: true}
 });
 
-const propertyFeatures = props.properties.map(p => {
-  return { "type": "Feature",
-    properties: {
-      address: p.opa_address,
-      color: p.color
-    },
-    geometry: {
-      type: "Point",
-      coordinates: [p.lng, p.lat]
-    },
-  }
+let propertyMap;
+
+// const propertyFeatures = props.properties.map(p => {
+//   return { "type": "Feature",
+//     properties: {
+//       address: p.opa_address,
+//       color: p.color
+//     },
+//     geometry: {
+//       type: "Point",
+//       coordinates: [p.lng, p.lat]
+//     },
+//   }
+// })
+
+
+const propertyMarkers = props.properties.map(p => {
+      return {
+        latLng: latLng(p.lat, p.lng),
+        color: p.color,
+        popUp: p.location + " " + (p.unit || ""),
+        parcelNumber: p.opa_account_num
+      }
 })
-
-
-
 onMounted(() => {
   const options: MapOptions = {
     center: latLng(39.952583, -75.165222),
     zoom: 12,
   }
-  const myMap  = map('propertyMap', options)
-  tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+
+  propertyMap  = map('propertyMap', options)
+
+  // 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+  tileLayer("https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png", {
     maxZoom: 19,
     attribution: '© OpenStreetMap'
-  }).addTo(myMap);
+  }).addTo(propertyMap);
+
+  const markers = L.markerClusterGroup();
+    props.properties.forEach(p => {
+       const m = marker(latLng(p.lat, p.lng))
+      console.log(m)
+       markers.addLayer(m);
+    })
+  console.log(markers)
+  markers.addLayer(marker([39.952583, -75.165222]));
+// add more markers here...
+
+  propertyMap.addLayer(markers);
+
 
 })
+
+watch(() => props.properties,
+    (value) => {
+  console.log("watch")
+      console.log(propertyMap)
+      const markers = L.markerClusterGroup();
+      value.forEach(p => {
+        const m = marker(latLng(p.lat, p.lng), { color: p.color})
+        markers.addLayer(m);
+      })
+      propertyMap.addLayer(markers);
+})
+  // return this.latLngs.map(latLngTuple => ({
+  //   latLng: latLng(latLngTuple.lat, latLngTuple.lng),
+  //   color: latLngTuple.color,
+  //   popUp: latLngTuple.location + " " + (latLngTuple.unit || ""),
+  //   parcelNumber: latLngTuple.opa_account_num
+  // }));
 
 // mymap .on("load", () => {
 //     if(propertyFeatures.length > 0) {

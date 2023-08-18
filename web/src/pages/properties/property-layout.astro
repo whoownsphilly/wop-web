@@ -1,0 +1,30 @@
+---
+import Layout from "../../layouts/layout.astro";
+const { id } = Astro.params;
+---
+<style>
+    .nav-button {
+        @apply px-6 py-2 rounded-sm bg-gray-100 border border-white text-black;
+    }
+
+    .nav-button:hover {
+        @apply bg-neutral-500 text-white
+    }
+
+    .active  {
+        @apply bg-neutral-500 text-white
+    }
+</style>
+
+<Layout title="Who owns Philly">
+<main class="w-full mt-4">
+    <nav class="flex w-full my-2 gap-4 ml-4">
+        <a class="nav-button" href={`/properties/${id}/summary` }>Summary</a>
+        <a class="nav-button" href={`/properties/${id}/timeline` }>Timeline</a>
+        <a class="nav-button" href={`/properties/${id}/owner`}>Owner</a>
+    </nav>
+    <section class="border-t rounded-sm p-4">
+        <slot/>
+    </section>
+</main>
+</Layout>

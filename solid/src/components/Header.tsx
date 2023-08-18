@@ -20,7 +20,7 @@ return (
             </Show>
             <div class="flex gap-4 items-center">
                 <a class="px-4 py-2 bg-emerald-700 rounded-lg text-white font-bold" href="/take-action">Take Action</a>
-                <a href="/About">About</a>
+                <a href="/about">About</a>
             </div>
         </div>
 

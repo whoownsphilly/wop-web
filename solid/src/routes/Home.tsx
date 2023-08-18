@@ -2,7 +2,7 @@ import {Component} from "solid-js";
 import AddressSearch from "../components/AddressSearch";
 
 const Home: Component = () => {
-   return (<main class="flex flex-col items-center h-screen lg:pt-36 p-4">
+   return (<main class="flex flex-col items-center h-screen lg:pt-24 p-4">
         <h1 class="text-4xl text-bold text-emerald-800 mb-2">Who Owns Philly?</h1>
         <p class="text-center"> Find out who owns what in Philly, what else
             they might own in the city, and information about their properties.</p>

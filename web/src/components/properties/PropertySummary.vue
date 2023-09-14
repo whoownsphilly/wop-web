@@ -47,14 +47,14 @@ const getLicenseInspectionsLink = (address: string) => {
           <div class="p-2">{{property.hasActiveRentalLicense ? "Active Rental" : "Not Active Rental"}}</div>
         </div>
         <div class="grow divide-y divide-black">
-          <div class="bg-gray-200 px-2">Rental License    (<a class="text-blue-500" :href=getLicenseInspectionsLink(property.location) target="_blank">Link to L&I</a>)</div>
+          <div class="bg-gray-200 px-2">Rental License (<a class="text-blue-500" :href=getLicenseInspectionsLink(property.location) target="_blank">Link to L&I</a>)</div>
           <div class="p-2">{{property.hasActiveRentalLicense ? "Active" : "None"}} : Expires {{ new Date(property.rentalLicenseExpiration).toLocaleString('en-us', { year:"numeric", month:"short", day:"numeric"})}}</div>
         </div>
 
       </div>
       <div class="flex w-full border-l border-r border-b border-emerald-800 divide-x divide-emerald-800">
         <div class="divide-y divide-black">
-          <div class="bg-gray-200 px-2 text-center"><span class="hidden lg:block">Property</span> Type</div>
+          <div class="bg-gray-200 px-2 text-center"><span class="hidden lg:block whitespace-nowrap">Property Type</span></div>
           <div class="p-2">{{property.categoryCodeDescription}}</div>
         </div>
         <div class="grow divide-y divide-black">
@@ -62,7 +62,7 @@ const getLicenseInspectionsLink = (address: string) => {
           <div class="p-2">{{property.buildingCodeDescription}}</div>
         </div>
         <div class="divide-y divide-black">
-          <div class="bg-gray-200 px-2 text-center"><span class="hidden lg:block">Year</span> Built</div>
+          <div class="bg-gray-200 px-2 text-center"><span class="hidden lg:block whitespace-nowrap">Year Built</span></div>
           <div class="p-2">{{property.yearBuilt}}</div>
         </div>
         <div class="divide-y divide-black">

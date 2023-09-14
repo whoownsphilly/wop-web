@@ -49,10 +49,8 @@ onMounted(() => {
   const markers = L.markerClusterGroup();
     props.properties.forEach(p => {
        const m = marker(latLng(p.lat, p.lng))
-      console.log(m)
        markers.addLayer(m);
     })
-  console.log(markers)
   markers.addLayer(marker([39.952583, -75.165222]));
 // add more markers here...
 

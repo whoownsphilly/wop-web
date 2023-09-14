@@ -1,8 +1,10 @@
 <script setup lang="ts">
   import PropertyOwnerMap from "./PropertyOwnerMap.vue";
   import {getOwnerPageInfoByMailingAddress, getOwnerPageInfoByName} from "../../services/apiFetcher";
-  import {reactive, ref} from "vue";
+  import {onMounted, reactive, ref, watch} from "vue";
   import {CurrencyFormatter} from "../../services/utility.helper";
+  import LoadingMap from "../ui/LoadingMap.vue";
+  import {IconLoader5Line} from "@iconify-prerendered/vue-ri";
 
   const mailingAddressInfo = ref<any>({})
   const violationDate = ref<any>(new Date(2006, 6, 1))
@@ -12,58 +14,88 @@
   const props = defineProps({
     id: { type: String, required: true }
   })
-  const [mailingResults, ownerResults] = await Promise.all([
-    getOwnerPageInfoByMailingAddress(props.id, violationDate),
-    getOwnerPageInfoByName(props.id, violationDate)])
 
-  const mailingInfo = {
-    mailingAddress: mailingResults["metadata"]["mailing_address"],
-    mailingAddressBasedNames: mailingResults["results"]["alias_names"],
-    mailingAddressBasedMailingCareOfNames:  mailingResults["results"]["mailing_care_of_names"],
-    mailingAddressBasedPropertyTimelineData: mailingResults["results"]["timeline"],
-    mailingAddressBasedViolations: mailingResults["results"]["violations"],
-    mailingAddressBasedComplaints: mailingResults["results"]["complaints"],
-    mailingAddressBasedOwnerPropertyCountsByName: mailingResults["display_inputs"]["owner_property_counts_by_name"],
-  }
-  mailingAddressInfo.value = mailingInfo
-  const ownerInfo = {
-    ownerBasedPropertyTimelineData: ownerResults["results"]["timeline"],
-    ownerBasedViolations: ownerResults["results"]["violations"],
-    ownerBasedComplaints: ownerResults["results"]["complaints"],
-    ownerBasedNames: ownerResults["results"]["alias_names"],
-    ownerBasedOwnerPropertyCountsByName: ownerResults["display_inputs"]["owner_property_counts_by_name"],
-  }
-
-  const allProperties = ownerInfo.ownerBasedPropertyTimelineData.concat(mailingInfo.mailingAddressBasedPropertyTimelineData)
-  let allUniqueCurrentProperties = []
-  let allUniquePropertyParcelNumbers = [];
-  allProperties.forEach((property) => {
-    if (
-        !allUniquePropertyParcelNumbers.includes(
-            property.opa_account_num
-        )
-    ) {
-      allUniquePropertyParcelNumbers.push(property.opa_account_num);
-      propertySummary.open += property.n_violations_open;
-      propertySummary.closed += property.n_violations_closed;
-      propertySummary.complaints += property.n_complaints;
-      propertySummary.amount += property.market_value;
-      if (property.current_owner === true) {
-        allUniqueCurrentProperties.push(property);
-      }
-    }
+  const pageState = reactive({
+    isLoading: true,
+    loadingPercent: 0
   })
-  properties.value = allUniqueCurrentProperties
-  propertySummary.value = propertySummary
+
+  const loadData = async (propertyId: string) => {
+    pageState.isLoading = true
+    const [mailingResults, ownerResults] = await Promise.all([
+      getOwnerPageInfoByMailingAddress(propertyId, violationDate),
+      getOwnerPageInfoByName(propertyId, violationDate)])
+
+    const mailingInfo = {
+      mailingAddress: mailingResults["metadata"]["mailing_address"],
+      mailingAddressBasedNames: mailingResults["results"]["alias_names"],
+      mailingAddressBasedMailingCareOfNames:  mailingResults["results"]["mailing_care_of_names"],
+      mailingAddressBasedPropertyTimelineData: mailingResults["results"]["timeline"],
+      mailingAddressBasedViolations: mailingResults["results"]["violations"],
+      mailingAddressBasedComplaints: mailingResults["results"]["complaints"],
+      mailingAddressBasedOwnerPropertyCountsByName: mailingResults["display_inputs"]["owner_property_counts_by_name"],
+    }
+    mailingAddressInfo.value = mailingInfo
+    const ownerInfo = {
+      ownerBasedPropertyTimelineData: ownerResults["results"]["timeline"],
+      ownerBasedViolations: ownerResults["results"]["violations"],
+      ownerBasedComplaints: ownerResults["results"]["complaints"],
+      ownerBasedNames: ownerResults["results"]["alias_names"],
+      ownerBasedOwnerPropertyCountsByName: ownerResults["display_inputs"]["owner_property_counts_by_name"],
+    }
+
+    const allProperties = ownerInfo.ownerBasedPropertyTimelineData.concat(mailingInfo.mailingAddressBasedPropertyTimelineData)
+    let allUniqueCurrentProperties = []
+    let allUniquePropertyParcelNumbers = [];
+    allProperties.forEach((property) => {
+      if (
+          !allUniquePropertyParcelNumbers.includes(
+              property.opa_account_num
+          )
+      ) {
+        allUniquePropertyParcelNumbers.push(property.opa_account_num);
+        propertySummary.open += property.n_violations_open;
+        propertySummary.closed += property.n_violations_closed;
+        propertySummary.complaints += property.n_complaints;
+        propertySummary.amount += property.market_value;
+        if (property.current_owner === true) {
+          allUniqueCurrentProperties.push(property);
+        }
+      }
+    })
+    properties.value = allUniqueCurrentProperties
+    propertySummary.value = propertySummary
+
+    pageState.isLoading = false
+
+  }
+  onMounted(async () => {
+    // TODO return these first but run in parallel. RXJS?
+    await loadData(props.id)
+  })
+
+  watch(() => props.id, async (value) => {
+    console.log(value)
+    await loadData(value)
+  })
+
 </script>
 
 <template>
   <section class="flex flex-col w-full">
+    <div v-if="pageState.isLoading" class="bg-gray-200 p-4 rounded-sm flex justify-between mb-4">
+      <div class="w-full text-center">
+        <span>Loading could take up to 30 seconds</span>
+      </div>
+      <icon-loader5-line class="animate-spin text-2xl text-gray-500"/>
+    </div>
     <div class="flex flex-col flex-col-reverse w-full lg:flex-row gap-4">
       <div class="w-full lg:w-1/2 h-[50vh]">
-        <PropertyOwnerMap :properties=properties />
+        <LoadingMap v-if="pageState.isLoading" />
+        <PropertyOwnerMap :properties=properties v-if="!pageState.isLoading" />
       </div>
       <div class="w-full lg:w-1/2">
+
         <div>
           <div>Mailing Address</div>
           <span class="text-sm lg:text-xl"> {{mailingAddressInfo.mailingAddress}}</span>

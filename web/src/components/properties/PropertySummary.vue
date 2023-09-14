@@ -2,8 +2,7 @@
 import {getPropertyBasicsPageInfo, getPropertyLatestOwnerDetailsInfo} from "../../services/apiFetcher";
 import {Property} from "../../models/property.model";
 import {onMounted, reactive, ref} from "vue";
-import LoadingSpinner from "../ui/LoadingSpinner.vue";
-import { IconVideoDownloadFill } from '@iconify-prerendered/vue-ri';
+import LoadingMap from "../ui/LoadingMap.vue";
 
 const props  = defineProps({
   id: String
@@ -36,9 +35,7 @@ const getLicenseInspectionsLink = (address: string) => {
 <template>
   <section class="flex flex-wrap flex-col flex-col-reverse lg:flex-row justify-between ">
     <div class="w-full lg:w-1/2 h-100">
-      <div  v-show="pageState.isMapLoading" class="flex h-[600px] w-full justify-center items-center bg-gray-200 animate-pulse">
-        <icon-video-download-fill class="text-8xl text-grey-400" />
-      </div>
+      <LoadingMap v-if="pageState.isMapLoading" />
       <iframe v-show="!pageState.isMapLoading"  @load="frameLoaded()" v-if="link" class="h-[600px] w-full" :src="`${link}`"></iframe>
     </div>
     <div class="w-full lg:w-1/2 lg:pl-4 mb-4 lg:mb-0">

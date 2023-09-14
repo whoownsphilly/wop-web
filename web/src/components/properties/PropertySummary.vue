@@ -1,15 +1,21 @@
 <script setup lang="ts">
 import {getPropertyBasicsPageInfo, getPropertyLatestOwnerDetailsInfo} from "../../services/apiFetcher";
 import {Property} from "../../models/property.model";
-import {onMounted, ref} from "vue";
+import {onMounted, reactive, ref} from "vue";
+import LoadingSpinner from "../ui/LoadingSpinner.vue";
+import { IconVideoDownloadFill } from '@iconify-prerendered/vue-ri';
 
 const props  = defineProps({
   id: String
+})
+const pageState = reactive({
+  isMapLoading: true
 })
 const property = ref(new Property())
 const owner = ref({})
 const link = ref()
 const violationDate = ref(new Date(2006, 6, 1))
+
 
 onMounted(async () => {
   const result= await getPropertyBasicsPageInfo(props.id, violationDate.value)
@@ -19,6 +25,9 @@ onMounted(async () => {
   property.value.owner = result2
 });
 
+const frameLoaded = () => {
+  pageState.isMapLoading = false
+}
 const getLicenseInspectionsLink = (address: string) => {
   return `https://li.phila.gov/property-history/search?address=${address}`;
 }
@@ -27,7 +36,10 @@ const getLicenseInspectionsLink = (address: string) => {
 <template>
   <section class="flex flex-wrap flex-col flex-col-reverse lg:flex-row justify-between ">
     <div class="w-full lg:w-1/2 h-100">
-      <iframe v-if="link" class="h-[600px] w-full" :src="`${link}`"></iframe>
+      <div  v-show="pageState.isMapLoading" class="flex h-[600px] w-full justify-center items-center bg-gray-200 animate-pulse">
+        <icon-video-download-fill class="text-8xl text-grey-400" />
+      </div>
+      <iframe v-show="!pageState.isMapLoading"  @load="frameLoaded()" v-if="link" class="h-[600px] w-full" :src="`${link}`"></iframe>
     </div>
     <div class="w-full lg:w-1/2 lg:pl-4 mb-4 lg:mb-0">
       <div class="text-xl">BUILDING: {{property.location}}</div>

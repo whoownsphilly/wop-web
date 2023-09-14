@@ -1,4 +1,4 @@
-const domain = "http://localhost:8081/"
+const domain = "http://localhost:8000/"
 export const getPropertyBasicsPageInfo = (
     parcel_number,
     violations_complaints_date_since: Date

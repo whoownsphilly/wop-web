@@ -4,7 +4,7 @@ import {useNavigate} from "@solidjs/router";
 // let searchInput; // use with bind:this to focus element
 
 
-const domain = "http://localhost:8081/"
+const domain = "http://localhost:8000/"
 
 const AddressSearch: Component = () => {
     const navigate = useNavigate();
@@ -13,6 +13,7 @@ const AddressSearch: Component = () => {
         const inputValue = event.target.value
         if (event.target.value && inputValue.length > 3) {
             const endpoint = `${domain}api/v1/autocomplete?startswith_str=${inputValue.toLowerCase()}`
+            console.log(endpoint)
             const result = await axios.get(endpoint)
             setFilteredItems(result.data.results)
         }

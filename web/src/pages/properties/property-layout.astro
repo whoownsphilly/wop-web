@@ -1,8 +1,7 @@
 ---
 import Layout from "../../layouts/layout.astro";
 const { id } = Astro.params;
-const pathname = Astro.url.pathname;
-const currentPath = pathname.slice(1); // remove the first "/"
+const pathname = Astro.url.pathname.slice(1);
 ---
 <style>
     .nav-button {
@@ -21,9 +20,9 @@ const currentPath = pathname.slice(1); // remove the first "/"
 <Layout title="Who owns Philly">
 <main class="w-full mt-4">
     <nav class="flex w-full my-2 gap-2 px-2">
-        <a class={`nav-button w-full text-center ${currentPath.endsWith("summary") ? "active" : ""}`} href={`/properties/${id}/summary` }>Summary</a>
-        <a class={`nav-button w-full text-center ${currentPath.endsWith("timeline") ? "active" : ""}`} href={`/properties/${id}/timeline` }>Timeline</a>
-        <a class={`nav-button w-full text-center ${currentPath.endsWith("owner") ? "active" : ""}`}  href={`/properties/${id}/owner`}>Owner</a>
+        <a class={`nav-button w-full text-center ${pathname.endsWith("summary") ? "active" : ""}`} href={`/properties/${id}/summary` }>Summary</a>
+        <a class={`nav-button w-full text-center ${pathname.endsWith("timeline") ? "active" : ""}`} href={`/properties/${id}/timeline` }>Timeline</a>
+        <a class={`nav-button w-full text-center ${pathname.endsWith("owner") ? "active" : ""}`}  href={`/properties/${id}/owner`}>Owner</a>
     </nav>
     <section class="border-t rounded-sm p-4">
         <slot/>

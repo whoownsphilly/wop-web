@@ -1,6 +1,7 @@
 version: '3'
 services:
   django:
+    container_name: philly-api
     build:
       context: .
       dockerfile: Dockerfile
@@ -11,22 +12,16 @@ services:
       - .:/app
     working_dir: /app
   web:
-    build:
-      context: .empty/
-      dockerfile: Dockerfile
-    entrypoint: sh -c "npm run serve"
+    container_name: philly-web
+    image: node:20.5-alpine
+    command: sh -c "npm ci && npm start"
+    ports:
+      - "8080:8080"
+    environment:
+      - PATH=/www-app/www/node_modules/.bin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    volumes:
+      - .:/app
+    working_dir: /app/web
+    restart: on-failure
     stdin_open: true
     tty: true
-    working_dir: /app
-    volumes:
-      - ./:/app
-    environment:
-      - YARN_PORT=${YARN_PORT:-8081}
-      - DJANGO_PORT=${DJANGO_PORT:-8000}
-      - DJANGO_HOSTNAME=django
-      - PATH=/app/node_modules/.bin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-    ports:
-      - "127.0.0.1:${YARN_PORT:-8081}:${YARN_PORT:-8081}"
-    depends_on:
-      - django
-

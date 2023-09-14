@@ -1,0 +1,32 @@
+version: '3'
+services:
+  django:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: python manage.py runserver 0.0.0.0:${DJANGO_PORT:-8000}
+    ports:
+      - "127.0.0.1:${DJANGO_PORT:-8000}:${DJANGO_PORT:-8000}"
+    volumes:
+      - .:/app
+    working_dir: /app
+  web:
+    build:
+      context: .empty/
+      dockerfile: Dockerfile
+    entrypoint: sh -c "npm run serve"
+    stdin_open: true
+    tty: true
+    working_dir: /app
+    volumes:
+      - ./:/app
+    environment:
+      - YARN_PORT=${YARN_PORT:-8081}
+      - DJANGO_PORT=${DJANGO_PORT:-8000}
+      - DJANGO_HOSTNAME=django
+      - PATH=/app/node_modules/.bin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    ports:
+      - "127.0.0.1:${YARN_PORT:-8081}:${YARN_PORT:-8081}"
+    depends_on:
+      - django
+

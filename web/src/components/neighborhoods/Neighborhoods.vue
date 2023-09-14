@@ -26,7 +26,7 @@ const blocksFromAddress = ref(0)
 const searchType = ref("mapBoundary")
 const activeToggles = ref(["rental", "no-rental", "no-condo", "no-owner"])
 const activeBuildingTypes = ref([buildingTypes[0], buildingTypes[1], buildingTypes[8]])
-const properties = ref([])
+const properties = ref<any>(new Array<any>())
 const walkingLists= ref([])
 
 const isActive = (key: string) => {
@@ -216,12 +216,9 @@ const update = async  () => {
 
       </div>
     </section>
-    <div class="w-3/4">
-      <NeighborhoodMap :properties="properties" />
-    </div>
     <section class="w-full flex gap-4 h-[600px] px-4">
       <div>
-        <button class="bg-emerald-700 px-4 py-2 text-white rounded-sm mr-4 w-full my-2" onclick={update}>Update Map</button>
+        <button class="bg-emerald-700 px-4 py-2 text-white rounded-sm mr-4 w-full my-2" @click="update">Update Map</button>
         <div class="flex justify-between items-center gap-2">
           <div class="text-sm">Units per list</div>
           <input type="text" class="border w-1/3 text-right px-2 py-1 rounded-sm" :value="numUnitsPerList"/>
@@ -240,7 +237,7 @@ const update = async  () => {
         </div>
       </div>
       <div class="w-3/4">
-        <NeighborhoodMap :properties="properties" />
+          <NeighborhoodMap :properties="properties" />
       </div>
 
     </section>

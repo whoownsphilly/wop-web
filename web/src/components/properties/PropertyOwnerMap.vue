@@ -3,6 +3,7 @@
 import L, {map, latLng, tileLayer, MapOptions, marker} from "leaflet";
 import "leaflet.markercluster";
 import {onMounted, watch} from "vue";
+import LeafletMap from "../ui/LeafletMap.vue";
 
 const props = defineProps({
   properties: { type: Array, required: true}
@@ -176,7 +177,7 @@ watch(() => props.properties,
 </script>
 
 <template>
-<div id="propertyMap" class="w-full h-full"></div>
+  <LeafletMap id="propertyMap" />
 </template>
 
 <style scoped></style>

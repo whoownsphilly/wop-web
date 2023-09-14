@@ -1,6 +1,7 @@
 ---
 import Neighborhoods from "../components/neighborhoods/Neighborhoods.vue";
-import Layout from "../layouts/layout.astro";---
+import Layout from "../layouts/layout.astro";
+import PropertyOwner from "../components/properties/PropertyOwner.vue";---
 <Layout title="Who owns Philly - Neighborhoods">
-    <Neighborhoods client:load />
+    <Neighborhoods  client:only="vue" />
 </Layout>

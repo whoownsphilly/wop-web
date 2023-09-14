@@ -38,24 +38,21 @@ const isActiveBuildingType = (value: string) => {
 }
 
 const toggleActive = (key:string) => {
-  const active = [...activeToggles.value]
-  const index= active.indexOf(key)
+  const index = activeToggles.value.indexOf(key)
   if(index > -1) {
-    activeToggles.value = active.splice(index, 1)
+    activeToggles.value.splice(index, 1)
   } else {
-    active.push(key)
-    activeToggles.value = active
+    activeToggles.value.push(key)
   }
 }
 
 const toggleActiveBuildingType = (type: any) => {
-  const active = [...activeBuildingTypes.value]
-  const index= active.indexOf(type)
+  const index= activeBuildingTypes.value.indexOf(type)
   if(index > -1) {
-    activeBuildingTypes.value = active.splice(index, 1)
+    activeBuildingTypes.value.splice(index, 1)
   } else {
-    active.push(type)
-    activeBuildingTypes.value = active
+    activeBuildingTypes.value.push(type)
+
   }
 }
 

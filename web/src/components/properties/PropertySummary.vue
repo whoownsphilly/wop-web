@@ -21,7 +21,7 @@ onMounted(async () => {
   property.value = Property.toProperty(result)
   const result2 = await getPropertyLatestOwnerDetailsInfo(props.id, violationDate.value)
   link.value = result2.street_view_link
-  property.value.owner = result2
+  owner.value = result2
 });
 
 const frameLoaded = () => {

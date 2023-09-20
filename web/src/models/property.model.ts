@@ -18,6 +18,8 @@ export class Property {
     categoryCodeDescription = ""
     buildingCodeDescription = ""
     location = ""
+    latestOwner = ""
+
 
     public static toProperty(propertyResults): Property {
         const property = new Property()
@@ -37,6 +39,7 @@ export class Property {
         property.categoryCodeDescription = propertyResults["category_code_description"]
         property.buildingCodeDescription = propertyResults["building_code_description"]
         property.location = propertyResults["location"]
+        property.latestOwner = propertyResults["latest_owner"]
 
         return property
     }

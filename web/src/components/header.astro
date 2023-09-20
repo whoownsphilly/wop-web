@@ -7,7 +7,7 @@ const isHome = Astro.url.pathname === "/"
         <a class="px-4 py-2 text-black visited:text-black" href="/neighborhoods">Neighborhoods</a>
     </div>
     { !isHome &&
-        <div class="text-2xl text-bold text-emerald-800">Who owns Philly?</div>
+        <a href="/" class="text-2xl text-bold text-emerald-800">Who owns Philly?</a>
     }
 
     <div class="flex gap-8 items-center">

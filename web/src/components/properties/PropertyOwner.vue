@@ -23,8 +23,8 @@
   const loadData = async (propertyId: string) => {
     pageState.isLoading = true
     const [mailingResults, ownerResults] = await Promise.all([
-      getOwnerPageInfoByMailingAddress(propertyId, violationDate),
-      getOwnerPageInfoByName(propertyId, violationDate)])
+      getOwnerPageInfoByMailingAddress(propertyId, violationDate.value),
+      getOwnerPageInfoByName(propertyId, violationDate.value)])
 
     const mailingInfo = {
       mailingAddress: mailingResults["metadata"]["mailing_address"],
@@ -75,7 +75,6 @@
   })
 
   watch(() => props.id, async (value) => {
-    console.log(value)
     await loadData(value)
   })
 

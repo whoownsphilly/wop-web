@@ -47,6 +47,23 @@ onMounted(() => {
     attribution: '© OpenStreetMap'
   }).addTo(propertyMap);
 
+  //
+  const legend = L.control({position: "bottomleft"})
+  legend.onAdd = function () {
+
+    const div = L.DomUtil.create('div', 'info legend');
+    div.className = "bg-white p-2 border border-black flex flex-col opacity-95"
+    div.innerHTML = "" +
+        "<div><span class='bg-black px-2 py-1 mr-2'></span>This Property</div>" +
+        "<div><span class='bg-red-500 px-2 py-1 mr-2'></span><span>Same Mailing Address</span></div>" +
+        "<div><span class='bg-blue-500 px-2 py-1 mr-2'></span><span>Same Owner</span></div>"
+
+    return div;
+  };
+  legend.addTo(propertyMap);
+
+  propertyMap.addControl(legend)
+
   const markers = L.markerClusterGroup();
     props.properties.forEach(p => {
        const m = marker(latLng(p.lat, p.lng))
@@ -63,7 +80,6 @@ onMounted(() => {
 watch(() => props.properties,
     (value) => {
   console.log("watch")
-      console.log(propertyMap)
       const markers = L.markerClusterGroup();
       value.forEach(p => {
         const m = marker(latLng(p.lat, p.lng), { color: p.color})

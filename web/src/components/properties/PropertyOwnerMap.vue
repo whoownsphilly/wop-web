@@ -11,19 +11,6 @@ const props = defineProps({
 
 let propertyMap: any;
 
-// const propertyFeatures = props.properties.map(p => {
-//   return { "type": "Feature",
-//     properties: {
-//       address: p.opa_address,
-//       color: p.color
-//     },
-//     geometry: {
-//       type: "Point",
-//       coordinates: [p.lng, p.lat]
-//     },
-//   }
-// })
-
 const getColors = (property: any) => {
   switch (property.color) {
     case "red":
@@ -35,13 +22,6 @@ const getColors = (property: any) => {
   }
 }
 
-
- /*
- *
- *  className: "bg-red-500",
-    popUp: property.location + " " + (property.unit || ""),
-    *  parcelNumber: property.opa_account_num
- * */
 const createCircleMarker = (property: any) => {
   const colors = getColors(property)
   const marker = circleMarker(latLng(property.lat, property.lng),  {
@@ -51,9 +31,18 @@ const createCircleMarker = (property: any) => {
     fillOpacity: .6
   })
   const url = `/properties/${property.opa_account_num}/owner`
-  marker.bindPopup(`<a class="underline" href="${url}">${property.location}</a>`);
+  marker.bindPopup(`<a class="underline" href="${url}">${property.location} ${property.unit || ""}</a>`)
 
   return marker
+}
+
+const setMarkers = (properties: any[]) => {
+  const markers = L.markerClusterGroup()
+  properties.forEach((p:any) => {
+    const m = createCircleMarker(p)
+    markers.addLayer(m);
+  })
+  propertyMap.addLayer(markers);
 }
 onMounted(() => {
   const options: MapOptions = {
@@ -68,7 +57,7 @@ onMounted(() => {
 
     maxZoom: 19,
     attribution: ''
-  }).addTo(propertyMap);
+  }).addTo(propertyMap)
 
   //
   const legend = L.control({position: "bottomleft"})
@@ -82,31 +71,16 @@ onMounted(() => {
 
     return div;
   };
-  legend.addTo(propertyMap);
+  legend.addTo(propertyMap)
 
   propertyMap.addControl(legend)
 
-  const markers = L.markerClusterGroup();
-    props.properties.forEach((p:any) => {
-      const m = createCircleMarker(p)
-       // const m = marker(latLng(p.lat, p.lng),  {
-       //   color: "#6ee7b7",
-       //   popUp: p.location + " " + (p.unit || ""),
-       //   parcelNumber: p.opa_account_num
-       // })
-       markers.addLayer(m);
-    })
-  propertyMap.addLayer(markers);
+  setMarkers(props.properties)
 })
 
 watch(() => props.properties,
     (value: any) => {
-      const markers = L.markerClusterGroup();
-      value.forEach((p: any) => {
-        const m = createCircleMarker(p)
-        markers.addLayer(m);
-      })
-      propertyMap.addLayer(markers);
+      setMarkers(value)
 })
 </script>
 

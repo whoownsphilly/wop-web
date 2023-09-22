@@ -1,12 +1,13 @@
 <script setup lang="ts">
   import PropertyOwnerMap from "./PropertyOwnerMap.vue";
   import {getOwnerPageInfoByMailingAddress, getOwnerPageInfoByName} from "../../services/apiFetcher";
-  import {onMounted, reactive, ref, watch} from "vue";
+  import {computed, onMounted, reactive, ref, watch} from "vue";
   import {CurrencyFormatter} from "../../services/utility.helper";
   import LoadingMap from "../ui/LoadingMap.vue";
   import {IconLoader5Line} from "@iconify-prerendered/vue-ri";
 
   const mailingAddressInfo = ref<any>({})
+  const ownerInfo = ref({})
   const violationDate = ref<any>(new Date(2006, 6, 1))
   const properties = ref<any>(new Array<any>())
   const propertySummary = reactive({ amount: 0, complaints: 0, open: 0, closed: 0 })
@@ -19,34 +20,45 @@
     isLoading: true,
     loadingPercent: 0,
     activeListTab: 'owner',
-    activeListType: 'properties'
+    activeListType: 'timeline'
+  })
+
+
+
+  const filteredList = computed(() => {
+    const list = pageState.activeListTab === "owner" ? ownerInfo.value : mailingAddressInfo.value
+    return list[pageState.activeListType]
   })
 
   const loadData = async (propertyId: string) => {
     pageState.isLoading = true
+
+    // TODO add date parameter
     const [mailingResults, ownerResults] = await Promise.all([
-      getOwnerPageInfoByMailingAddress(propertyId, violationDate.value),
-      getOwnerPageInfoByName(propertyId, violationDate.value)])
+      getOwnerPageInfoByMailingAddress(propertyId),
+      getOwnerPageInfoByName(propertyId)])
 
-    const mailingInfo = {
+    mailingAddressInfo.value = {
       mailingAddress: mailingResults["metadata"]["mailing_address"],
-      mailingAddressBasedNames: mailingResults["results"]["alias_names"],
-      mailingAddressBasedMailingCareOfNames:  mailingResults["results"]["mailing_care_of_names"],
-      mailingAddressBasedPropertyTimelineData: mailingResults["results"]["timeline"],
-      mailingAddressBasedViolations: mailingResults["results"]["violations"],
-      mailingAddressBasedComplaints: mailingResults["results"]["complaints"],
-      mailingAddressBasedOwnerPropertyCountsByName: mailingResults["display_inputs"]["owner_property_counts_by_name"],
-    }
-    mailingAddressInfo.value = mailingInfo
-    const ownerInfo = {
-      ownerBasedPropertyTimelineData: ownerResults["results"]["timeline"],
-      ownerBasedViolations: ownerResults["results"]["violations"],
-      ownerBasedComplaints: ownerResults["results"]["complaints"],
-      ownerBasedNames: ownerResults["results"]["alias_names"],
-      ownerBasedOwnerPropertyCountsByName: ownerResults["display_inputs"]["owner_property_counts_by_name"],
+      names: mailingResults["results"]["alias_names"],
+      mailingCareOfNames:  mailingResults["results"]["mailing_care_of_names"],
+      timeline: mailingResults["results"]["timeline"],
+      violations: mailingResults["results"]["violations"],
+      complaints: mailingResults["results"]["complaints"],
+      ownerPropertyCountsByName: mailingResults["display_inputs"]["owner_property_counts_by_name"],
     }
 
-    const allProperties = ownerInfo.ownerBasedPropertyTimelineData.concat(mailingInfo.mailingAddressBasedPropertyTimelineData)
+    ownerInfo.value = {
+      timeline: ownerResults["results"]["timeline"],
+      violations: ownerResults["results"]["violations"],
+      complaints: ownerResults["results"]["complaints"],
+      names: ownerResults["results"]["alias_names"],
+      ownerPropertyCountsByName: ownerResults["display_inputs"]["owner_property_counts_by_name"],
+    }
+
+    const allProperties = ownerInfo.value.ownerBasedPropertyTimeline
+        .concat(mailingAddressInfo.value.mailingAddressBasedPropertyTimelineData)
+
     let allUniqueCurrentProperties = []
     let allUniquePropertyParcelNumbers = [];
     allProperties.forEach((property) => {
@@ -66,8 +78,6 @@
       }
     })
     properties.value = allUniqueCurrentProperties
-    propertySummary.value = propertySummary
-
     pageState.isLoading = false
 
   }
@@ -95,7 +105,7 @@
         <LoadingMap v-if="pageState.isLoading" />
         <PropertyOwnerMap :properties=properties v-if="!pageState.isLoading" />
       </div>
-      <div class="w-full lg:w-1/2">
+      <div class="w-full flex flex-col lg:w-1/2">
         <div>
           <div>
             <div>Mailing Address</div>
@@ -134,55 +144,62 @@
             </div>
           </div>
         </div>
-        <div>
-          <h3 class="mt-4">Property Lists</h3>
+        <div class="flex flex-col grow">
+          <h3 class="mt-4">Property Lists {{filteredList?.length}}</h3>
           <div class="w-full flex">
             <button class="nav-button w-full" :class="{active: pageState.activeListTab === 'owner'}" @click="pageState.activeListTab = 'owner'">Owner</button>
             <button class="nav-button w-full" :class="{active: pageState.activeListTab === 'mailing'}" @click="pageState.activeListTab = 'mailing'">Mailing Address</button>
           </div>
           <div class="mt-1 w-full flex">
-            <button class="nav-button w-full" :class="{active: pageState.activeListType === 'properties'}" @click="pageState.activeListType = 'properties'">Properties</button>
+            <button class="nav-button w-full" :class="{active: pageState.activeListType === 'timeline'}" @click="pageState.activeListType = 'timeline'">Properties</button>
             <button class="nav-button w-full" :class="{active: pageState.activeListType === 'violations'}" @click="pageState.activeListType = 'violations'">Violations</button>
-            <button class="nav-button w-full" :class="{active: pageState.activeListType === '311'}" @click="pageState.activeListType = '311'">311 Complaints</button>
+            <button class="nav-button w-full" :class="{active: pageState.activeListType === 'complaints'}" @click="pageState.activeListType = 'complaints'">311 Complaints</button>
+          </div>
+          <div class="overflow-x-auto grow">
+            <table>
+              <thead>
+              <tr>
+                <th>color</th>
+                <th>current_owner</th>
+                <th>document_id</th>
+                <th>lat</th>
+                <th>likely_owner</th>
+                <th>lng</th>
+                <th>location</th>
+                <th>location_unit</th>
+                <th>mailing_address_1</th>
+                <th>mailing_address_2</th>
+                <th>mailing_care_of</th>
+                <th>mailing_city_state</th>
+                <th>mailing_street</th>
+                <th>mailing_zip</th>
+                <th>market_value</th>
+                <th>complaints</th>
+                <th>violations</th>
+                <th>violations_closed</th>
+                <th>violations_open</th>
+                <th>opa_account_num</th>
+                <th>opa_address</th>
+                <th>opa_address_unit</th>
+                <th>property_count</th>
+                <th>sold_to</th>
+                <th>source</th>
+                <th>start_dt</th>
+                <th>unit</th>
+              </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item) in filteredList">
+                  <td>{{item.opa_account_num}}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
     </div>
 <!--    <div class="max-w-6xl">-->
-<!--      <table class="w-6xl">-->
-<!--        <thead>-->
-<!--        <tr>-->
-<!--          <th>color</th>-->
-<!--          <th>current_owner</th>-->
-<!--          <th>document_id</th>-->
-<!--          <th>lat</th>-->
-<!--          <th>likely_owner</th>-->
-<!--          <th>lng</th>-->
-<!--          <th>location</th>-->
-<!--          <th>location_unit</th>-->
-<!--          <th>mailing_address_1</th>-->
-<!--          <th>mailing_address_2</th>-->
-<!--          <th>mailing_care_of</th>-->
-<!--          <th>mailing_city_state</th>-->
-<!--          <th>mailing_street</th>-->
-<!--          <th>mailing_zip</th>-->
-<!--          <th>market_value</th>-->
-<!--          <th>complaints</th>-->
-<!--          <th>violations</th>-->
-<!--          <th>violations_closed</th>-->
-<!--          <th>violations_open</th>-->
-<!--          <th>opa_account_num</th>-->
-<!--          <th>opa_address</th>-->
-<!--          <th>opa_address_unit</th>-->
-<!--          <th>property_count</th>-->
-<!--          <th>sold_to</th>-->
-<!--          <th>source</th>-->
-<!--          <th>start_dt</th>-->
-<!--          <th>unit</th>-->
-<!--        </tr>-->
-<!--        </thead>-->
 
-<!--      </table>-->
 <!--    </div>-->
   </section>
 </template>

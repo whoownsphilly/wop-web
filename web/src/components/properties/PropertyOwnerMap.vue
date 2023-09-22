@@ -44,13 +44,16 @@ const getColors = (property: any) => {
  * */
 const createCircleMarker = (property: any) => {
   const colors = getColors(property)
-  return circleMarker(latLng(property.lat, property.lng),  {
+  const marker = circleMarker(latLng(property.lat, property.lng),  {
     color: colors[0],
     fill: true,
     fillColor: colors[1],
     fillOpacity: .6
   })
+  const url = `/properties/${property.opa_account_num}/owner`
+  marker.bindPopup(`<a class="underline" href="${url}">${property.location}</a>`);
 
+  return marker
 }
 onMounted(() => {
   const options: MapOptions = {

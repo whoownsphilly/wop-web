@@ -56,8 +56,8 @@
       ownerPropertyCountsByName: ownerResults["display_inputs"]["owner_property_counts_by_name"],
     }
 
-    const allProperties = ownerInfo.value.ownerBasedPropertyTimeline
-        .concat(mailingAddressInfo.value.mailingAddressBasedPropertyTimelineData)
+    const allProperties = ownerInfo.value.timeline
+        .concat(mailingAddressInfo.value.timeline)
 
     let allUniqueCurrentProperties = []
     let allUniquePropertyParcelNumbers = [];
@@ -155,43 +155,39 @@
             <button class="nav-button w-full" :class="{active: pageState.activeListType === 'violations'}" @click="pageState.activeListType = 'violations'">Violations</button>
             <button class="nav-button w-full" :class="{active: pageState.activeListType === 'complaints'}" @click="pageState.activeListType = 'complaints'">311 Complaints</button>
           </div>
-          <div class="overflow-x-auto grow">
-            <table>
-              <thead>
+          <div class="overflow-auto grow h-[50vh]]">
+            <table class="w-full">
+              <thead class="text-sm">
               <tr>
-                <th>color</th>
-                <th>current_owner</th>
-                <th>document_id</th>
+                <th colspan="7"></th>
+                <th colspan="3" class="text-center">Violations</th>
+              </tr>
+              <tr>
+                <th>opa number</th>
+                <th>Owner</th>
+                <th>Location</th>
                 <th>lat</th>
-                <th>likely_owner</th>
                 <th>lng</th>
-                <th>location</th>
-                <th>location_unit</th>
-                <th>mailing_address_1</th>
-                <th>mailing_address_2</th>
-                <th>mailing_care_of</th>
-                <th>mailing_city_state</th>
-                <th>mailing_street</th>
-                <th>mailing_zip</th>
-                <th>market_value</th>
+                <th>market</th>
                 <th>complaints</th>
-                <th>violations</th>
-                <th>violations_closed</th>
-                <th>violations_open</th>
-                <th>opa_account_num</th>
-                <th>opa_address</th>
-                <th>opa_address_unit</th>
-                <th>property_count</th>
-                <th>sold_to</th>
-                <th>source</th>
-                <th>start_dt</th>
-                <th>unit</th>
+                <th>Total</th>
+                <th>Closed</th>
+                <th>Open</th>
               </tr>
               </thead>
               <tbody>
-                <tr v-for="(item) in filteredList">
-                  <td>{{item.opa_account_num}}</td>
-                </tr>
+              <tr v-for="(item, index) in filteredList" v-bind:key="index">
+                <td>{{item.opa_account_num}}</td>
+                <td>{{item.likely_owner}}</td>
+                <td class="whitespace-nowrap" >{{item.location}}</td>
+                <td>{{item.lat.toFixed(2)}}</td>
+                <td>{{item.lng.toFixed(2)}}</td>
+                <td>{{item.market_value}}</td>
+                <td>{{item.n_complaints}}</td>
+                <td>{{item.n_violations}}</td>
+                <td>{{item.n_violations_closed}}</td>
+                <td>{{item.n_violations_open}}</td>
+              </tr>
               </tbody>
             </table>
           </div>
@@ -199,7 +195,34 @@
       </div>
     </div>
 <!--    <div class="max-w-6xl">-->
-
+<!--    <tr>-->
+<!--      <th>current_owner</th>-->
+<!--      <th>document_id</th>-->
+<!--      <th>lat</th>-->
+<!--      <th>likely_owner</th>-->
+<!--      <th>lng</th>-->
+<!--      <th>location</th>-->
+<!--      <th>location_unit</th>-->
+<!--      <th>mailing_address_1</th>-->
+<!--      <th>mailing_address_2</th>-->
+<!--      <th>mailing_care_of</th>-->
+<!--      <th>mailing_city_state</th>-->
+<!--      <th>mailing_street</th>-->
+<!--      <th>mailing_zip</th>-->
+<!--      <th>market_value</th>-->
+<!--      <th>complaints</th>-->
+<!--      <th>violations</th>-->
+<!--      <th>violations_closed</th>-->
+<!--      <th>violations_open</th>-->
+<!--      <th>opa_account_num</th>-->
+<!--      <th>opa_address</th>-->
+<!--      <th>opa_address_unit</th>-->
+<!--      <th>property_count</th>-->
+<!--      <th>sold_to</th>-->
+<!--      <th>source</th>-->
+<!--      <th>start_dt</th>-->
+<!--      <th>unit</th>-->
+<!--    </tr>-->
 <!--    </div>-->
   </section>
 </template>

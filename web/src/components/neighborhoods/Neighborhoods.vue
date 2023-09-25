@@ -65,8 +65,8 @@ const isSearchType = (key: string) => {
 }
 
 const getActiveToggleFilterValues = (filter) =>{
-  const isToggle =  activeToggles().indexOf(filter) > -1
-  const isNotToggle = activeToggles().indexOf("no-" + filter) > -1
+  const isToggle =  activeToggles.value.indexOf(filter) > -1
+  const isNotToggle = activeToggles.value.indexOf("no-" + filter) > -1
   let result = null
   if(isToggle && !isNotToggle) {
     result = true
@@ -78,8 +78,8 @@ const getActiveToggleFilterValues = (filter) =>{
   return result
 }
 const update = async  () => {
-  const selectedBuildingTypes = activeBuildingTypes().filter(t => !t.isRental).map(t => t.value).join(",")
-  const selectedRentalBuildingTypes = activeBuildingTypes().filter(t => t.isRental).map(t => t.value).join(",")
+  const selectedBuildingTypes = activeBuildingTypes.value.filter(t => !t.isRental).map(t => t.value).join(",")
+  const selectedRentalBuildingTypes = activeBuildingTypes.value.filter(t => t.isRental).map(t => t.value).join(",")
   const mapBounds = {
     _northEast: {
       lat: 39.987642831840844,
@@ -99,16 +99,16 @@ const update = async  () => {
 
   const results = await getNeighborhoodsPageInfo(
       mapBounds,
-      zipCode(),
-      blocksFromAddress(),
+      zipCode.value,
+      blocksFromAddress.value,
       startingAddressLatitude,
       startingAddressLongitude,
-      searchType(),
+      searchType.value,
       licenseFilter,
       condoFilter,
       ownerOccupiedFilter,
-      numUnitsPerList(),
-      numLists(),
+      numUnitsPerList.value,
+      numLists.value,
       selectedBuildingTypes,
       selectedRentalBuildingTypes
   )
@@ -188,32 +188,26 @@ const update = async  () => {
     </section>
     <section class="flex items-center border-t border-b px-4">
       <div class="font-medium uppercase px-4 py-2 whitespace-nowrap">Search By</div>
-      <div class="flex justify-between py-2 border-l w-full ">
-        <div class="flex justify-start">
-          <select class="py-2 px-4 mx-2 pr-9 block w-full border border-gray-200 rounded-md text-sm w-[200px]" v-model="searchType">
+      <div class="flex justify-start py-2 border-l w-full ">
+          <select class="py-2 px-4 mx-2 pr-9 block w-1/3 border border-gray-200 rounded-md text-sm w-[200px]" v-model="searchType">
             <option selected value="mapBoundary" >Map</option>
             <option value="address" >Address</option>
             <option value="zipCode" >Zip Code</option>
           </select>
-          <div v-if="isSearchType('address')">
-            <div class="flex">
-              <div class="w-2/3 flex items-center gap-2 grow mr-2">
-                <input type="text" class="border w-1/3 p-2 rounded-sm grow" placeholder="Starting Address" :value="startingAddress" />
+          <div v-if="isSearchType('address')" class="flex w-full">
+              <div class="flex items-center gap-2 grow mr-2">
+                <input type="text" class="border w-1/3 p-2 rounded-sm grow" placeholder="Starting Address" v-model="startingAddress" />
               </div>
-              <div class="w-1/3 flex items-center gap-2">
-                <input type="text" class="border w-full p-2 w-10 text-right" :value="blocksFromAddress" />
+              <div class="flex flex-row justify-between items-center gap-2">
+                <input type="text" class="border py-2 px-2 w-[50px] rounded-sm text-right" v-model="blocksFromAddress" />
                 <div class="text-sm whitespace-nowrap text-gray-400">Blocks from Address</div>
               </div>
-            </div>
-
           </div>
           <div v-if="isSearchType('zipCode')">
             <div class="flex items-center gap-2">
-              <input type="text" class="border w-full p-2" placeholder="Zip Code" :value="zipCode" />
+              <input type="text" class="border w-full rounded-sm p-2" placeholder="Zip Code" v-model="zipCode" />
             </div>
           </div>
-        </div>
-
       </div>
     </section>
     <section class="w-full flex gap-4 h-[600px] px-4">
@@ -221,11 +215,11 @@ const update = async  () => {
         <button class="bg-emerald-700 px-4 py-2 text-white rounded-sm mr-4 w-full my-2" @click="update">Update Map</button>
         <div class="flex justify-between items-center gap-2">
           <div class="text-sm">Units per list</div>
-          <input type="text" class="border w-1/3 text-right px-2 py-1 rounded-sm" :value="numUnitsPerList"/>
+          <input type="text" class="border w-1/3 text-right px-2 py-1 rounded-sm" v-model="numUnitsPerList"/>
         </div>
         <div  class="flex justify-between items-center gap-2">
           <div class="text-sm">Number of lists</div>
-          <input type="text" class="border w-1/3 text-right px-2 py-1 rounded-sm" :value="numLists"/>
+          <input type="text" class="border w-1/3 text-right px-2 py-1 rounded-sm" v-model="numLists"/>
         </div>
 
         <h3 class="text-xl font-medium">Searched Properties</h3>

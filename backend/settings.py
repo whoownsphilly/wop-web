@@ -36,6 +36,7 @@ ALLOWED_HOSTS = [
     "0.0.0.0",
     "django",
     "www.whoownsphilly.org",
+    "old.whoownsphilly.org",
 ]
 
 

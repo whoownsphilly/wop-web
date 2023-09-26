@@ -8,7 +8,7 @@ services:
     #buildCommand: "pip install -r requirements.txt"
     #startCommand: "gunicorn backend.wsgi"
     domains: # custom domains
-      - "www.whoownsphilly.org"
+      - "old.whoownsphilly.org"
     envVars:
       - key: BIOS_URL # Imported from Heroku app
         value: https://api.airtable.com/v0/appWtLiq9Ezlbp7s1/Visible%20On%20Website%20-%20By%20Mailing%20Address?api_key&#x3D;keyygo7ozRiqZGwWa

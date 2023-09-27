@@ -30,6 +30,10 @@
     return list[pageState.activeListType]
   })
 
+  const getPropertyLink = (id: number) => {
+    return `/properties/${id}/summary`
+  }
+
   const loadData = async (propertyId: string) => {
     pageState.isLoading = true
 
@@ -155,38 +159,83 @@
             <button class="nav-button w-full" :class="{active: pageState.activeListType === 'violations'}" @click="pageState.activeListType = 'violations'">Violations</button>
             <button class="nav-button w-full" :class="{active: pageState.activeListType === 'complaints'}" @click="pageState.activeListType = 'complaints'">311 Complaints</button>
           </div>
+          <!-- TODO
+          Show different columns for each type
+          properties:  likely_owner, location, unit, n_days_owned, n_complaints, n_violations, n_violations_open, opa_account_num
+          violations:  likely_owner, location, unit, opa_account_num, violationcodetitle, violationdate, violationnumber, violationresolutioncode, violationstatus
+          complaints: likely_owner, location, unit, complaint_date, complaint_number, complaint (empty right now), opa_account_num
+          -->
           <div class="overflow-auto grow h-[50vh]]">
-            <table class="w-full">
+            <table class="w-full" v-if="pageState.activeListType === 'timeline'">
               <thead class="text-sm">
               <tr>
-                <th colspan="7"></th>
-                <th colspan="3" class="text-center">Violations</th>
+                <th colspan="4"></th>
+                <th colspan="2" class="text-center">Violations</th>
+                <th></th>
               </tr>
               <tr>
-                <th>opa number</th>
                 <th>Owner</th>
                 <th>Location</th>
-                <th>lat</th>
-                <th>lng</th>
-                <th>market</th>
-                <th>complaints</th>
+                <th>Days Owned</th>
+                <th>Complaints</th>
                 <th>Total</th>
-                <th>Closed</th>
                 <th>Open</th>
+                <th>Opa Number</th>
               </tr>
               </thead>
               <tbody>
-              <tr v-for="(item, index) in filteredList" v-bind:key="index">
-                <td>{{item.opa_account_num}}</td>
+              <tr class="hover:bg-gray-100" v-for="(item, index) in filteredList" v-bind:key="index">
                 <td>{{item.likely_owner}}</td>
-                <td class="whitespace-nowrap" >{{item.location}}</td>
-                <td>{{item.lat.toFixed(2)}}</td>
-                <td>{{item.lng.toFixed(2)}}</td>
-                <td>{{item.market_value}}</td>
-                <td>{{item.n_complaints}}</td>
-                <td>{{item.n_violations}}</td>
-                <td>{{item.n_violations_closed}}</td>
-                <td>{{item.n_violations_open}}</td>
+                <td class="whitespace-nowrap" >{{item.location}} {{ item?.unit}}</td>
+                <td class="text-right">{{item.n_days_owned}}</td>
+                <td class="text-right">{{item.n_complaints}}</td>
+                <td class="text-right">{{item.n_violations}}</td>
+                <td class="text-right">{{item.n_violations_open}}</td>
+                <td class="text-right"><a :href="getPropertyLink(item.opa_account_num)">{{item.opa_account_num}}</a> </td>
+              </tr>
+              </tbody>
+            </table>
+            <table class="w-full border-separate border-spacing-x-1" v-if="pageState.activeListType === 'violations'">
+              <thead class="text-sm">
+                <tr>
+                  <th>Owner</th>
+                  <th>Location</th>
+                  <th>Title</th>
+                  <th>Date</th>
+                  <th>Number</th>
+                  <th>Resolution</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody class="text-xs whitespace-nowrap">
+                <tr class="hover:bg-gray-100" v-for="(item, index) in filteredList" v-bind:key="index">
+                  <td>{{item.likely_owner}}</td>
+                  <td>{{item.location}} {{ item?.unit}}</td>
+                  <td>{{item.violationcodetitle}}</td>
+                  <td>{{item.violationdate}}</td>
+                  <td>{{item.violationnumber}}</td>
+                  <td>{{item.violationstatus}}</td>
+                  <td>{{item.violationresolutioncode}}</td>
+                </tr>
+              </tbody>
+            </table>
+            <table class="w-full border-separate border-spacing-x-1" v-if="pageState.activeListType === 'complaints'">
+              <thead class="text-sm">
+              <tr>
+                <th>Owner</th>
+                <th>Location</th>
+                <th>Date</th>
+                <th>Number</th>
+                <th>Complaint</th>
+              </tr>
+              </thead>
+              <tbody class="whitespace-nowrap">
+              <tr class="hover:bg-gray-100"  v-for="(item, index) in filteredList" v-bind:key="index">
+                <td>{{item.likely_owner}}</td>
+                <td>{{item.location}} {{ item?.unit}}</td>
+                <td>{{item.complaintdate}}</td>
+                <td>{{item.complaintnumber}}</td>
+                <td></td>
               </tr>
               </tbody>
             </table>
@@ -194,36 +243,6 @@
         </div>
       </div>
     </div>
-<!--    <div class="max-w-6xl">-->
-<!--    <tr>-->
-<!--      <th>current_owner</th>-->
-<!--      <th>document_id</th>-->
-<!--      <th>lat</th>-->
-<!--      <th>likely_owner</th>-->
-<!--      <th>lng</th>-->
-<!--      <th>location</th>-->
-<!--      <th>location_unit</th>-->
-<!--      <th>mailing_address_1</th>-->
-<!--      <th>mailing_address_2</th>-->
-<!--      <th>mailing_care_of</th>-->
-<!--      <th>mailing_city_state</th>-->
-<!--      <th>mailing_street</th>-->
-<!--      <th>mailing_zip</th>-->
-<!--      <th>market_value</th>-->
-<!--      <th>complaints</th>-->
-<!--      <th>violations</th>-->
-<!--      <th>violations_closed</th>-->
-<!--      <th>violations_open</th>-->
-<!--      <th>opa_account_num</th>-->
-<!--      <th>opa_address</th>-->
-<!--      <th>opa_address_unit</th>-->
-<!--      <th>property_count</th>-->
-<!--      <th>sold_to</th>-->
-<!--      <th>source</th>-->
-<!--      <th>start_dt</th>-->
-<!--      <th>unit</th>-->
-<!--    </tr>-->
-<!--    </div>-->
   </section>
 </template>
 

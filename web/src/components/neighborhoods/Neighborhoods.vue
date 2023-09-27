@@ -123,6 +123,7 @@ const update = async  () => {
 
   properties.value = results.searched_properties
   walkingLists.value = results.walk_lists
+  console.log(walkingLists.value)
   Object.keys(results.walk_lists).forEach(walkListName => {
     console.log(walkListName)
     // this.saveNewCustomPropertyList(walkListName);
@@ -224,7 +225,7 @@ const update = async  () => {
 
         <h3 class="text-xl font-medium">Searched Properties</h3>
         <div v-for="walkingList in walkingLists" v-bind:key="walkingList.location">
-          <div>{walkingList.location}</div>
+          <div>{{walkingList.location}} {{walkingLists.length}}</div>
         </div>
         <div v-if="walkingLists.length ===  0">
         <div class="text-center bg-gray-100 p-4">No Results</div>

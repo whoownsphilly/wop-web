@@ -2,6 +2,9 @@
 import Layout from "../../layouts/layout.astro";
 const { id } = Astro.params;
 const pathname = Astro.url.pathname.slice(1);
+
+const propertyData = `http://static.whoownsphilly.com/${id}.json`
+// load json
 ---
 <style>
     .nav-button {

@@ -112,7 +112,7 @@
       <div class="w-full flex flex-col lg:w-1/2">
         <div>
           <div>
-            <div>Mailing Address</div>
+            <div class="font-bold">Mailing Address</div>
             <span class="text-sm lg:text-xl"> {{mailingAddressInfo.mailingAddress}}</span>
           </div>
           <div v-if="mailingAddressInfo.mailingAddressBasedMailingCareOfNames" class="text-sm lg:text-base">
@@ -149,7 +149,7 @@
           </div>
         </div>
         <div class="flex flex-col grow">
-          <h3 class="mt-4">Property Lists {{filteredList?.length}}</h3>
+          <h3 class="mt-4 flex w-full justify-between font-bold mb-2">Property Violations<span class="font-normal">Record Count: {{filteredList?.length}}</span></h3>
           <div class="w-full flex">
             <button class="nav-button w-full" :class="{active: pageState.activeListTab === 'owner'}" @click="pageState.activeListTab = 'owner'">Owner</button>
             <button class="nav-button w-full" :class="{active: pageState.activeListTab === 'mailing'}" @click="pageState.activeListTab = 'mailing'">Mailing Address</button>

@@ -166,6 +166,9 @@
           complaints: likely_owner, location, unit, complaint_date, complaint_number, complaint (empty right now), opa_account_num
           -->
           <div class="overflow-auto grow h-[50vh]]">
+            <div class="flex items-center mt-2 border pr-2" v-if="pageState.activeListTab === 'mailing'">
+              <span class="bg-gray-100 px-2 py-1 mr-2">NAMES</span> {{mailingAddressInfo.names.join("; ")}}
+            </div>
             <table class="w-full" v-if="pageState.activeListType === 'timeline'">
               <thead class="text-sm">
               <tr>
@@ -174,7 +177,7 @@
                 <th></th>
               </tr>
               <tr>
-                <th>Owner</th>
+                <th v-if="pageState.activeListTab === 'owner'">Owner</th>
                 <th>Location</th>
                 <th>Days Owned</th>
                 <th>Complaints</th>
@@ -185,7 +188,7 @@
               </thead>
               <tbody>
               <tr class="hover:bg-gray-100" v-for="(item, index) in filteredList" v-bind:key="index">
-                <td>{{item.likely_owner}}</td>
+                <td v-if="pageState.activeListTab === 'owner'">{{item.likely_owner}}</td>
                 <td class="whitespace-nowrap" >{{item.location}} {{ item?.unit}}</td>
                 <td class="text-right">{{item.n_days_owned}}</td>
                 <td class="text-right">{{item.n_complaints}}</td>
@@ -195,10 +198,10 @@
               </tr>
               </tbody>
             </table>
-            <table class="w-full border-separate border-spacing-x-1" v-if="pageState.activeListType === 'violations'">
+            <table class="w-full" v-if="pageState.activeListType === 'violations'">
               <thead class="text-sm">
                 <tr>
-                  <th>Owner</th>
+                  <th v-if="pageState.activeListTab === 'owner'">Owner</th>
                   <th>Location</th>
                   <th>Title</th>
                   <th>Date</th>
@@ -209,7 +212,7 @@
               </thead>
               <tbody class="text-xs whitespace-nowrap">
                 <tr class="hover:bg-gray-100" v-for="(item, index) in filteredList" v-bind:key="index">
-                  <td>{{item.likely_owner}}</td>
+                  <td v-if="pageState.activeListTab === 'owner'">{{item.likely_owner}}</td>
                   <td>{{item.location}} {{ item?.unit}}</td>
                   <td>{{item.violationcodetitle}}</td>
                   <td>{{item.violationdate}}</td>
@@ -219,10 +222,10 @@
                 </tr>
               </tbody>
             </table>
-            <table class="w-full border-separate border-spacing-x-1" v-if="pageState.activeListType === 'complaints'">
+            <table class="w-full" v-if="pageState.activeListType === 'complaints'">
               <thead class="text-sm">
               <tr>
-                <th>Owner</th>
+                <th v-if="pageState.activeListTab === 'owner'">Owner</th>
                 <th>Location</th>
                 <th>Date</th>
                 <th>Number</th>
@@ -231,7 +234,7 @@
               </thead>
               <tbody class="whitespace-nowrap">
               <tr class="hover:bg-gray-100"  v-for="(item, index) in filteredList" v-bind:key="index">
-                <td>{{item.likely_owner}}</td>
+                <td v-if="pageState.activeListTab === 'owner'">{{item.likely_owner}}</td>
                 <td>{{item.location}} {{ item?.unit}}</td>
                 <td>{{item.complaintdate}}</td>
                 <td>{{item.complaintnumber}}</td>
@@ -247,6 +250,9 @@
 </template>
 
 <style scoped>
+table tbody tr td {
+  @apply pr-1
+}
 .nav-button {
   @apply px-6 py-2 rounded-sm bg-gray-100 border border-white text-black;
 }

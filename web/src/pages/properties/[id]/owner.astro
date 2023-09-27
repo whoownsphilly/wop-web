@@ -1,0 +1,10 @@
+---
+
+import PropertyLayout from "../property-layout.astro";
+import PropertyOwner from "../../../components/properties/PropertyOwner.vue";
+const { id } = Astro.params
+---
+
+<PropertyLayout>
+    <PropertyOwner id={id} client:only="vue"/>
+</PropertyLayout>

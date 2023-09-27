@@ -1,0 +1,11 @@
+.toggle-button {
+    @apply bg-neutral-100 text-neutral-400 px-4 py-1 border text-xs
+}
+
+.search-toggle-button {
+    @apply bg-neutral-100 text-neutral-400 px-6 py-2 border
+}
+
+.active {
+    @apply bg-neutral-500 text-white
+}

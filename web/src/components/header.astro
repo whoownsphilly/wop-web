@@ -1,0 +1,17 @@
+---
+const isHome = Astro.url.pathname === "/"
+---
+<header class={`flex justify-between items-center p-4 text-xs md:text-sm lg:text-base ${ isHome ? "" : "border-b"}`}>
+    <div class="flex gap-4 items-center">
+        <a class="px-4 py-2 text-black visited:text-black" href="/">Search</a>
+        <a class="px-4 py-2 text-black visited:text-black" href="/neighborhoods">Neighborhoods</a>
+    </div>
+    { !isHome &&
+        <a href="/" class="text-2xl text-bold text-emerald-800">Who owns Philly?</a>
+    }
+
+    <div class="flex gap-8 items-center">
+        <a class="px-4 py-2 bg-emerald-700 rounded-lg text-white visited:text-white font-bold" href="/take-action">Take Action</a>
+        <a class="text-black visited:text-black" href="/about">About</a>
+    </div>
+</header>

@@ -1,0 +1,10 @@
+---
+
+import PropertyLayout from "../property-layout.astro";
+import PropertySummary from "../../../components/properties/PropertySummary.vue";
+const { id } = Astro.params
+---
+
+<PropertyLayout>
+    <PropertySummary id={id} client:load/>
+</PropertyLayout>

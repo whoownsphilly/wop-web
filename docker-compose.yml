@@ -12,7 +12,7 @@ services:
     working_dir: /app
   web:
     build:
-      context: .empty/
+      context: .
       dockerfile: Dockerfile
     entrypoint: sh -c "npm run serve"
     stdin_open: true

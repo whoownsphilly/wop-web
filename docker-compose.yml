@@ -14,11 +14,12 @@ services:
   web:
     container_name: philly-web
     image: node:20.5-alpine
-    command: sh -c "npm ci && npm start"
+    command: sh -c "PORT=${YARN_PORT:-8081} npm ci && npm start"
     ports:
-      - "8080:8080"
+      - "${YARN_PORT:-8080}:${YARN_PORT:-8080}"
     environment:
       - PATH=/www-app/www/node_modules/.bin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      - PUBLIC_YARN_PORT=${YARN_PORT:-8080}
     volumes:
       - .:/app
     working_dir: /app/web

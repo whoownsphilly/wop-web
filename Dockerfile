@@ -2,6 +2,8 @@ FROM combos/python_node:3.10_16
 RUN apt update && apt install -y libmemcached-dev zlib1g-dev
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
+COPY package.json ./
+RUN npm install
 COPY . /app
 WORKDIR /app
 RUN npm run build

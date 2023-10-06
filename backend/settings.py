@@ -36,6 +36,7 @@ ALLOWED_HOSTS = [
     "0.0.0.0",
     "django",
     "www.whoownsphilly.org",
+    "phillydb-web.onrender.com",
 ]
 
 
@@ -158,7 +159,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
     "http://192.168.1.169:8080",
     "http://192.168.1.169:8081",
+    "https://wop-adyrz9v7t-ssuffians-projects.vercel.app",
 ]
+CORS_ALLOW_ALL_ORIGINS = True
 
 VUE_FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
 
@@ -220,7 +223,3 @@ def get_cache():
 CACHES = get_cache()
 
 REST_FRAMEWORK = {"TEST_REQUEST_DEFAULT_FORMAT": "json"}
-
-CORS_ALLOWED_ORIGINS = [
-    "https://wop-adyrz9v7t-ssuffians-projects.vercel.app",
-]

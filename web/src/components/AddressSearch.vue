@@ -2,7 +2,7 @@
 import {ref} from "vue";
 import axios from "axios";
 
-const domain = "http://localhost:8000/"
+const domain = import.meta.env.PUBLIC_API_DOMAIN
 
 const filteredItems = ref([]);
 const filterItems = async (event) => {

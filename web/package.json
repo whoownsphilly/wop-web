@@ -12,6 +12,7 @@
   "dependencies": {
     "@astrojs/solid-js": "^3.0.1",
     "@astrojs/tailwind": "^5.0.0",
+    "@astrojs/vercel": "^5.0.2",
     "@astrojs/vue": "^3.0.0",
     "@iconify-prerendered/vue-ri": "^0.23.1690784687",
     "@types/geojson": "^7946.0.10",

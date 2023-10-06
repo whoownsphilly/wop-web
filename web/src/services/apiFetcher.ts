@@ -1,4 +1,4 @@
-const domain = "http://localhost:8000/"
+const domain = import.meta.env.PUBLIC_API_DOMAIN
 export const getPropertyBasicsPageInfo = (
     parcel_number,
     violations_complaints_date_since: Date

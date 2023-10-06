@@ -220,3 +220,7 @@ def get_cache():
 CACHES = get_cache()
 
 REST_FRAMEWORK = {"TEST_REQUEST_DEFAULT_FORMAT": "json"}
+
+CORS_ALLOWED_ORIGINS = [
+    "https://wop-adyrz9v7t-ssuffians-projects.vercel.app",
+]

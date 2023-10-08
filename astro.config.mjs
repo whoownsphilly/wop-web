@@ -9,7 +9,7 @@ import vercel from "@astrojs/vercel/serverless";
 export default defineConfig({
   output: 'server',
   server: {
-    port: Number(import.meta.env.PUBLIC_YARN_PORT||4321),
+    port: Number(import.meta.env.WEB_PORT||4321),
     host: true
   },
   adapter: vercel(),

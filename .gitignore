@@ -38,3 +38,6 @@ phillydb
 
 #pyenv
 .python-version
+
+# vercel
+.vercel

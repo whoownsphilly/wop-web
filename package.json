@@ -1,66 +1,30 @@
 {
-  "name": "phillydb-web",
-  "version": "0.1.0",
-  "engines": {
-    "node": "19.x"
-  },
-  "private": true,
+  "name": "web",
+  "type": "module",
+  "version": "0.0.1",
   "scripts": {
-    "serve": "export VUE_APP_DJANGO_PORT=${DJANGO_PORT:-8000}; export VUE_APP_DJANGO_URL=${DJANGO_HOSTNAME:-localhost}; export NODE_OPTIONS=--openssl-legacy-provider && vue-cli-service serve --port ${YARN_PORT:-8081}",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
   },
   "dependencies": {
-    "apexcharts": "^3.32.1",
-    "core-js": "^3.20.2",
-    "d3": "^7.2.1",
-    "glob-parent": "^6.0.1",
-    "leaflet": "^1.7.1",
-    "semantic-ui-css": "^2.4.1",
-    "semantic-ui-vue": "^0.11.0",
-    "sql-formatter": "^4.0.2",
-    "v-tooltip": "^2.1.3",
-    "vue": "^2.6.14",
-    "vue-apexcharts": "^1.6.2",
-    "vue-cookie-law": "^1.13.3",
-    "vue-good-table": "^2.21.10",
-    "vue-iframes": "^0.0.16",
-    "vue-luxon": "^0.10.0",
-    "vue-router": "^3.5.3",
-    "vue2-leaflet": "^2.7.1",
-    "vue2-leaflet-draw-toolbar": "^0.1.1",
-    "vue2-leaflet-markercluster": "^3.1.0",
-    "vuejs-toggle-switch": "^1.3.3",
-    "vuex": "^3.6.2",
-    "xlsx": "^0.18.5"
-  },
-  "devDependencies": {
-    "@vue/cli-plugin-babel": "~4.5.15",
-    "@vue/cli-plugin-eslint": "~4.5.15",
-    "@vue/cli-plugin-router": "~4.5.0",
-    "@vue/cli-service": "~4.5.15",
-    "babel-eslint": "^10.1.0",
-    "eslint": "^6.7.2",
-    "eslint-plugin-vue": "^8.2.0",
-    "vue-template-compiler": "^2.6.14"
-  },
-  "eslintConfig": {
-    "root": true,
-    "env": {
-      "node": true
-    },
-    "extends": [
-      "plugin:vue/essential",
-      "eslint:recommended"
-    ],
-    "parserOptions": {
-      "parser": "babel-eslint"
-    },
-    "rules": {}
-  },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not dead"
-  ]
+    "@astrojs/solid-js": "^3.0.1",
+    "@astrojs/tailwind": "^5.0.0",
+    "@astrojs/vercel": "^5.0.2",
+    "@astrojs/vue": "^3.0.0",
+    "@iconify-prerendered/vue-ri": "^0.23.1690784687",
+    "@types/geojson": "^7946.0.10",
+    "@types/leaflet": "^1.9.3",
+    "apexcharts": "^3.41.1",
+    "astro": "^3.0.13",
+    "axios": "^1.5.0",
+    "leaflet": "^1.9.4",
+    "leaflet.markercluster": "^1.5.3",
+    "mapbox-gl": "^2.15.0",
+    "solid-js": "^1.7.11",
+    "tailwindcss": "^3.3.3",
+    "vue": "^3.3.4"
+  }
 }

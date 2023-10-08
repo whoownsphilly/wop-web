@@ -1,60 +1,54 @@
-# phillydb-web
+# Astro Starter Kit: Basics
 
-Local Development
------------------
-
-## Install
 ```
-yarn install
+npm create astro@latest -- --template basics
 ```
 
-To develop locally, you need to start up the django server. The django server points to the built JS, so if you want a hot-reload on your JS, you also need to separately start up the vue server.
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/basics)
+[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/basics)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/basics/devcontainer.json)
 
-### Docker
+> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
 
-The easiest way is to use docker. Simply run `docker-compose build` to build the docker container the first time. Then whenever you want to run the servers, run `docker-compose up web`. This will create two docker services: `django` and `web`. `django` is the backend and will default go to port 8000. `web` is the yarn server which will default go to port 8080. You can change the ports by updating the DJANGO_PORT or YARN_PORT env vars, I highly recommend .envrc files using [direnv](https://direnv.net).
+![just-the-basics](https://github.com/withastro/astro/assets/2244813/a0a5533c-a856-4198-8470-2d67b1d7c554)
 
-It is suggested to also do `docker-compose up django` which will show the logs from the django side.
+## 🚀 Project Structure
 
-### Directly
-To run directly, you need to do the following:
+Inside of your Astro project, you'll see the following folders and files:
+
 ```
-yarn install
-pip install -r requirements.txt
-```
-You should then use `npm run serve` and `./django_serve.sh`. These will default to port 8080 and port 8000 respectively, but can also be set by `YARN_PORT` and `DJANGO_PORT` envirionment variables.
-
-
-Front-End Frameworks
---------------------
-
-- Vue Good Tables
-- Semantic UI Vue
-- ApexCharts
-
-API Docs
---------
-
-api/v1/autocomplete/?startswith={property-address or owner-name}&n_results={number of results to return}
-api/v1/property/latest_owner_details/?parcel_number={parcel_number}
-api/v1/property/historical_details/?
-
-
-Heroku
-------
-```
-# setup
-heroku buildpacks:add --index 1 heroku/nodejs
-heroku buildpacks:add --index 2 heroku/python
-heroku addons:create memcachier:dev
-heroku addons:create raygun-rum:rum-free
-heroku git:remote -a phillydb-web
+/
+├── public/
+│   └── favicon.svg
+├── src/
+│   ├── components/
+│   │   └── Card.astro
+│   ├── layouts/
+│   │   └── Layout.astro
+│   └── pages/
+│       └── index.astro
+└── package.json
 ```
 
-To deploy to heroku, use the `./heroku.sh` script which both freezes and requirements and pushes the code.
+Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
 
-Learnings
----------
-### RTT Summary
-- `document_date` seems to be the correct, as opposed to recording_date, even though recording_date is whats in the opa_properties_public (032209600)
-- Sometimes the document_dates can be the same because multiple sales happen in the same day: 341182500 (02/22/2010)
+There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+
+Any static assets, like images, can be placed in the `public/` directory.
+
+## 🧞 Commands
+
+All commands are run from the root of the project, from a terminal:
+
+| Command                   | Action                                           |
+| :------------------------ | :----------------------------------------------- |
+| `npm install`             | Installs dependencies                            |
+| `npm run dev`             | Starts local dev server at `localhost:3000`      |
+| `npm run build`           | Build your production site to `./dist/`          |
+| `npm run preview`         | Preview your build locally, before deploying     |
+| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
+| `npm run astro -- --help` | Get help using the Astro CLI                     |
+
+## 👀 Want to learn more?
+
+Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).

@@ -1,4 +1,4 @@
-const domain = import.meta.env.PUBLIC_API_DOMAIN
+const domain = import.meta.env.PUBLIC_API_DOMAIN || "https://api.whoownsphilly.org/"
 export const getPropertyBasicsPageInfo = (
     parcel_number,
     violations_complaints_date_since: Date

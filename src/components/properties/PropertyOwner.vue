@@ -169,37 +169,37 @@
             <div class="flex items-center mt-2 border pr-2" v-if="pageState.activeListTab === 'mailing'">
               <span class="bg-gray-100 px-2 py-1 mr-2">NAMES</span> {{mailingAddressInfo.names.join("; ")}}
             </div>
-            <table class="w-full" v-if="pageState.activeListType === 'timeline'">
-              <thead class="text-sm">
-              <tr>
-                <th colspan="4"></th>
-                <th colspan="2" class="text-center">Violations</th>
-                <th></th>
-              </tr>
-              <tr>
-                <th v-if="pageState.activeListTab === 'owner'">Owner</th>
-                <th>Location</th>
-                <th>Days Owned</th>
-                <th>Complaints</th>
-                <th>Total</th>
-                <th>Open</th>
-                <th>Opa Number</th>
-              </tr>
+            <table class="w-full text-xs sm:text-sm" v-if="pageState.activeListType === 'timeline'">
+              <thead>
+                <tr>
+                  <th colspan="4"></th>
+                  <th colspan="2" class="text-center">Violations</th>
+                  <th></th>
+                </tr>
+                <tr>
+                  <th v-if="pageState.activeListTab === 'owner'">Owner</th>
+                  <th>Location</th>
+                  <th>Days <span class="hidden sm:block">Owned</span></th>
+                  <th>Complaints</th>
+                  <th>Total</th>
+                  <th>Open</th>
+                  <th>OPA <span class="hidden sm:block">Number</span></th>
+                </tr>
               </thead>
               <tbody>
-              <tr class="hover:bg-gray-100" v-for="(item, index) in filteredList" v-bind:key="index">
-                <td v-if="pageState.activeListTab === 'owner'">{{item.likely_owner}}</td>
-                <td class="whitespace-nowrap" >{{item.location}} {{ item?.unit}}</td>
-                <td class="text-right">{{item.n_days_owned}}</td>
-                <td class="text-right">{{item.n_complaints}}</td>
-                <td class="text-right">{{item.n_violations}}</td>
-                <td class="text-right">{{item.n_violations_open}}</td>
-                <td class="text-right"><a :href="getPropertyLink(item.opa_account_num)">{{item.opa_account_num}}</a> </td>
-              </tr>
+                <tr class="hover:bg-gray-100" v-for="(item, index) in filteredList" v-bind:key="index">
+                  <td v-if="pageState.activeListTab === 'owner'">{{item.likely_owner}}</td>
+                  <td class="whitespace-nowrap" >{{item.location}} {{ item?.unit}}</td>
+                  <td class="text-right">{{item.n_days_owned}}</td>
+                  <td class="text-right">{{item.n_complaints}}</td>
+                  <td class="text-right">{{item.n_violations}}</td>
+                  <td class="text-right">{{item.n_violations_open}}</td>
+                  <td class="text-right"><a :href="getPropertyLink(item.opa_account_num)">{{item.opa_account_num}}</a> </td>
+                </tr>
               </tbody>
             </table>
-            <table class="w-full" v-if="pageState.activeListType === 'violations'">
-              <thead class="text-sm">
+            <table class="w-full text-xs sm:text-sm"  v-if="pageState.activeListType === 'violations'">
+              <thead>
                 <tr>
                   <th v-if="pageState.activeListTab === 'owner'">Owner</th>
                   <th>Location</th>
@@ -222,8 +222,8 @@
                 </tr>
               </tbody>
             </table>
-            <table class="w-full" v-if="pageState.activeListType === 'complaints'">
-              <thead class="text-sm">
+            <table  class="w-full text-xs sm:text-sm" v-if="pageState.activeListType === 'complaints'">
+              <thead>
               <tr>
                 <th v-if="pageState.activeListTab === 'owner'">Owner</th>
                 <th>Location</th>

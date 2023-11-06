@@ -41,8 +41,8 @@ onMounted(() => {
 
   neighborhoodMap  = map('neighborhoodMap', options)
 
-  // 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
-  tileLayer("https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png", {
+  const tileDomain = import.meta.env.PUBLIC_MAP_TILE_DOMAIN || "https://tile.openstreetmap.org"
+  tileLayer(`${tileDomain}/{z}/{x}/{y}.png`, {
     maxZoom: 19,
     attribution: '© OpenStreetMap'
   }).addTo(neighborhoodMap);

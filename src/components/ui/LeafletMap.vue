@@ -100,8 +100,8 @@ export default {
       leafletOptions: { scrollWheelZoom: false },
       highlightedCircleWeight: 100,
       fillColor: "#e4ce7f",
-      //url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-      url: "https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png",
+      url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      //url: "https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png",
       attribution:
         '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
     };

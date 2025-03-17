@@ -1,34 +1,44 @@
 ---
-import Layout from "../../layouts/layout.astro";
-const { id } = Astro.params;
-const pathname = Astro.url.pathname.slice(1);
+import Layout from '../../layouts/layout.astro'
+const { id } = Astro.params
+const pathname = Astro.url.pathname.slice(1)
 
 const propertyData = `http://static.whoownsphilly.com/${id}.json`
 // load json
 ---
+
 <style>
-    .nav-button {
-        @apply px-6 py-2 rounded-sm bg-gray-100 border border-white text-black;
-    }
+  .nav-button {
+    @apply rounded-sm border border-white bg-gray-100 px-6 py-2 text-black;
+  }
 
-    .nav-button:hover {
-        @apply bg-neutral-400 text-white
-    }
+  .nav-button:hover {
+    @apply bg-neutral-400 text-white;
+  }
 
-    .active  {
-        @apply bg-neutral-500 text-white
-    }
+  .active {
+    @apply bg-neutral-500 text-white;
+  }
 </style>
 
 <Layout title="Who owns Philly">
-<main class="w-full mt-4">
-    <nav class="flex w-full my-2 gap-2 px-2">
-        <a class={`nav-button w-full text-center ${pathname.endsWith("summary") ? "active" : ""}`} href={`/properties/${id}/summary` }>Summary</a>
-        <a class={`nav-button w-full text-center ${pathname.endsWith("timeline") ? "active" : ""}`} href={`/properties/${id}/timeline` }>Timeline</a>
-        <a class={`nav-button w-full text-center ${pathname.endsWith("owner") ? "active" : ""}`}  href={`/properties/${id}/owner`}>Owner</a>
+  <main class="mt-4 w-full">
+    <nav class="my-2 flex w-full gap-2 px-2">
+      <a
+        class={`nav-button w-full text-center ${pathname.endsWith('summary') ? 'active' : ''}`}
+        href={`/properties/${id}/summary`}>Summary</a
+      >
+      <a
+        class={`nav-button w-full text-center ${pathname.endsWith('timeline') ? 'active' : ''}`}
+        href={`/properties/${id}/timeline`}>Timeline</a
+      >
+      <a
+        class={`nav-button w-full text-center ${pathname.endsWith('owner') ? 'active' : ''}`}
+        href={`/properties/${id}/owner`}>Owner</a
+      >
     </nav>
-    <section class="border-t rounded-sm p-4">
-        <slot/>
+    <section class="rounded-sm border-t p-4">
+      <slot />
     </section>
-</main>
+  </main>
 </Layout>

@@ -1,10 +1,9 @@
 ---
-
-import PropertyLayout from "../property-layout.astro";
-import PropertyTimeline from "../../../components/properties/PropertyTimeline.vue";
+import PropertyLayout from '../property-layout.astro'
+import PropertyTimeline from '../../../components/properties/PropertyTimeline.vue'
 const { id } = Astro.params
 ---
 
 <PropertyLayout>
-    <PropertyTimeline id={id} client:only="vue"/>
+  <PropertyTimeline id={id} client:only="vue" />
 </PropertyLayout>
